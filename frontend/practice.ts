@@ -138,6 +138,39 @@ const DURATIONS: Record<number, NoteDuration> = { 1: "q", 2: "8", 4: "16" };
 
 // ---- Exercise lifecycle ---------------------------------------------------
 
+// ---- Remembered settings ------------------------------------------------------
+
+/** Put the last-used choices back into the form (each is validated on read). */
+function restoreSettings() {
+  const saved = store.settings();
+  const type = saved.type ?? "major";
+  ui.type.value = type;
+  populateTonics(type, saved.tonic);
+  if (saved.hands) ui.hands.value = saved.hands;
+  if (saved.octaves) ui.octaves.value = String(saved.octaves);
+  if (saved.direction) ui.direction.value = saved.direction;
+  if (saved.mode) ui.mode.value = saved.mode;
+  if (saved.bpm) ui.bpm.value = String(saved.bpm);
+  if (saved.notesPerBeat) ui.subdivision.value = String(saved.notesPerBeat);
+  if (saved.latencyMs !== undefined) ui.latency.value = String(saved.latencyMs);
+}
+
+function persistSettings() {
+  const o = readOptions();
+  const t = tempoSettings();
+  store.saveSettings({
+    tonic: o.tonic,
+    type: o.type,
+    hands: o.hands,
+    octaves: o.octaves,
+    direction: o.direction,
+    mode: ui.mode.value as Mode,
+    bpm: t.bpm,
+    notesPerBeat: t.notesPerBeat,
+    latencyMs: t.latencyMs,
+  });
+}
+
 function rebuild() {
   options = readOptions();
   mode = ui.mode.value as Mode;
@@ -360,7 +393,9 @@ function showDevices(devices: MidiDevice[]) {
   if (devices.length > 1) opts.unshift(new Option("All devices", ALL_DEVICES));
   ui.device.replaceChildren(...opts);
   ui.device.disabled = false;
-  ui.device.value = [...ui.device.options].some((o) => o.value === prev) ? prev : opts[0].value;
+  const remembered = devices.find((d) => d.name === store.settings().device)?.id;
+  const has = (v: string) => [...ui.device.options].some((o) => o.value === v);
+  ui.device.value = has(prev) ? prev : remembered ?? opts[0].value;
   midi.select(ui.device.value);
   ui.midiStatus.textContent = devices.length === 1
     ? `Connected: ${devices[0].name}`
@@ -494,7 +529,13 @@ for (const s of [ui.tonic, ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdi
 // BPM and latency are read at Start, so editing them needs no rebuild —
 // but it does end a run in progress, whose timing no longer matches.
 for (const s of [ui.bpm, ui.latency]) s.addEventListener("change", reset);
-ui.device.addEventListener("change", () => midi.select(ui.device.value));
+ui.form.addEventListener("change", persistSettings);
+// Remembered by name: a port's id changes when the instrument reconnects.
+ui.device.addEventListener("change", () => {
+  midi.select(ui.device.value);
+  const name = ui.device.selectedOptions[0]?.textContent;
+  if (name && ui.device.value !== ALL_DEVICES) store.saveSettings({ device: name });
+});
 ui.start.addEventListener("click", () => {
   toggleTempo();
   ui.start.blur();
@@ -514,8 +555,7 @@ document.addEventListener("keydown", (e) => {
 ui.storageWarning.hidden = store.available;
 
 populateTypes();
-ui.type.value = "major";
-populateTonics("major");
+restoreSettings();
 rebuild();
 
 midi.onDevices = showDevices;
