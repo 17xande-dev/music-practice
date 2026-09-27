@@ -54,12 +54,14 @@
     --rule: #33383d;
     --accent: #7fc4d6;
     --accent-ink: #0d1f24;
-    --ok: #4cc27f;
+    /* ok/early/late checked with the dataviz palette validator against
+       this surface: lightness band, chroma, CVD and contrast. */
+    --ok: #2fa36b;
     --bad: #ff6b5b;
     --target: #6ea3ff;
     --hint: #2a3f5e;
-    --early: #e0a64a;
-    --late: #b196ee;
+    --early: #c28630;
+    --late: #9a7ede;
   }
 }
 
@@ -347,6 +349,49 @@ kbd {
     dd { font-size: var(--title); font-weight: 650; font-variant-numeric: tabular-nums; }
   }
   .results-note { margin: var(--gap-sm) 0 0; color: var(--ink-faint); font-size: var(--small); }
+}
+
+.timing-chart {
+  margin-top: var(--gap-md);
+
+  .timing-plot { display: block; max-width: 100%; height: auto; }
+  .band { fill: var(--paper-sunk); }
+  .beat { stroke: var(--rule); stroke-width: 1; }
+  .axis { font: 11px var(--font); fill: var(--ink-faint); text-anchor: end; }
+  .dot {
+    circle { stroke: var(--paper-raised); stroke-width: 2; }
+    &.on circle { fill: var(--ok); }
+    &.early circle { fill: var(--early); }
+    &.late circle { fill: var(--late); }
+    &.missed path { stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; }
+    .hit { fill: transparent; stroke: none; }
+    &:hover circle:not(.hit) { stroke: var(--ink); }
+  }
+}
+
+.timing-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs) var(--gap-md);
+  margin: var(--gap-xs) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+  color: var(--ink-soft);
+
+  li::before {
+    content: "";
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-right: 0.35rem;
+    border-radius: 50%;
+    vertical-align: -0.05rem;
+  }
+  .on::before { background: var(--ok); }
+  .early::before { background: var(--early); }
+  .late::before { background: var(--late); }
+  .missed::before { content: "×"; width: auto; height: auto; color: var(--ink-soft); font-weight: 700; }
 }
 
 /* A touch-only device has no keyboard to play on. */

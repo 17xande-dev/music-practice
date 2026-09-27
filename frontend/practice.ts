@@ -19,6 +19,7 @@ import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
+import { renderTimingChart } from "./lib/timing_chart.ts";
 import {
   buildSteps,
   type ExerciseOptions,
@@ -58,6 +59,7 @@ const ui = {
   staff: el("staff"),
   results: el("results"),
   stats: el("results-stats"),
+  timingChart: el("timing-chart"),
   resultsNote: el("results-note"),
 };
 
@@ -399,7 +401,13 @@ function showResults(s: Summary) {
   if (steps[0].notes.length > 1) rows.push(stat("Hands apart", `${s.notTogether} of ${s.total}`));
   ui.stats.replaceChildren(...rows);
   ui.resultsNote.textContent = resultsNote(s);
+  // Shown before the chart is drawn: it sizes itself to its container,
+  // which measures zero while hidden.
   ui.results.hidden = false;
+  ui.timingChart.hidden = !t;
+  if (t && engine instanceof TempoEngine) {
+    renderTimingChart(ui.timingChart, steps, t, engine.interval);
+  }
 }
 
 function resultsNote(s: Summary): string {
