@@ -279,6 +279,32 @@ kbd {
 }
 
 .staff-scroll:empty { display: none; }
+
+/* VexFlow draws in the container's text colour (read at render time), and
+   shows about two systems, scrolling to follow the current line. */
+.staff-scroll {
+  color: var(--ink);
+  max-height: 21rem;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+
+  svg { display: block; }
+
+  /* Step marks are classes on each note's group. CSS beats VexFlow's
+     presentation attributes, so no redraw is needed to recolour. */
+  .vf-stavenote {
+    &.current { --mark: var(--target); }
+    &.ok { --mark: var(--ok); }
+    &.bad { --mark: var(--bad); }
+    &.early { --mark: var(--early); }
+    &.late { --mark: var(--late); }
+
+    &:is(.current, .ok, .bad, .early, .late) {
+      :not([fill="none"]) { fill: var(--mark); }
+      path { stroke: var(--mark); }
+    }
+  }
+}
 .keyboard-scroll { padding: var(--gap-sm); }
 
 .piano {

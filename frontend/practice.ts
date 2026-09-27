@@ -3,11 +3,13 @@
 
 import { type Engine, type NoteEvent, NotesEngine, type Summary } from "./lib/engine.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
+import { StaffView } from "./lib/staff_view.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import {
   buildSteps,
   type ExerciseOptions,
+  keySignatureFifths,
   nameOf,
   noteLabel,
   type PitchName,
@@ -35,12 +37,14 @@ const ui = {
   status: el("exercise-status"),
   restart: el<HTMLButtonElement>("restart"),
   keyboard: el("keyboard"),
+  staff: el("staff"),
   results: el("results"),
   stats: el("results-stats"),
   resultsNote: el("results-note"),
 };
 
 const keyboard = new KeyboardView(ui.keyboard);
+const staff = new StaffView(ui.staff);
 const synth = new Synth();
 const midi = new Midi();
 
@@ -95,12 +99,14 @@ function rebuild() {
   const all = steps.flatMap((s) => s.notes.map((n) => n.midi));
   keyboard.setRange(Math.min(...all), Math.max(...all));
   keyboard.setScale(all);
+  staff.render(steps, keySignatureFifths(options.tonic, options.type));
   reset();
 }
 
 function reset() {
   engine = new NotesEngine(steps);
   keyboard.releaseAll();
+  staff.clearMarks();
   ui.results.hidden = true;
   showProgress();
 }
@@ -129,6 +135,8 @@ function showProgress() {
     : `Note ${(engine as NotesEngine).cursor + 1} of ${steps.length}`;
   ui.status.textContent = `${where} · next: ${names.join(" + ")}`;
   keyboard.reveal(step.notes[0].midi);
+  staff.mark(step.index, "current");
+  staff.reveal(step.index);
 }
 
 // ---- Input ------------------------------------------------------------------
@@ -147,6 +155,10 @@ function handleNote(ev: NoteEvent) {
     ev.midi,
     fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral",
   );
+  if (fb.kind === "correct" && fb.stepDone) {
+    // Green only for a step played without a wrong note on the way.
+    staff.mark(fb.step, engine.results[fb.step].clean ? "ok" : "bad");
+  }
   showProgress();
   if (engine.done) showResults(engine.summary());
 }

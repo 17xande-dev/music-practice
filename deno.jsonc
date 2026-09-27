@@ -29,6 +29,12 @@
     "test": "deno test --no-check frontend"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@^1.0.19"
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    // Staff notation. Pinned exactly: rendering depends on its layout
+    // internals, and a minor bump could move every glyph. Imported through
+    // its "bravura" entry, which embeds the Bravura and Academico fonts as
+    // data: URIs (hence the CSP's font-src data:); the default "core" path
+    // would fetch them from a CDN at runtime.
+    "vexflow": "npm:vexflow@5.0.0"
   }
 }
