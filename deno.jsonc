@@ -12,6 +12,7 @@
   },
   "include": ["frontend"],
   "fmt": {
+    "lineWidth": 100,
     "include": ["frontend", "deno.jsonc"]
   },
   "lint": {

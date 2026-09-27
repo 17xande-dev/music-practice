@@ -42,7 +42,7 @@ Deno.test("notes: a clean run scores 100%", () => {
   const s = e.summary();
   assertEquals([s.total, s.correct, s.accuracy, s.wrongNotes], [8, 8, 1, 0]);
   assertEquals(s.durationMs, 3500);
-  assertEquals(s.evenness, 0); // perfectly even gaps
+  assertEquals(s.unevenness, 0); // perfectly even gaps
   assertEquals(s.timing, null);
 });
 
@@ -97,13 +97,19 @@ Deno.test("notes: hands together completes on both notes in either order and mea
   assertEquals(e.summary().notTogether, 1);
 });
 
-Deno.test("notes: evenness and velocity spread", () => {
-  const e = new NotesEngine(cMajor());
-  const times = [0, 400, 800, 1400, 1800, 2200, 2600, 3000]; // one long gap
-  const vels = [60, 100, 60, 100, 60, 100, 60, 100];
-  cMajor().forEach((s, i) => e.input(on(s.notes[0].midi, times[i], vels[i])));
-  const s = e.summary();
-  assert(s.evenness! > 0.1, `evenness ${s.evenness}`);
+Deno.test("notes: one hesitation barely moves unevenness; ragged spacing does", () => {
+  const run = (times: number[], vels = times.map(() => 80)) => {
+    const e = new NotesEngine(cMajor());
+    cMajor().forEach((s, i) => e.input(on(s.notes[0].midi, times[i], vels[i])));
+    return e.summary();
+  };
+  // Steady 400 ms apart except one 3 s pause to find a note.
+  const hesitant = run([0, 400, 800, 3800, 4200, 4600, 5000, 5400]);
+  assertEquals(hesitant.unevenness, 0);
+  // Gaps alternating 200/600: never steady.
+  const ragged = run([0, 200, 800, 1000, 1600, 1800, 2400, 2600]);
+  assert(ragged.unevenness! >= 0.5, `unevenness ${ragged.unevenness}`);
+  const s = run([0, 400, 800, 1200, 1600, 2000, 2400, 2800], [60, 100, 60, 100, 60, 100, 60, 100]);
   assertEquals(s.velocityStd, 20);
 });
 

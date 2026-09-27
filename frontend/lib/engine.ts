@@ -61,10 +61,14 @@ export interface Summary {
   wrongNotes: number;
   durationMs: number;
   /**
-   * Coefficient of variation of the gaps between step onsets: 0 is
-   * metronomic. Null with fewer than three onsets.
+   * How uneven the spacing between step onsets was, relative to its typical
+   * size: 0 is metronomic. The interquartile range of the gaps over their
+   * median, rather than a coefficient of variation, so one hesitation in an
+   * otherwise steady run does not swamp it (a quarter of the gaps can be
+   * outliers), while spacing that is ragged throughout still scores badly.
+   * Null with fewer than three onsets.
    */
-  evenness: number | null;
+  unevenness: number | null;
   /** Standard deviation of the velocities of correct notes (0–127 scale). */
   velocityStd: number | null;
   /** Hands-together steps whose hands were more than NOT_TOGETHER_MS apart. */
@@ -101,6 +105,17 @@ export function mean(xs: number[]): number | null {
   return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 }
 
+/** Linear-interpolated quantile, q in [0, 1]. */
+export function quantile(xs: number[], q: number): number | null {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const pos = (s.length - 1) * q;
+  const lo = Math.floor(pos);
+  return s[lo] + (s[Math.min(lo + 1, s.length - 1)] - s[lo]) * (pos - lo);
+}
+
+export const median = (xs: number[]) => quantile(xs, 0.5);
+
 export function std(xs: number[]): number | null {
   const m = mean(xs);
   if (m === null || xs.length < 2) return null;
@@ -121,11 +136,8 @@ function baseSummary(mode: Summary["mode"], results: readonly StepResult[]) {
     })
     .filter((t): t is number => t !== null);
   const gaps = firstOnsets.slice(1).map((t, i) => t - firstOnsets[i]);
-  const gapMean = mean(gaps);
-  const gapStd = std(gaps);
-  const allOnsets = results.flatMap((r) =>
-    r.onsets.filter((t): t is number => t !== null)
-  );
+  const gapMedian = median(gaps);
+  const allOnsets = results.flatMap((r) => r.onsets.filter((t): t is number => t !== null));
   const correct = results.filter((r) => r.status === "ok" && r.clean).length;
   return {
     mode,
@@ -133,16 +145,13 @@ function baseSummary(mode: Summary["mode"], results: readonly StepResult[]) {
     correct,
     accuracy: results.length ? correct / results.length : 0,
     wrongNotes: results.reduce((a, r) => a + r.wrong.length, 0),
-    durationMs: allOnsets.length
-      ? Math.max(...allOnsets) - Math.min(...allOnsets)
-      : 0,
-    evenness: gapMean && gapStd !== null && gaps.length >= 2
-      ? gapStd / gapMean
+    durationMs: allOnsets.length ? Math.max(...allOnsets) - Math.min(...allOnsets) : 0,
+    unevenness: gapMedian && gaps.length >= 2
+      ? (quantile(gaps, 0.75)! - quantile(gaps, 0.25)!) / gapMedian
       : null,
     velocityStd: std(results.flatMap((r) => r.velocities)),
-    notTogether:
-      results.filter((r) => r.asyncMs !== null && r.asyncMs > NOT_TOGETHER_MS)
-        .length,
+    notTogether: results.filter((r) => r.asyncMs !== null && r.asyncMs > NOT_TOGETHER_MS)
+      .length,
   };
 }
 
@@ -282,9 +291,7 @@ export class TempoEngine implements Engine {
   private grade(i: number) {
     const r = this.results[i];
     const due = this.dueAt(i);
-    const devs = r.onsets.filter((x): x is number => x !== null).map((x) =>
-      x - due
-    );
+    const devs = r.onsets.filter((x): x is number => x !== null).map((x) => x - due);
     r.status = "ok";
     r.asyncMs = spread(r.onsets);
     r.deviationMs = mean(devs);

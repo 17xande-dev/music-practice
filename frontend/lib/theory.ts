@@ -269,9 +269,7 @@ export function tonicOptions(type: ScaleType): TonicOption[] {
       const f = keySignatureFifths(p, sigType)!;
       if (Math.abs(f) <= 7) candidates.push({ p, f });
     }
-    candidates.sort((a, b) =>
-      Math.abs(a.f) - Math.abs(b.f) || a.p.acc - b.p.acc
-    );
+    candidates.sort((a, b) => Math.abs(a.f) - Math.abs(b.f) || a.p.acc - b.p.acc);
     out.push({ pc, spellings: candidates.map((c) => c.p) });
   }
   return out;
@@ -357,9 +355,7 @@ function spellChromatic(
   descending: boolean,
 ): Spelled {
   const pc = mod(midi, 12);
-  const name = pc === pitchClass(tonic)
-    ? tonic
-    : (descending ? FLAT_NAMES : SHARP_NAMES)[pc];
+  const name = pc === pitchClass(tonic) ? tonic : (descending ? FLAT_NAMES : SHARP_NAMES)[pc];
   return spell(midi, name.letter);
 }
 
@@ -380,9 +376,7 @@ function handLine(
     return { up, down };
   }
   const up = run(o.tonic, tonicMidi, def.up, def.letters, o.octaves);
-  const downSource = def.down
-    ? run(o.tonic, tonicMidi, def.down, def.downLetters!, o.octaves)
-    : up;
+  const downSource = def.down ? run(o.tonic, tonicMidi, def.down, def.downLetters!, o.octaves) : up;
   return { up, down: [...downSource].reverse() };
 }
 

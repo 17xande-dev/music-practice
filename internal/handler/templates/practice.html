@@ -1,7 +1,72 @@
 {{define "scripts"}}<script type="module" src="{{asset "dist/practice.js"}}"></script>{{end}}
 
 {{define "content"}}
-<h1>Practice scales</h1>
-<noscript><p class="notice">This page needs JavaScript to read your instrument and grade your playing.</p></noscript>
-<div id="app" class="practice"></div>
+<noscript><p class="notice error">This page needs JavaScript to read your instrument and grade your playing.</p></noscript>
+
+<section class="panel device" aria-label="Instrument">
+  <div class="field">
+    <label for="midi-input">Instrument</label>
+    <select id="midi-input" disabled>
+      <option value="">Looking for MIDI devices…</option>
+    </select>
+  </div>
+  <span id="midi-activity" class="activity" aria-hidden="true"></span>
+  <p id="midi-status" class="status" role="status"></p>
+  <p class="qwerty-hint">No instrument? Play with your computer keyboard: <kbd>A</kbd>–<kbd>J</kbd> are the white keys C to B, and <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> the black keys. The octave is chosen for you.</p>
+</section>
+
+<form id="scale-form" class="panel picker" aria-label="Choose a scale">
+  <div class="field">
+    <label for="tonic">Key</label>
+    <select id="tonic" name="tonic"></select>
+  </div>
+  <div class="field">
+    <label for="type">Scale</label>
+    <select id="type" name="type"></select>
+  </div>
+  <div class="field">
+    <label for="hands">Hands</label>
+    <select id="hands" name="hands">
+      <option value="rh">Right hand</option>
+      <option value="lh">Left hand</option>
+      <option value="both">Hands together</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="octaves">Octaves</label>
+    <select id="octaves" name="octaves">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="direction">Direction</label>
+    <select id="direction" name="direction">
+      <option value="updown">Up and down</option>
+      <option value="up">Up only</option>
+    </select>
+  </div>
+</form>
+
+<section class="exercise" aria-labelledby="exercise-title">
+  <div class="exercise-head">
+    <div>
+      <h1 id="exercise-title">Practice scales</h1>
+      <p id="exercise-status" class="exercise-status" aria-live="polite"></p>
+    </div>
+    <div class="actions">
+      <button id="restart" type="button" class="secondary" title="Restart (Space)">Restart</button>
+    </div>
+  </div>
+  <div id="staff" class="staff-scroll"></div>
+  <div id="keyboard" class="keyboard-scroll"></div>
+</section>
+
+<section id="results" class="panel results" aria-labelledby="results-title" hidden>
+  <h2 id="results-title">Results</h2>
+  <dl id="results-stats" class="stats"></dl>
+  <p id="results-note" class="results-note"></p>
+</section>
 {{end}}

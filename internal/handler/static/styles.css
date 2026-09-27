@@ -190,3 +190,142 @@ label { font-size: var(--small); color: var(--ink-soft); }
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- Practice page ---------------------------------------------------- */
+
+main > .inner { display: flex; flex-direction: column; gap: var(--gap-md); }
+
+.panel {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--gap-md);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+
+  select { width: 100%; }
+}
+
+.device {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) auto 1fr;
+  align-items: end;
+  gap: var(--gap-sm) var(--gap-md);
+
+  .status { margin: 0; align-self: center; color: var(--ink-soft); font-size: var(--small); }
+  .status.warn { color: var(--early); }
+  .qwerty-hint { grid-column: 1 / -1; margin: 0; font-size: var(--small); color: var(--ink-faint); }
+}
+
+/* Blinks on every incoming MIDI note, so a silent connection is obvious. */
+.activity {
+  align-self: center;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--rule);
+  transition: background 0.1s;
+
+  &.on { background: var(--ok); transition: none; }
+}
+
+kbd {
+  font: 0.8em var(--font-mono);
+  padding: 0.05em 0.35em;
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--paper-sunk);
+}
+
+/* Fills the row with as many columns as fit: five on a desktop, two on a
+   phone, with no breakpoints. */
+.picker {
+  display: grid;
+  gap: var(--gap-sm) var(--gap-md);
+  grid-template-columns: repeat(auto-fill, minmax(clamp(7.5rem, 35vw, 11rem), 1fr));
+}
+
+.exercise {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.exercise-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+
+  h1 { margin: 0; font-size: var(--title-page); }
+  .exercise-status { margin: var(--gap-xs) 0 0; color: var(--ink-soft); min-height: 1.55em; }
+}
+
+/* Wide content scrolls inside its own box; the page body never scrolls
+   sideways. */
+.staff-scroll, .keyboard-scroll {
+  overflow-x: auto;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.staff-scroll:empty { display: none; }
+.keyboard-scroll { padding: var(--gap-sm); }
+
+.piano {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 12rem;
+
+  /* Base colours sit inside :where() so they carry no specificity, and any
+     state below (target, pressed) wins without needing to out-count them. */
+  .key { stroke: var(--key-edge); stroke-width: 1; }
+  :where(.key.white) { fill: var(--key-white); }
+  :where(.key.black) { fill: var(--key-black); stroke: var(--key-black); }
+  :where(.key.white.in-scale) { fill: color-mix(in oklab, var(--key-white), var(--target) 14%); }
+  :where(.key.black.in-scale) { fill: color-mix(in oklab, var(--key-black), var(--target) 40%); }
+  .key.target { fill: var(--target); }
+  .key.down.ok { fill: var(--ok); }
+  .key.down.bad { fill: var(--bad); }
+  .key.down.neutral { fill: var(--ink-faint); }
+  .labels text {
+    font: 10px var(--font);
+    fill: #6b7075;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+}
+
+.results {
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(7rem, 40vw, 10rem), 1fr));
+    gap: var(--gap-md);
+    margin: 0;
+
+    > div, dt, dd { margin: 0; }
+    dt { font-size: var(--small); color: var(--ink-soft); }
+    dd { font-size: var(--title); font-weight: 650; font-variant-numeric: tabular-nums; }
+  }
+  .results-note { margin: var(--gap-sm) 0 0; color: var(--ink-faint); font-size: var(--small); }
+}
+
+/* A touch-only device has no keyboard to play on. */
+@media (hover: none) and (pointer: coarse) {
+  .qwerty-hint { display: none; }
+}
+
+@media (max-width: 40rem) {
+  .device { grid-template-columns: 1fr auto; }
+  .device .status { grid-column: 1 / -1; }
+}
