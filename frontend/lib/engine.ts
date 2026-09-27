@@ -1,0 +1,339 @@
+// Grading. Two engines share one shape: notes-only (the cursor waits for
+// you) and tempo (the metronome moves on whether you played or not). Both
+// are pure: they take timestamped note events and return what happened, and
+// the page decides how to show it. Times are milliseconds on one clock — the
+// page uses performance.now(), which is also what MIDIMessageEvent.timeStamp
+// is measured on.
+
+import type { Step } from "./theory.ts";
+
+export interface NoteEvent {
+  type: "on" | "off";
+  midi: number;
+  velocity: number;
+  t: number;
+}
+
+export type Feedback =
+  /** An expected note. stepDone when it completed its step. */
+  | { kind: "correct"; midi: number; step: number; stepDone: boolean }
+  /** Not a note the current step wants. */
+  | { kind: "wrong"; midi: number; step: number }
+  /** A repeat of an already-counted note, a note-off, or input after the end. */
+  | { kind: "ignored"; midi: number };
+
+export type Grade = "on" | "early" | "late";
+
+export interface StepResult {
+  index: number;
+  status: "pending" | "ok" | "missed";
+  /** Completed with no wrong note while it was the current step. */
+  clean: boolean;
+  wrong: number[];
+  /** Onset of each expected note, parallel to Step.notes (null = not played). */
+  onsets: (number | null)[];
+  velocities: number[];
+  /** Spread between the hands' onsets, for hands together. */
+  asyncMs: number | null;
+  /** Tempo mode: mean signed deviation from the beat (negative = early). */
+  deviationMs: number | null;
+  grade: Grade | null;
+}
+
+export interface TimingSummary {
+  onTime: number;
+  early: number;
+  late: number;
+  missed: number;
+  meanAbsMs: number | null;
+  /** Positive = dragging behind the beat, negative = rushing. */
+  meanSignedMs: number | null;
+  toleranceMs: number;
+  deviations: (number | null)[];
+}
+
+export interface Summary {
+  mode: "notes" | "tempo";
+  total: number;
+  correct: number;
+  /** correct / total, 0–1. */
+  accuracy: number;
+  wrongNotes: number;
+  durationMs: number;
+  /**
+   * Coefficient of variation of the gaps between step onsets: 0 is
+   * metronomic. Null with fewer than three onsets.
+   */
+  evenness: number | null;
+  /** Standard deviation of the velocities of correct notes (0–127 scale). */
+  velocityStd: number | null;
+  /** Hands-together steps whose hands were more than NOT_TOGETHER_MS apart. */
+  notTogether: number;
+  timing: TimingSummary | null;
+}
+
+/** Hands this far apart no longer sound like one event. */
+export const NOT_TOGETHER_MS = 80;
+
+export interface Engine {
+  readonly steps: readonly Step[];
+  readonly results: readonly StepResult[];
+  readonly done: boolean;
+  input(ev: NoteEvent): Feedback;
+  summary(): Summary;
+}
+
+function freshResults(steps: readonly Step[]): StepResult[] {
+  return steps.map((s) => ({
+    index: s.index,
+    status: "pending",
+    clean: true,
+    wrong: [],
+    onsets: s.notes.map(() => null),
+    velocities: [],
+    asyncMs: null,
+    deviationMs: null,
+    grade: null,
+  }));
+}
+
+export function mean(xs: number[]): number | null {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+}
+
+export function std(xs: number[]): number | null {
+  const m = mean(xs);
+  if (m === null || xs.length < 2) return null;
+  return Math.sqrt(xs.reduce((a, x) => a + (x - m) ** 2, 0) / xs.length);
+}
+
+function spread(onsets: (number | null)[]): number | null {
+  const ts = onsets.filter((t): t is number => t !== null);
+  return ts.length > 1 ? Math.max(...ts) - Math.min(...ts) : null;
+}
+
+/** Shared metrics over whichever steps were played. */
+function baseSummary(mode: Summary["mode"], results: readonly StepResult[]) {
+  const firstOnsets = results
+    .map((r) => {
+      const ts = r.onsets.filter((t): t is number => t !== null);
+      return ts.length ? Math.min(...ts) : null;
+    })
+    .filter((t): t is number => t !== null);
+  const gaps = firstOnsets.slice(1).map((t, i) => t - firstOnsets[i]);
+  const gapMean = mean(gaps);
+  const gapStd = std(gaps);
+  const allOnsets = results.flatMap((r) =>
+    r.onsets.filter((t): t is number => t !== null)
+  );
+  const correct = results.filter((r) => r.status === "ok" && r.clean).length;
+  return {
+    mode,
+    total: results.length,
+    correct,
+    accuracy: results.length ? correct / results.length : 0,
+    wrongNotes: results.reduce((a, r) => a + r.wrong.length, 0),
+    durationMs: allOnsets.length
+      ? Math.max(...allOnsets) - Math.min(...allOnsets)
+      : 0,
+    evenness: gapMean && gapStd !== null && gaps.length >= 2
+      ? gapStd / gapMean
+      : null,
+    velocityStd: std(results.flatMap((r) => r.velocities)),
+    notTogether:
+      results.filter((r) => r.asyncMs !== null && r.asyncMs > NOT_TOGETHER_MS)
+        .length,
+  };
+}
+
+/**
+ * Notes-only: the cursor waits on the current step until every note of it
+ * has been played, in any order. A wrong note is counted against the step
+ * and the cursor stays put, so the run always ends on the last note.
+ */
+export class NotesEngine implements Engine {
+  readonly results: StepResult[];
+  cursor = 0;
+
+  constructor(readonly steps: readonly Step[]) {
+    this.results = freshResults(steps);
+  }
+
+  get done(): boolean {
+    return this.cursor >= this.steps.length;
+  }
+
+  input(ev: NoteEvent): Feedback {
+    if (ev.type !== "on" || this.done) {
+      return { kind: "ignored", midi: ev.midi };
+    }
+    const step = this.steps[this.cursor];
+    const r = this.results[this.cursor];
+    const i = step.notes.findIndex((n) => n.midi === ev.midi);
+    if (i < 0) {
+      r.wrong.push(ev.midi);
+      r.clean = false;
+      return { kind: "wrong", midi: ev.midi, step: this.cursor };
+    }
+    if (r.onsets[i] !== null) return { kind: "ignored", midi: ev.midi };
+
+    r.onsets[i] = ev.t;
+    r.velocities.push(ev.velocity);
+    const index = this.cursor;
+    const stepDone = r.onsets.every((t) => t !== null);
+    if (stepDone) {
+      r.status = "ok";
+      r.asyncMs = spread(r.onsets);
+      this.cursor++;
+    }
+    return { kind: "correct", midi: ev.midi, step: index, stepDone };
+  }
+
+  summary(): Summary {
+    return { ...baseSummary("notes", this.results), timing: null };
+  }
+}
+
+export interface TempoOptions {
+  bpm: number;
+  notesPerBeat: number;
+  /** When step 0 is due, on the event clock (i.e. after the count-in). */
+  startTime: number;
+  /**
+   * Subtracted from every event time before grading: the measured delay
+   * between hearing a click and the instrument's report arriving.
+   */
+  latencyMs?: number;
+}
+
+/**
+ * Tempo: step i is due at startTime + i × interval. Each note is matched to
+ * the step whose window (±½ interval) it falls in; it counts if that step
+ * wants it. Steps whose window passes unplayed are missed — call tick() as
+ * time advances so the page can show them.
+ */
+export class TempoEngine implements Engine {
+  readonly results: StepResult[];
+  readonly interval: number;
+  readonly tolerance: number;
+  private finalized = 0;
+  private readonly latency: number;
+
+  constructor(readonly steps: readonly Step[], readonly opts: TempoOptions) {
+    if (opts.bpm <= 0 || opts.notesPerBeat <= 0) {
+      throw new RangeError("bpm and notesPerBeat must be positive");
+    }
+    this.results = freshResults(steps);
+    this.interval = 60000 / opts.bpm / opts.notesPerBeat;
+    // 60 ms is comfortably "on the beat" at moderate tempi; at fast
+    // subdivisions it would swallow a quarter of the gap, so it scales down.
+    this.tolerance = Math.min(60, this.interval / 4);
+    this.latency = opts.latencyMs ?? 0;
+  }
+
+  dueAt(i: number): number {
+    return this.opts.startTime + i * this.interval;
+  }
+
+  /** The step whose window contains t (may be out of range). */
+  stepAt(t: number): number {
+    return Math.round((t - this.opts.startTime) / this.interval);
+  }
+
+  /** When the last step's window closes. */
+  get endTime(): number {
+    return this.dueAt(this.steps.length - 1) + this.interval / 2;
+  }
+
+  get done(): boolean {
+    return this.finalized >= this.steps.length;
+  }
+
+  input(ev: NoteEvent): Feedback {
+    if (ev.type !== "on") return { kind: "ignored", midi: ev.midi };
+    const t = ev.t - this.latency;
+    const i = this.stepAt(t);
+    if (i < 0 || i >= this.steps.length || i < this.finalized) {
+      // Before the first window, after the last, or in a window already
+      // closed by tick(): a stray note, but still a wrong one if the run is
+      // under way.
+      if (i >= 0 && i < this.steps.length) {
+        this.results[i].wrong.push(ev.midi);
+        this.results[i].clean = false;
+        return { kind: "wrong", midi: ev.midi, step: i };
+      }
+      return { kind: "ignored", midi: ev.midi };
+    }
+    const r = this.results[i];
+    const n = this.steps[i].notes.findIndex((x) => x.midi === ev.midi);
+    if (n < 0) {
+      r.wrong.push(ev.midi);
+      r.clean = false;
+      return { kind: "wrong", midi: ev.midi, step: i };
+    }
+    if (r.onsets[n] !== null) return { kind: "ignored", midi: ev.midi };
+    r.onsets[n] = t;
+    r.velocities.push(ev.velocity);
+    const stepDone = r.onsets.every((x) => x !== null);
+    if (stepDone) this.grade(i);
+    return { kind: "correct", midi: ev.midi, step: i, stepDone };
+  }
+
+  private grade(i: number) {
+    const r = this.results[i];
+    const due = this.dueAt(i);
+    const devs = r.onsets.filter((x): x is number => x !== null).map((x) =>
+      x - due
+    );
+    r.status = "ok";
+    r.asyncMs = spread(r.onsets);
+    r.deviationMs = mean(devs);
+    const d = r.deviationMs!;
+    r.grade = Math.abs(d) <= this.tolerance ? "on" : d < 0 ? "early" : "late";
+  }
+
+  /**
+   * Close every window that has passed by `now`, marking unfinished steps
+   * missed. Returns the indices closed by this call.
+   */
+  tick(now: number): number[] {
+    const closed: number[] = [];
+    const t = now - this.latency;
+    while (
+      this.finalized < this.steps.length &&
+      this.dueAt(this.finalized) + this.interval / 2 < t
+    ) {
+      const r = this.results[this.finalized];
+      if (r.status !== "ok") {
+        // A partly played hands-together step is still a miss: half a
+        // chord is not the chord.
+        r.status = "missed";
+        r.clean = false;
+      }
+      closed.push(this.finalized);
+      this.finalized++;
+    }
+    return closed;
+  }
+
+  summary(): Summary {
+    const base = baseSummary("tempo", this.results);
+    const graded = this.results.filter((r) => r.status === "ok");
+    const devs = graded.map((r) => r.deviationMs!);
+    const absMean = mean(devs.map(Math.abs));
+    return {
+      ...base,
+      durationMs: this.results.length ? this.endTime - this.opts.startTime : 0,
+      timing: {
+        onTime: graded.filter((r) => r.grade === "on").length,
+        early: graded.filter((r) => r.grade === "early").length,
+        late: graded.filter((r) => r.grade === "late").length,
+        missed: this.results.filter((r) => r.status !== "ok").length,
+        meanAbsMs: absMean,
+        meanSignedMs: mean(devs),
+        toleranceMs: this.tolerance,
+        deviations: this.results.map((r) => r.deviationMs),
+      },
+    };
+  }
+}
