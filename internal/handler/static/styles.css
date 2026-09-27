@@ -338,6 +338,13 @@ kbd {
 }
 
 .results {
+  .best {
+    margin: 0 0 var(--gap-sm);
+    color: var(--ink-soft);
+
+    &.new { color: var(--ok); font-weight: 650; }
+  }
+
   .stats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(clamp(7rem, 40vw, 10rem), 1fr));

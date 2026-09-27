@@ -2,6 +2,7 @@
 
 {{define "content"}}
 <noscript><p class="notice error">This page needs JavaScript to read your instrument and grade your playing.</p></noscript>
+<p id="storage-warning" class="notice warn" hidden>This browser isn't letting the site save data (a private window, perhaps), so your practice history won't be kept. Everything else works.</p>
 
 <section class="panel device" aria-label="Instrument">
   <div class="field">
@@ -91,6 +92,7 @@
 
 <section id="results" class="panel results" aria-labelledby="results-title" hidden>
   <h2 id="results-title">Results</h2>
+  <p id="results-best" class="best" hidden></p>
   <dl id="results-stats" class="stats"></dl>
   <div id="timing-chart" class="timing-chart" hidden></div>
   <p id="results-note" class="results-note"></p>

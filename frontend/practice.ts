@@ -17,6 +17,7 @@ import {
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
+import { better, ProgressStore, type Session } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
 import { renderTimingChart } from "./lib/timing_chart.ts";
@@ -61,6 +62,8 @@ const ui = {
   stats: el("results-stats"),
   timingChart: el("timing-chart"),
   resultsNote: el("results-note"),
+  best: el("results-best"),
+  storageWarning: el("storage-warning"),
 };
 
 const keyboard = new KeyboardView(ui.keyboard);
@@ -68,6 +71,7 @@ const staff = new StaffView(ui.staff);
 const synth = new Synth();
 const midi = new Midi();
 const metronome = new Metronome();
+const store = ProgressStore.fromWindow();
 
 type Mode = "notes" | "tempo";
 type TempoPhase = "idle" | "countin" | "playing" | "done";
@@ -186,7 +190,7 @@ function finishTempo(e: TempoEngine) {
   ui.start.textContent = "Start";
   keyboard.setTargets([]);
   ui.status.textContent = "Done — press Start or Space to go again.";
-  showResults(e.summary());
+  finishRun(e.summary());
 }
 
 /** How a finished step is shown on the staff. */
@@ -295,7 +299,7 @@ function handleNote(ev: NoteEvent) {
   }
   if (engine instanceof NotesEngine) {
     showProgress();
-    if (engine.done) showResults(engine.summary());
+    if (engine.done) finishRun(engine.summary());
   }
 }
 
@@ -379,7 +383,56 @@ function stat(label: string, value: string): HTMLDivElement {
   return div;
 }
 
+/** Record a finished run (if anything was played) and show its results. */
+function finishRun(s: Summary) {
+  showResults(s);
+  ui.best.hidden = true;
+  if (s.correct === 0 && s.wrongNotes === 0) return; // nothing was played
+  const t = tempoSettings();
+  const { session, saved, previousBest } = store.add({
+    ts: Date.now(),
+    tonic: options.tonic,
+    type: options.type,
+    hands: options.hands,
+    octaves: options.octaves,
+    direction: options.direction,
+    mode,
+    total: s.total,
+    correct: s.correct,
+    accuracy: s.accuracy,
+    wrongNotes: s.wrongNotes,
+    durationMs: Math.round(s.durationMs),
+    unevenness: s.unevenness,
+    velocityStd: s.velocityStd,
+    notTogether: s.notTogether,
+    timing: s.timing && {
+      bpm: t.bpm,
+      notesPerBeat: t.notesPerBeat,
+      onTime: s.timing.onTime,
+      early: s.timing.early,
+      late: s.timing.late,
+      missed: s.timing.missed,
+      meanAbsMs: s.timing.meanAbsMs,
+      meanSignedMs: s.timing.meanSignedMs,
+    },
+  });
+  if (saved) showBest(session, previousBest);
+}
+
+function showBest(session: Session, previous: Session | null) {
+  if (!previous) {
+    ui.best.textContent = "First run of this exercise recorded. See your history under Progress.";
+  } else if (better(session, previous)) {
+    ui.best.textContent = `New personal best — up from ${pct(previous.accuracy)}.`;
+    ui.best.classList.add("new");
+  } else {
+    ui.best.textContent = `Your best for this exercise is ${pct(previous.accuracy)}.`;
+  }
+  ui.best.hidden = false;
+}
+
 function showResults(s: Summary) {
+  ui.best.classList.remove("new");
   const rows = [
     stat("Accuracy", pct(s.accuracy)),
     stat("Clean notes", `${s.correct} of ${s.total}`),
@@ -457,6 +510,8 @@ document.addEventListener("keydown", (e) => {
   if (mode === "tempo") toggleTempo();
   else reset();
 });
+
+ui.storageWarning.hidden = store.available;
 
 populateTypes();
 ui.type.value = "major";
