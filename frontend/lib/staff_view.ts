@@ -5,7 +5,9 @@
 
 import {
   Accidental,
+  Beam,
   Formatter,
+  Fraction,
   Renderer,
   Stave,
   StaveConnector,
@@ -15,6 +17,8 @@ import {
 import type { Hand, Spelled, Step } from "./theory.ts";
 
 export type StepMark = "current" | "ok" | "bad" | "early" | "late";
+/** VexFlow durations: quarter, eighth, sixteenth. */
+export type NoteDuration = "q" | "8" | "16";
 const MARKS: StepMark[] = ["current", "ok", "bad", "early", "late"];
 
 const MAJOR_BY_FIFTHS: Record<number, string> = {
@@ -75,6 +79,7 @@ const GRAND_SYSTEM = SINGLE_SYSTEM + STAFF_GAP;
 export class StaffView {
   private steps: readonly Step[] = [];
   private fifths: number | null = null;
+  private duration: NoteDuration = "q";
   private groups: SVGElement[][] = [];
   private systemTops: number[] = [];
   private lineOf: number[] = [];
@@ -90,9 +95,10 @@ export class StaffView {
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.draw());
   }
 
-  render(steps: readonly Step[], fifths: number | null) {
+  render(steps: readonly Step[], fifths: number | null, duration: NoteDuration = "q") {
     this.steps = steps;
     this.fifths = fifths;
+    this.duration = duration;
     this.marks = steps.map(() => null);
     this.draw();
   }
@@ -139,7 +145,12 @@ export class StaffView {
         stave.addClef(clef).addKeySignature(key).setContext(ctx);
         staves.push(stave);
         const notes = line.map((s) =>
-          new StaveNote({ keys: [vfKey(s.notes[h].spelled)], duration: "q", clef, autoStem: true })
+          new StaveNote({
+            keys: [vfKey(s.notes[h].spelled)],
+            duration: this.duration,
+            clef,
+            autoStem: true,
+          })
         );
         notesByHand.push(notes);
         const voice = new Voice({ numBeats: notes.length, beatValue: 4 }).setMode(Voice.Mode.SOFT);
@@ -158,7 +169,16 @@ export class StaffView {
         new StaveConnector(staves[0], staves[1]).setType("brace").setContext(ctx).draw();
         new StaveConnector(staves[0], staves[1]).setType("singleLeft").setContext(ctx).draw();
       }
+      // Eighths and sixteenths are beamed a beat at a time, so the notation
+      // reads as the rhythm the metronome asks for. Beams are generated
+      // before the voices draw, which suppresses the individual flags.
+      const beams = this.duration === "q"
+        ? []
+        : notesByHand.flatMap((notes) =>
+          Beam.generateBeams(notes, { groups: [new Fraction(1, 4)] })
+        );
       voices.forEach((v, h) => v.draw(ctx, staves[h]));
+      beams.forEach((b) => b.setContext(ctx).draw());
 
       line.forEach((s, i) => {
         this.lineOf[s.index] = li;

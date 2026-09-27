@@ -48,6 +48,30 @@
       <option value="up">Up only</option>
     </select>
   </div>
+  <div class="field">
+    <label for="mode">Grading</label>
+    <select id="mode" name="mode">
+      <option value="notes">Notes only</option>
+      <option value="tempo">With metronome</option>
+    </select>
+  </div>
+  <div class="field tempo-only" hidden>
+    <label for="bpm">Tempo (BPM)</label>
+    <input id="bpm" name="bpm" type="number" min="40" max="200" step="1" value="80" inputmode="numeric">
+  </div>
+  <div class="field tempo-only" hidden>
+    <label for="subdivision">Notes per beat</label>
+    <select id="subdivision" name="subdivision">
+      <option value="1">1 (quarter notes)</option>
+      <option value="2" selected>2 (eighth notes)</option>
+      <option value="4">4 (sixteenth notes)</option>
+    </select>
+  </div>
+  <div class="field tempo-only" hidden>
+    <label for="latency">Latency offset (ms)</label>
+    <input id="latency" name="latency" type="number" min="0" max="300" step="5" value="0" inputmode="numeric"
+      title="If you play with the click but are graded late, raise this until on-time playing reads on time.">
+  </div>
 </form>
 
 <section class="exercise" aria-labelledby="exercise-title">
@@ -57,7 +81,8 @@
       <p id="exercise-status" class="exercise-status" aria-live="polite"></p>
     </div>
     <div class="actions">
-      <button id="restart" type="button" class="secondary" title="Restart (Space)">Restart</button>
+      <button id="start" type="button" class="tempo-only" hidden title="Start or stop (Space)">Start</button>
+      <button id="restart" type="button" class="secondary" title="Restart (Space in notes-only mode)">Restart</button>
     </div>
   </div>
   <div id="staff" class="staff-scroll"></div>

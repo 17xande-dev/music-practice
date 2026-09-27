@@ -65,6 +65,9 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* The hidden attribute must win over any display a class sets. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
