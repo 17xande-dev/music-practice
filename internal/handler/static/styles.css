@@ -410,3 +410,106 @@ kbd {
   .device { grid-template-columns: 1fr auto; }
   .device .status { grid-column: 1 / -1; }
 }
+
+/* ---- Progress page ------------------------------------------------------ */
+
+.summary-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(8rem, 40vw, 12rem), 1fr));
+  gap: var(--gap-md);
+  margin: 0 0 var(--gap-md);
+
+  > div { margin: 0; }
+  dt { font-size: var(--small); color: var(--ink-soft); }
+  dd { margin: 0; font-size: var(--title); font-weight: 650; font-variant-numeric: tabular-nums; }
+}
+
+#history { display: flex; flex-direction: column; gap: var(--gap-md); }
+#history[hidden] { display: none; }
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  margin-bottom: var(--gap-sm);
+
+  h2 { margin: 0; }
+  .field { min-width: min(16rem, 100%); }
+}
+
+.trend-chart {
+  .trend-plot { display: block; max-width: 100%; height: auto; }
+  .grid { stroke: var(--rule); stroke-width: 1; }
+  .axis { font: 11px var(--font); fill: var(--ink-faint); }
+  .line { fill: none; stroke: var(--target); stroke-width: 2; stroke-linejoin: round; }
+  .mark {
+    circle { stroke-width: 2; }
+    &.notes circle { fill: var(--target); stroke: var(--paper-raised); }
+    &.tempo circle { fill: var(--paper-raised); stroke: var(--target); }
+    .hit { fill: transparent !important; stroke: none !important; }
+    &:hover circle:not(.hit) { stroke: var(--ink); }
+  }
+}
+
+.trend-legend {
+  display: flex;
+  gap: var(--gap-md);
+  margin: var(--gap-xs) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+  color: var(--ink-soft);
+
+  li::before {
+    content: "";
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.35rem;
+    border-radius: 50%;
+    border: 2px solid var(--target);
+    vertical-align: -0.05rem;
+  }
+  .notes::before { background: var(--target); }
+}
+
+.table-scroll { overflow-x: auto; }
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--small);
+  font-variant-numeric: tabular-nums;
+
+  th, td { padding: var(--gap-xs) var(--gap-sm); text-align: left; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th { color: var(--ink-soft); font-weight: 600; }
+  .num { text-align: right; }
+  tbody tr:hover { background: var(--paper-sunk); }
+}
+
+.actions { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
+
+/* A label styled as a button, wrapping a visually hidden file input so the
+   control stays keyboard-reachable. */
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  font-size: var(--text);
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  &:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+}
+
+button.danger { background: var(--bad); color: #fff; }
+button.secondary.danger { background: transparent; color: var(--bad); border-color: color-mix(in oklab, var(--bad), transparent 50%); }
+
+.data-status { margin: var(--gap-sm) 0 0; min-height: 1.55em; color: var(--ink-soft); font-size: var(--small); }
+.empty p { margin: 0; }

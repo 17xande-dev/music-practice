@@ -1,7 +1,58 @@
 {{define "scripts"}}<script type="module" src="{{asset "dist/progress.js"}}"></script>{{end}}
 
 {{define "content"}}
+<noscript><p class="notice error">This page needs JavaScript to read the practice history stored in your browser.</p></noscript>
 <h1>Your progress</h1>
-<noscript><p class="notice">This page needs JavaScript to read the practice history stored in your browser.</p></noscript>
-<div id="app" class="progress"></div>
+<p id="storage-warning" class="notice warn" hidden>This browser isn't letting the site read saved data (a private window, perhaps), so there is no history to show.</p>
+
+<section id="empty" class="panel empty" hidden>
+  <p>No practice recorded yet. Finish a run on the <a href="/">practice page</a> and it will appear here.</p>
+</section>
+
+<div id="history" hidden>
+  <dl id="summary" class="summary-tiles"></dl>
+
+  <section class="panel" aria-labelledby="trend-title">
+    <div class="section-head">
+      <h2 id="trend-title">Accuracy over time</h2>
+      <div class="field">
+        <label for="trend-scale">Scale</label>
+        <select id="trend-scale"></select>
+      </div>
+    </div>
+    <div id="trend-chart" class="trend-chart"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="scales-title">
+    <h2 id="scales-title">By scale</h2>
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr><th scope="col">Scale</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Best</th><th scope="col" class="num">Latest</th><th scope="col">Last practised</th></tr></thead>
+        <tbody id="scales-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="recent-title">
+    <h2 id="recent-title">Recent sessions</h2>
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr><th scope="col">When</th><th scope="col">Exercise</th><th scope="col">Grading</th><th scope="col" class="num">Accuracy</th><th scope="col" class="num">Wrong</th><th scope="col" class="num">Time / offset</th></tr></thead>
+        <tbody id="recent-body"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="data-title">
+  <h2 id="data-title">Your data</h2>
+  <p>History lives only in this browser. Export it to keep a copy or move it to another browser; importing merges and skips sessions you already have.</p>
+  <div class="actions">
+    <button id="export" type="button" class="secondary">Export JSON</button>
+    <label class="button secondary file-button">Import JSON<input id="import" type="file" accept="application/json,.json"></label>
+    <button id="clear" type="button" class="secondary danger">Clear history</button>
+    <button id="clear-confirm" type="button" class="danger" hidden>Yes, delete all history</button>
+  </div>
+  <p id="data-status" class="data-status" role="status"></p>
+</section>
 {{end}}
