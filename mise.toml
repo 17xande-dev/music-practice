@@ -1,0 +1,5 @@
+[tools]
+# Pinned to what the Dockerfile's frontend stage uses, so a local bundle and
+# a container bundle come from the same bundler.
+deno = "2.9.7"
+go = "1.27.1"

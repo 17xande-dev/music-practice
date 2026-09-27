@@ -1,0 +1,9 @@
+/bin/
+*.test
+*.out
+.env
+
+# Frontend build output, embedded into the Go binary. The placeholder stays
+# tracked so a fresh checkout has a directory for go:embed to find.
+internal/handler/static/dist/*
+!internal/handler/static/dist/.gitkeep

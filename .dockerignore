@@ -1,0 +1,4 @@
+bin
+.git
+internal/handler/static/dist/*
+!internal/handler/static/dist/.gitkeep

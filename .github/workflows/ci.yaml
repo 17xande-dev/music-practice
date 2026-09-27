@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27"
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: "2.9.7"
+      # The same gate as a local `make check`: formatting, vet, type check,
+      # lint, Deno tests, then bundle before the Go tests so the embedded
+      # assets exist.
+      - run: make check
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t music-practice:ci .

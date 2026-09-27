@@ -1,0 +1,7 @@
+{{define "scripts"}}<script type="module" src="{{asset "dist/progress.js"}}"></script>{{end}}
+
+{{define "content"}}
+<h1>Your progress</h1>
+<noscript><p class="notice">This page needs JavaScript to read the practice history stored in your browser.</p></noscript>
+<div id="app" class="progress"></div>
+{{end}}

@@ -1,0 +1,37 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{.Title}} · Music Practice</title>
+<link rel="icon" href="{{asset "icon.svg"}}" type="image/svg+xml">
+<link rel="stylesheet" href="{{asset "styles.css"}}">
+{{block "scripts" .}}{{end}}
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="/">
+      <img src="{{asset "icon.svg"}}" alt="" width="28" height="28">
+      Music Practice
+    </a>
+    <nav aria-label="Main">
+      <a href="/"{{if eq .Nav "practice"}} aria-current="page"{{end}}>Practice</a>
+      <a href="/progress"{{if eq .Nav "progress"}} aria-current="page"{{end}}>Progress</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="inner">
+{{template "content" .}}
+</div>
+</main>
+<footer class="site-footer">
+  <div class="inner">
+    <p>Your practice history is kept in this browser only.</p>
+  </div>
+</footer>
+</body>
+</html>
+{{end}}

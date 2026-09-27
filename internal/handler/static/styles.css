@@ -1,0 +1,192 @@
+/* Music Practice theme. Every knob is a custom property in :root, and the
+   dark palette overrides the same names, so nothing below hard-codes a colour. */
+:root {
+  --paper: #fbfbf9;
+  --paper-sunk: #f0f0ec;
+  --paper-raised: #fff;
+  --ink: #16181a;
+  --ink-soft: #4a4f55;
+  --ink-faint: #7c848c;
+  --rule: #deded8;
+  --accent: #1f4d5c;
+  --accent-ink: #fff;
+
+  /* Feedback colours for the keyboard, the staff and the results. */
+  --ok: #1d7a46;
+  --bad: #c0392b;
+  --target: #2f6fd6;
+  --hint: #c9dcf5;
+  --early: #b7791f;
+  --late: #7b4fc4;
+
+  /* Piano keys stay literal white and black in both themes. */
+  --key-white: #fff;
+  --key-black: #1b1b1d;
+  --key-edge: #9a9a9a;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text: clamp(0.95rem, 0.9rem + 0.2vw, 1.05rem);
+  --small: 0.875rem;
+  --title: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem);
+  --title-page: clamp(1.6rem, 1.3rem + 1.5vw, 2.4rem);
+
+  --gap-xs: 0.35rem;
+  --gap-sm: 0.7rem;
+  --gap-md: 1.2rem;
+  --gap-lg: 2rem;
+  --gap-xl: 3.5rem;
+
+  --radius: 8px;
+  --measure: 68ch;
+  --page: 1180px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #131517;
+    --paper-sunk: #1b1e21;
+    --paper-raised: #202428;
+    --ink: #e8eaec;
+    --ink-soft: #b3b9bf;
+    --ink-faint: #858d95;
+    --rule: #33383d;
+    --accent: #7fc4d6;
+    --accent-ink: #0d1f24;
+    --ok: #4cc27f;
+    --bad: #ff6b5b;
+    --target: #6ea3ff;
+    --hint: #2a3f5e;
+    --early: #e0a64a;
+    --late: #b196ee;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font: var(--text)/1.55 var(--font);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+main { flex: 1; padding-block: var(--gap-lg); }
+
+.inner {
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--gap-md);
+}
+
+h1, h2, h3 { text-wrap: balance; line-height: 1.15; margin: 0 0 var(--gap-sm); }
+h1 { font-size: var(--title-page); }
+h2 { font-size: var(--title); }
+p { max-width: var(--measure); }
+
+a { color: var(--accent); }
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-raised);
+
+  > .inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-md);
+    padding-block: var(--gap-sm);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    font-weight: 650;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  nav {
+    display: flex;
+    gap: var(--gap-md);
+
+    a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      padding-block: var(--gap-xs);
+      border-bottom: 2px solid transparent;
+
+      &:hover { color: var(--ink); }
+      &[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+    }
+  }
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  color: var(--ink-faint);
+  font-size: var(--small);
+
+  p { margin: var(--gap-md) 0; }
+}
+
+.notice {
+  padding: var(--gap-sm) var(--gap-md);
+  border-radius: var(--radius);
+  background: var(--paper-sunk);
+  border-left: 4px solid var(--accent);
+
+  &.warn { border-left-color: var(--early); }
+  &.error { border-left-color: var(--bad); }
+}
+
+button, .button {
+  padding: var(--gap-xs) var(--gap-md);
+  min-height: 2.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: color-mix(in oklab, var(--accent), black 12%); }
+  &:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.secondary {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--rule);
+
+    &:hover { background: var(--paper-sunk); }
+  }
+}
+
+select, input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--gap-xs) var(--gap-sm);
+  min-height: 2.5rem;
+}
+
+label { font-size: var(--small); color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
