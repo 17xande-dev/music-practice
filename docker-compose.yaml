@@ -10,7 +10,10 @@ services:
       # HSTS is safe to send. See internal/config for what else is read.
       - HSTS=1
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/healthz"]
+      # The runtime image is distroless (no shell, no wget), so the binary
+      # probes itself. Traefik ignores containers that are not healthy, so a
+      # healthcheck that cannot run takes the whole site offline.
+      test: ["CMD", "/music-practice", "-healthcheck"]
       interval: 30s
       timeout: 3s
       retries: 3

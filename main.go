@@ -20,9 +20,21 @@ import (
 
 func main() {
 	dev := flag.Bool("dev", false, "read templates and static files from the source tree on every request")
+	healthcheck := flag.Bool("healthcheck", false, "probe the running server's /healthz and exit 0 if healthy (see healthcheck.go)")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	if *healthcheck {
+		cfg, err := config.Load(os.Getenv)
+		if err == nil {
+			err = probe(cfg.Addr, 3*time.Second)
+		}
+		if err != nil {
+			log.Error("unhealthy", "err", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if err := run(log, *dev); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
