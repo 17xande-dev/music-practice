@@ -134,12 +134,32 @@ DevTools can't provide a MIDI device, so the practice page exposes
 `window.__practice.note(midi, on, t)`, which feeds a note through the same path a MIDI message
 takes. A real instrument still needs a human.
 
+## Deploying
+
+Live at **https://music.17xande.dev**, set up like the teleprompter app:
+
+- **Coolify** on the Oracle free-tier VM (the same box Coolify itself runs on) builds
+  `docker-compose.yaml` with the Docker Compose build pack. A push to `master` deploys through the
+  GitHub webhook.
+- **Traefik**, managed by Coolify, terminates TLS at the origin with a Let's Encrypt certificate.
+  The domain is set on the `music-practice` compose service in Coolify's Domains tab, not the
+  app-level field.
+- **Cloudflare** DNS: a proxied `A` record to the VM. The zone runs SSL in Full (strict) mode, so
+  the origin certificate has to be real, and it is. `HSTS=1` is safe for that reason.
+
+Traefik only routes to a container whose Docker healthcheck is `healthy`. The runtime image is
+distroless (no shell, no `wget`), so the healthcheck runs `music-practice -healthcheck`, which
+probes `/healthz` itself. A test stops it from ever shelling out again. If the site returns 503 at
+the origin (526 through Cloudflare), check
+`docker inspect <container> --format '{{.State.Health.Status}}'` first. Coolify's own
+"running:healthy" status does not reflect Docker's health state.
+
 ## Decisions still open
 
-| Decision                                            | Trigger                                                                     |
-| --------------------------------------------------- | --------------------------------------------------------------------------- |
-| Hosting and TLS termination (Web MIDI needs HTTPS)  | First public deploy                                                         |
-| Stage 2: accounts, server-side history (SQLite)     | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Fingering hints on the staff                        | After stage 1 feedback                                                      |
-| Microphone pitch input for acoustic instruments     | If players without MIDI matter                                              |
-| Arpeggios, contrary motion, scales in thirds/sixths | After scales settle                                                         |
+| Decision                                                                         | Trigger                                                                     |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Cloudflare Web Analytics beacon (proxy-injected, blocked by `script-src 'self'`) | Decide: admit its two hosts in the CSP, or turn off injection               |
+| Stage 2: accounts, server-side history (SQLite)                                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
+| Fingering hints on the staff                                                     | After stage 1 feedback                                                      |
+| Microphone pitch input for acoustic instruments                                  | If players without MIDI matter                                              |
+| Arpeggios, contrary motion, scales in thirds/sixths                              | After scales settle                                                         |
