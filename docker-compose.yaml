@@ -1,0 +1,16 @@
+services:
+  music-practice:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080"
+    environment:
+      # This deployment sits behind Cloudflare in Full (strict) mode, so
+      # Traefik's own cert makes the connection genuinely HTTPS end to end —
+      # HSTS is safe to send. See internal/config for what else is read.
+      - HSTS=1
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
