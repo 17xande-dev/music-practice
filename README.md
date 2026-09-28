@@ -158,7 +158,6 @@ the origin (526 through Cloudflare), check
 
 | Decision                                                                         | Trigger                                                                     |
 | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Cloudflare Web Analytics beacon (proxy-injected, blocked by `script-src 'self'`) | Decide: admit its two hosts in the CSP, or turn off injection               |
 | Stage 2: accounts, server-side history (SQLite)                                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
 | Fingering hints on the staff                                                     | After stage 1 feedback                                                      |
 | Microphone pitch input for acoustic instruments                                  | If players without MIDI matter                                              |

@@ -18,9 +18,10 @@ func serve(p Policy) *httptest.ResponseRecorder {
 // edit to this test rather than a side effect of some other change.
 func TestCSPIsPinned(t *testing.T) {
 	got := serve(Policy{}).Header().Get("Content-Security-Policy")
-	want := "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; " +
-		"font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; " +
-		"form-action 'self'; frame-ancestors 'none'"
+	want := "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; " +
+		"style-src 'self'; img-src 'self' data:; font-src 'self' data:; " +
+		"connect-src 'self' https://cloudflareinsights.com; object-src 'none'; " +
+		"base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 	if got != want {
 		t.Errorf("CSP changed:\n got %s\nwant %s", got, want)
 	}

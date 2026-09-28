@@ -30,17 +30,28 @@ type Policy struct {
 //   - font-src/img-src data:: VexFlow ships its music font embedded as a
 //     data: URI and loads it through FontFace. The alternative is its "core"
 //     build, which fetches fonts from a CDN at runtime.
-//   - connect-src 'self': stage 1 makes no requests at all; stage 2's API is
-//     same-origin.
+//   - connect-src 'self': stage 1 makes no requests of its own; stage 2's API
+//     is same-origin.
+//
+// script-src and connect-src each carry one more origin: Cloudflare's Web
+// Analytics beacon. Cloudflare's proxy *injects* that script into the HTML in
+// front of this server — the page asks for a script this code never wrote —
+// so refusing it put a violation in the console on every load while the
+// analytics silently collected nothing. Two hosts because they are two
+// different things, as in ~/dev/teleprompter: the beacon is fetched from
+// static.cloudflareinsights.com (script-src) and reports to
+// cloudflareinsights.com/cdn-cgi/rum (connect-src). Turning off the injection
+// in the Cloudflare dashboard is the way back out; nothing here depends on it
+// loading.
 //
 // If something inline is ever genuinely needed, the answer is a per-response
 // nonce, never 'unsafe-inline' — that cannot be scoped to the code that asked.
 const CSP = "default-src 'self'; " +
-	"script-src 'self'; " +
+	"script-src 'self' https://static.cloudflareinsights.com; " +
 	"style-src 'self'; " +
 	"img-src 'self' data:; " +
 	"font-src 'self' data:; " +
-	"connect-src 'self'; " +
+	"connect-src 'self' https://cloudflareinsights.com; " +
 	"object-src 'none'; " +
 	"base-uri 'none'; " +
 	"form-action 'self'; " +
