@@ -21,27 +21,30 @@ import { better, ProgressStore, type Session } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
 import { renderTimingChart } from "./lib/timing_chart.ts";
+import { CircleView } from "./lib/circle_view.ts";
 import {
   buildSteps,
   type ExerciseOptions,
+  type Family,
+  familyOf,
+  inFamily,
   keySignatureFifths,
-  nameOf,
   noteLabel,
   type PitchName,
-  SCALE_TYPES,
+  resolveTonic,
   SCALES,
   scaleTitle,
   type ScaleType,
   type Step,
-  tonicOptions,
+  VARIANTS,
 } from "./lib/theory.ts";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const ui = {
   form: el<HTMLFormElement>("scale-form"),
-  tonic: el<HTMLSelectElement>("tonic"),
-  type: el<HTMLSelectElement>("type"),
+  circle: el("circle"),
+  variants: el<HTMLFieldSetElement>("variants"),
   hands: el<HTMLSelectElement>("hands"),
   octaves: el<HTMLSelectElement>("octaves"),
   direction: el<HTMLSelectElement>("direction"),
@@ -89,32 +92,68 @@ let shownCurrent = -1;
 
 // ---- Scale picker -------------------------------------------------------
 
-const pitchKey = (p: PitchName) => `${p.letter}${p.acc}`;
-const parsePitchKey = (k: string): PitchName => ({
-  letter: k[0] as PitchName["letter"],
-  acc: Number(k.slice(1)),
-});
+// The key is picked on the circle of fifths (tonic + ring), the scale from
+// the ring's variant list. `ring` is kept separately from the type's family
+// because chromatic belongs to both rings and stays on whichever was tapped.
+let pick: { tonic: PitchName; type: ScaleType; ring: Family } = {
+  tonic: { letter: "C", acc: 0 },
+  type: "major",
+  ring: "major",
+};
 
-function populateTypes() {
-  ui.type.replaceChildren(...SCALE_TYPES.map((t) => new Option(SCALES[t].label, t)));
+const circle = new CircleView(ui.circle);
+
+/** Short variant names: "Major (Ionian)" reads as just "Major" in the list. */
+const variantLabel = (t: ScaleType) => SCALES[t].label.replace(/ \(.*\)$/, "");
+
+/** Draw the circle's selection and the current ring's variant list. */
+function renderPicker() {
+  circle.render(
+    pick.tonic,
+    pick.ring,
+    scaleTitle(pick.tonic, pick.type),
+    keySignatureFifths(pick.tonic, pick.type),
+  );
+  if (ui.variants.dataset.ring !== pick.ring) {
+    // Real radio inputs: keyboard-native, and their change events reach the
+    // form, which persists settings.
+    const items = VARIANTS[pick.ring].map((t) => {
+      const label = document.createElement("label");
+      label.className = "variant";
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "variant";
+      input.value = t;
+      const span = document.createElement("span");
+      span.textContent = variantLabel(t);
+      label.append(input, span);
+      return label;
+    });
+    ui.variants.replaceChildren(ui.variants.querySelector("legend")!, ...items);
+    ui.variants.dataset.ring = pick.ring;
+  }
+  for (const input of ui.variants.querySelectorAll<HTMLInputElement>("input")) {
+    input.checked = input.value === pick.type;
+  }
 }
 
 /**
- * Fill the key select for a scale type. Each pitch class appears once per
- * usable spelling ("C♯ / D♭" become two entries), and the current tonic is
- * kept when the new type still offers it.
+ * A tap on the circle: keep the current scale if it belongs to the tapped
+ * ring, otherwise switch to that ring's default (Major or Natural minor).
  */
-function populateTonics(type: ScaleType, keep?: PitchName) {
-  const opts = tonicOptions(type).flatMap((o) => o.spellings);
-  ui.tonic.replaceChildren(...opts.map((p) => new Option(nameOf(p), pitchKey(p))));
-  const want = keep && opts.find((p) => pitchKey(p) === pitchKey(keep));
-  ui.tonic.value = pitchKey(want ?? opts[0]);
-}
+circle.onSelect = ({ tonic, ring }) => {
+  const type = inFamily(pick.type, ring) ? pick.type : VARIANTS[ring][0];
+  pick = { tonic: resolveTonic(tonic, type), type, ring };
+  renderPicker();
+  rebuild();
+  // Circle taps are not form inputs, so no change event persists them.
+  persistSettings();
+};
 
 function readOptions(): ExerciseOptions {
   return {
-    tonic: parsePitchKey(ui.tonic.value),
-    type: ui.type.value as ScaleType,
+    tonic: pick.tonic,
+    type: pick.type,
     octaves: Number(ui.octaves.value),
     direction: ui.direction.value as ExerciseOptions["direction"],
     hands: ui.hands.value as ExerciseOptions["hands"],
@@ -144,8 +183,11 @@ const DURATIONS: Record<number, NoteDuration> = { 1: "q", 2: "8", 4: "16" };
 function restoreSettings() {
   const saved = store.settings();
   const type = saved.type ?? "major";
-  ui.type.value = type;
-  populateTonics(type, saved.tonic);
+  pick = {
+    type,
+    ring: familyOf(type),
+    tonic: resolveTonic(saved.tonic ?? { letter: "C", acc: 0 }, type),
+  };
   if (saved.hands) ui.hands.value = saved.hands;
   if (saved.octaves) ui.octaves.value = String(saved.octaves);
   if (saved.direction) ui.direction.value = saved.direction;
@@ -519,11 +561,13 @@ function toggleTempo() {
 }
 
 ui.form.addEventListener("submit", (e) => e.preventDefault());
-ui.type.addEventListener("change", () => {
-  populateTonics(ui.type.value as ScaleType, parsePitchKey(ui.tonic.value));
+ui.variants.addEventListener("change", (e) => {
+  const type = (e.target as HTMLInputElement).value as ScaleType;
+  pick = { ...pick, type, tonic: resolveTonic(pick.tonic, type) };
+  renderPicker();
   rebuild();
 });
-for (const s of [ui.tonic, ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision]) {
+for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision]) {
   s.addEventListener("change", rebuild);
 }
 // BPM and latency are read at Start, so editing them needs no rebuild —
@@ -554,8 +598,8 @@ document.addEventListener("keydown", (e) => {
 
 ui.storageWarning.hidden = store.available;
 
-populateTypes();
 restoreSettings();
+renderPicker();
 rebuild();
 
 midi.onDevices = showDevices;

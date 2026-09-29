@@ -250,10 +250,122 @@ kbd {
 
 /* Fills the row with as many columns as fit: five on a desktop, two on a
    phone, with no breakpoints. */
+/* The circle of fifths and its variant list on one side, the other options
+   beside it; stacked on a phone. */
 .picker {
+  display: grid;
+  gap: var(--gap-md) var(--gap-lg);
+  grid-template-columns: minmax(0, 22rem) 1fr;
+  align-items: start;
+}
+
+.picker-fields {
   display: grid;
   gap: var(--gap-sm) var(--gap-md);
   grid-template-columns: repeat(auto-fill, minmax(clamp(7.5rem, 35vw, 11rem), 1fr));
+}
+
+@media (max-width: 44rem) {
+  .picker { grid-template-columns: 1fr; }
+  .picker-key { max-width: 22rem; margin-inline: auto; width: 100%; }
+}
+
+.circle {
+  .cof { display: block; width: 100%; height: auto; }
+
+  .target {
+    cursor: pointer;
+
+    path {
+      fill: var(--paper-sunk);
+      stroke: var(--paper-raised);
+      stroke-width: 2;
+      transition: fill 0.12s;
+    }
+    &.minor path { fill: color-mix(in oklab, var(--paper-sunk), var(--ink) 5%); }
+    &:hover path { fill: color-mix(in oklab, var(--paper-sunk), var(--target) 22%); }
+    &.near path { fill: color-mix(in oklab, var(--paper-sunk), var(--target) 16%); }
+    &.selected path { fill: var(--target); }
+    &:focus { outline: none; }
+    &:focus-visible path { stroke: var(--ink); stroke-width: 3; }
+
+    text {
+      fill: var(--ink);
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+    .name { font: 600 19px var(--font); }
+    &.minor .name { font-size: 15px; font-weight: 500; }
+    .name.small { font-size: 14px; }
+    &.minor .name.small { font-size: 12px; }
+    .sig { font: 10px var(--font); fill: var(--ink-faint); }
+    &.selected text { fill: #fff; }
+    &.selected .sig { fill: rgb(255 255 255 / 0.8); }
+  }
+
+  .numeral {
+    font: italic 9px var(--font);
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+
+  .centre-title {
+    font: 650 15px var(--font);
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+  .centre-sig {
+    font: 12px var(--font);
+    fill: var(--ink-soft);
+    text-anchor: middle;
+  }
+}
+
+.variants {
+  border: 0;
+  margin: var(--gap-sm) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+
+  legend {
+    font-size: var(--small);
+    color: var(--ink-soft);
+    margin-bottom: var(--gap-xs);
+    padding: 0;
+  }
+}
+
+/* A radio input shown as a chip. The input stays in the page (visually
+   hidden) so the group remains keyboard-navigable and announced as radios. */
+.variant {
+  position: relative;
+  font-size: var(--small);
+
+  input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  span {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--ink);
+    background: var(--paper-raised);
+  }
+
+  input:hover + span { border-color: var(--target); }
+  input:checked + span { background: var(--target); border-color: var(--target); color: #fff; }
+  input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
 }
 
 .exercise {
