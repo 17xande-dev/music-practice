@@ -4,7 +4,7 @@
 
 import { renderAccuracyChart } from "./lib/accuracy_chart.ts";
 import { better, ProgressStore, scaleKey, type Session } from "./lib/progress_store.ts";
-import { scaleTitle } from "./lib/theory.ts";
+import { compareByCircle, scaleTitle } from "./lib/theory.ts";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -61,7 +61,11 @@ function tile(label: string, value: string): HTMLDivElement {
   return div;
 }
 
-/** Sessions grouped by scale (tonic + type), most recently practised first. */
+/**
+ * Sessions grouped by scale (tonic + type), in circle-of-fifths order — the
+ * same order the practice page's picker lays keys out in, so a major key sits
+ * next to its relative minor. See compareByCircle.
+ */
 function byScale(sessions: Session[]): Session[][] {
   const groups = new Map<string, Session[]>();
   for (const s of sessions) {
@@ -69,7 +73,7 @@ function byScale(sessions: Session[]): Session[][] {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k)!.push(s);
   }
-  return [...groups.values()].sort((a, b) => b.at(-1)!.ts - a.at(-1)!.ts);
+  return [...groups.values()].sort((a, b) => compareByCircle(a[0], b[0]));
 }
 
 function render() {
@@ -97,7 +101,12 @@ function render() {
       new Option(`${scaleTitle(g[0].tonic, g[0].type)} (${g.length})`, scaleKey(g[0]))
     ),
   );
-  if (groups.some((g) => scaleKey(g[0]) === chosen)) ui.trendScale.value = chosen;
+  // The list is in circle order, but the chart opens on whatever was
+  // practised last — that is the trend someone coming here wants to see.
+  const latest = groups.reduce((a, b) => (b.at(-1)!.ts > a.at(-1)!.ts ? b : a));
+  ui.trendScale.value = groups.some((g) => scaleKey(g[0]) === chosen)
+    ? chosen
+    : scaleKey(latest[0]);
   drawTrend(groups);
 
   ui.scalesBody.replaceChildren(...groups.map((g) => {
