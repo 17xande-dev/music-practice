@@ -7,6 +7,9 @@ and an on-screen keyboard, and grades it.
 - **Scales:** major, the three minors (natural, harmonic, melodic), the other five modes, major and
   minor pentatonic, blues and chromatic. All 12 keys are offered, spelled properly: F♯ major shows
   E♯, G♯ harmonic minor shows F𝄪, and C♯/D♭ are both offered where both are in use.
+- **Picking a key:** a circle of fifths, with major keys outside and relative minors inside. Tap a
+  key, then pick a variant (Lydian, harmonic minor, blues…). Each outer wedge shows its key
+  signature, and the selected key's neighbours are shaded and labelled with Roman numerals.
 - **Options:** right hand, left hand or hands together; 1–4 octaves; up only, or up and down.
 - **Notes-only grading:** the page waits for each correct note. It reports accuracy, wrong notes,
   evenness of spacing, dynamics spread, and, for hands together, how often the hands were apart.
@@ -67,6 +70,7 @@ frontend/
   lib/qwerty.ts             computer-keyboard fallback + a small synth
   lib/metronome.ts          clicks scheduled on the audio clock
   lib/keyboard_view.ts      SVG piano
+  lib/circle_view.ts        circle-of-fifths key picker (SVG)
   lib/staff_view.ts         VexFlow staff / grand staff
   lib/timing_chart.ts       per-note timing chart (tempo results)
   lib/accuracy_chart.ts     accuracy trend (progress page)
@@ -156,9 +160,9 @@ the origin (526 through Cloudflare), check
 
 ## Decisions still open
 
-| Decision                                                                         | Trigger                                                                     |
-| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Stage 2: accounts, server-side history (SQLite)                                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Fingering hints on the staff                                                     | After stage 1 feedback                                                      |
-| Microphone pitch input for acoustic instruments                                  | If players without MIDI matter                                              |
-| Arpeggios, contrary motion, scales in thirds/sixths                              | After scales settle                                                         |
+| Decision                                            | Trigger                                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Stage 2: accounts, server-side history (SQLite)     | Start of stage 2. The localStorage export (`version: 1`) is the import path |
+| Fingering hints on the staff                        | After stage 1 feedback                                                      |
+| Microphone pitch input for acoustic instruments     | If players without MIDI matter                                              |
+| Arpeggios, contrary motion, scales in thirds/sixths | After scales settle                                                         |
