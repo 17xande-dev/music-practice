@@ -85,31 +85,43 @@ interface ScaleDef {
    * Absent for scales drawn without a key signature.
    */
   relMajor?: [semitones: number, letters: number];
+  /**
+   * Which ring of the circle-of-fifths picker the scale belongs to: major
+   * (major third) or minor (minor third). Chromatic has no third and sits
+   * under both.
+   */
+  family: Family | "both";
 }
+
+export type Family = "major" | "minor";
 
 const HEPT = [0, 1, 2, 3, 4, 5, 6];
 
 export const SCALES: Record<ScaleType, ScaleDef> = {
   "major": {
     label: "Major (Ionian)",
+    family: "major",
     up: [0, 2, 4, 5, 7, 9, 11],
     letters: HEPT,
     relMajor: [0, 0],
   },
   "natural-minor": {
     label: "Natural minor (Aeolian)",
+    family: "minor",
     up: [0, 2, 3, 5, 7, 8, 10],
     letters: HEPT,
     relMajor: [3, 2],
   },
   "harmonic-minor": {
     label: "Harmonic minor",
+    family: "minor",
     up: [0, 2, 3, 5, 7, 8, 11],
     letters: HEPT,
     relMajor: [3, 2],
   },
   "melodic-minor": {
     label: "Melodic minor",
+    family: "minor",
     up: [0, 2, 3, 5, 7, 9, 11],
     letters: HEPT,
     // Classical melodic minor: raised 6th and 7th going up, natural minor
@@ -120,42 +132,49 @@ export const SCALES: Record<ScaleType, ScaleDef> = {
   },
   "dorian": {
     label: "Dorian",
+    family: "minor",
     up: [0, 2, 3, 5, 7, 9, 10],
     letters: HEPT,
     relMajor: [-2, -1],
   },
   "phrygian": {
     label: "Phrygian",
+    family: "minor",
     up: [0, 1, 3, 5, 7, 8, 10],
     letters: HEPT,
     relMajor: [-4, -2],
   },
   "lydian": {
     label: "Lydian",
+    family: "major",
     up: [0, 2, 4, 6, 7, 9, 11],
     letters: HEPT,
     relMajor: [-5, -3],
   },
   "mixolydian": {
     label: "Mixolydian",
+    family: "major",
     up: [0, 2, 4, 5, 7, 9, 10],
     letters: HEPT,
     relMajor: [5, 3],
   },
   "locrian": {
     label: "Locrian",
+    family: "minor",
     up: [0, 1, 3, 5, 6, 8, 10],
     letters: HEPT,
     relMajor: [1, 1],
   },
   "major-pentatonic": {
     label: "Major pentatonic",
+    family: "major",
     up: [0, 2, 4, 7, 9],
     letters: [0, 1, 2, 4, 5],
     relMajor: [0, 0],
   },
   "minor-pentatonic": {
     label: "Minor pentatonic",
+    family: "minor",
     up: [0, 3, 5, 7, 10],
     letters: [0, 2, 3, 4, 6],
     relMajor: [3, 2],
@@ -163,6 +182,7 @@ export const SCALES: Record<ScaleType, ScaleDef> = {
   "blues": {
     // The blue note is spelled as a flattened 5th (C E♭ F G♭ G B♭).
     label: "Blues",
+    family: "minor",
     up: [0, 3, 5, 6, 7, 10],
     letters: [0, 2, 3, 4, 4, 6],
   },
@@ -170,6 +190,7 @@ export const SCALES: Record<ScaleType, ScaleDef> = {
     // Spelled by convention rather than by letters: sharps going up, flats
     // coming down. See spellChromatic.
     label: "Chromatic",
+    family: "both",
     up: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     letters: [],
   },
@@ -273,6 +294,146 @@ export function tonicOptions(type: ScaleType): TonicOption[] {
     out.push({ pc, spellings: candidates.map((c) => c.p) });
   }
   return out;
+}
+
+// ---- The circle of fifths -------------------------------------------------
+//
+// The key picker is a circle of fifths: major keys on the outer ring, their
+// relative minors on the inner ring. Wedge 0 is at the top (C major, A minor)
+// and each step clockwise is a fifth up, one more sharp (or one fewer flat).
+
+/**
+ * The scales offered for each ring, in the order the picker lists them: the
+ * ring's own default first, then the others roughly bright to dark (the
+ * modes' own circle-of-fifths order), pentatonic and blues after the
+ * seven-note scales, chromatic last because it has no third.
+ */
+export const VARIANTS: Record<Family, ScaleType[]> = {
+  major: ["major", "lydian", "mixolydian", "major-pentatonic", "chromatic"],
+  minor: [
+    "natural-minor",
+    "harmonic-minor",
+    "melodic-minor",
+    "dorian",
+    "phrygian",
+    "locrian",
+    "minor-pentatonic",
+    "blues",
+    "chromatic",
+  ],
+};
+
+/** Whether `type` is offered on the `family` ring. */
+export function inFamily(type: ScaleType, family: Family): boolean {
+  const f = SCALES[type].family;
+  return f === "both" || f === family;
+}
+
+/** The ring a scale type is shown on; chromatic defaults to the major ring. */
+export function familyOf(type: ScaleType): Family {
+  const f = SCALES[type].family;
+  return f === "both" ? "major" : f;
+}
+
+export interface Wedge {
+  /** 0 at the top, increasing clockwise. */
+  index: number;
+  /** Outer-ring spellings, the default first; two on the enharmonic wedges. */
+  major: PitchName[];
+  /** Inner-ring (relative minor) spellings. */
+  minor: PitchName[];
+}
+
+/**
+ * The twelve wedges. Spellings come from tonicOptions, so the enharmonic
+ * pairs (F♯/G♭, D♭/C♯, B/C♭, E♭m/D♯m, G♯m/A♭m, B♭m/A♯m) and the rule that a
+ * key signature has at most seven accidentals are the ones the rest of the
+ * app already uses.
+ */
+export function circleOfFifths(): Wedge[] {
+  const major = tonicOptions("major");
+  const minor = tonicOptions("natural-minor");
+  return Array.from({ length: 12 }, (_, k) => ({
+    index: k,
+    major: major[mod(7 * k, 12)].spellings,
+    minor: minor[mod(7 * k + 9, 12)].spellings,
+  }));
+}
+
+/** The wedge a tonic sits on, for the given ring. */
+export function wedgeOf(tonic: PitchName, family: Family): number {
+  // 7 is its own inverse mod 12, so "which k has 7k ≡ pc" is k = 7·pc.
+  const pc = pitchClass(tonic);
+  return mod(7 * (family === "major" ? pc : pc - 9), 12);
+}
+
+/**
+ * The spelling to use for `pitch` as a `type` scale: the one given if its key
+ * signature fits in seven accidentals, otherwise that pitch class's default.
+ * So C♭ tapped on the major ring stays C♭ as a major scale but becomes B as
+ * Mixolydian, whose C♭ form would need eight flats.
+ */
+export function resolveTonic(pitch: PitchName, type: ScaleType): PitchName {
+  const { spellings } = tonicOptions(type)[pitchClass(pitch)];
+  return spellings.find((s) => s.letter === pitch.letter && s.acc === pitch.acc) ??
+    spellings[0];
+}
+
+export interface Neighbour {
+  ring: Family;
+  index: number;
+  numeral: string;
+}
+
+/**
+ * The selected key and its diatonic neighbours, with Roman numerals: the
+ * keys either side on its own ring (IV and V, or iv and v) and the three on
+ * the other ring (ii, iii, vi for a major key; III, VI, VII for a minor one).
+ */
+export function neighbourhood(index: number, family: Family): Neighbour[] {
+  const [own, other] = family === "major"
+    ? [["IV", "I", "V"], ["ii", "vi", "iii"]]
+    : [["iv", "i", "v"], ["VI", "III", "VII"]];
+  const otherRing: Family = family === "major" ? "minor" : "major";
+  return [-1, 0, 1].flatMap((d, i) => [
+    { ring: family, index: mod(index + d, 12), numeral: own[i] },
+    { ring: otherRing, index: mod(index + d, 12), numeral: other[i] },
+  ]);
+}
+
+/** "2♯", "3♭" or "" — the short key-signature label on a wedge. */
+export function signatureShort(fifths: number): string {
+  return fifths === 0 ? "" : `${Math.abs(fifths)}${fifths > 0 ? "♯" : "♭"}`;
+}
+
+/** "1 sharp", "3 flats", "no sharps or flats". */
+export function signatureLong(fifths: number): string {
+  if (fifths === 0) return "no sharps or flats";
+  const n = Math.abs(fifths);
+  return `${n} ${fifths > 0 ? "sharp" : "flat"}${n === 1 ? "" : "s"}`;
+}
+
+/**
+ * Orders scales around the circle: by the key signature's position, so a
+ * major key and its relative minor sit together; within a position, major
+ * before minor, then the picker's variant order. Scales without a key
+ * signature (blues, chromatic) come last, ordered by their tonic's wedge.
+ */
+export function compareByCircle(
+  a: { tonic: PitchName; type: ScaleType },
+  b: { tonic: PitchName; type: ScaleType },
+): number {
+  const fa = keySignatureFifths(a.tonic, a.type);
+  const fb = keySignatureFifths(b.tonic, b.type);
+  if ((fa === null) !== (fb === null)) return fa === null ? 1 : -1;
+  const pos = (f: number | null, s: { tonic: PitchName; type: ScaleType }) =>
+    f === null ? wedgeOf(s.tonic, familyOf(s.type)) : mod(f, 12);
+  const rank = (s: { type: ScaleType }) => {
+    const fam = familyOf(s.type);
+    return (fam === "major" ? 0 : 100) + VARIANTS[fam].indexOf(s.type);
+  };
+  return pos(fa, a) - pos(fb, b) || rank(a) - rank(b) || (fa ?? 0) - (fb ?? 0) ||
+    pitchClass(a.tonic) - pitchClass(b.tonic);
 }
 
 export interface ExerciseOptions {

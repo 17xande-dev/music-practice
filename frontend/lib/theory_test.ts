@@ -1,17 +1,27 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
   buildSteps,
+  circleOfFifths,
+  compareByCircle,
   type ExerciseOptions,
+  familyOf,
+  inFamily,
   keySignatureFifths,
   midiOf,
   nameOf,
+  neighbourhood,
   pitchClass,
   type PitchName,
+  resolveTonic,
   SCALE_TYPES,
   SCALES,
   scaleTitle,
+  signatureLong,
+  signatureShort,
   spell,
   tonicOptions,
+  VARIANTS,
+  wedgeOf,
 } from "./theory.ts";
 
 const P = (s: string): PitchName => {
@@ -358,4 +368,131 @@ Deno.test("titles", () => {
   assertEquals(scaleTitle(P("D"), "harmonic-minor"), "D harmonic minor");
   assertEquals(scaleTitle(P("Eb"), "major"), "E♭ major");
   assertEquals(scaleTitle(P("A"), "natural-minor"), "A natural minor");
+});
+
+// ---- Circle of fifths ------------------------------------------------------
+
+const joined = (ps: PitchName[]) => ps.map(nameOf).join("/");
+
+Deno.test("circle: majors outside, relative minors inside, sharps clockwise", () => {
+  const c = circleOfFifths();
+  assertEquals(c.length, 12);
+  assertEquals(
+    c.map((w) => joined(w.major)),
+    ["C", "G", "D", "A", "E", "B/C♭", "G♭/F♯", "D♭/C♯", "A♭", "E♭", "B♭", "F"],
+  );
+  assertEquals(
+    c.map((w) => joined(w.minor)),
+    ["A", "E", "B", "F♯", "C♯", "G♯/A♭", "E♭/D♯", "B♭/A♯", "F", "C", "G", "D"],
+  );
+  // Every wedge's two rings share a key signature: that is what "relative" means.
+  for (const w of c) {
+    assertEquals(
+      keySignatureFifths(w.major[0], "major"),
+      keySignatureFifths(w.minor[0], "natural-minor"),
+      `wedge ${w.index}`,
+    );
+  }
+});
+
+Deno.test("circle: wedgeOf finds a tonic on either ring", () => {
+  assertEquals(wedgeOf(P("C"), "major"), 0);
+  assertEquals(wedgeOf(P("F"), "major"), 11);
+  assertEquals(wedgeOf(P("Db"), "major"), 7);
+  assertEquals(wedgeOf(P("C#"), "major"), 7); // same pitch, same wedge
+  assertEquals(wedgeOf(P("A"), "minor"), 0);
+  assertEquals(wedgeOf(P("D"), "minor"), 11);
+  for (const w of circleOfFifths()) {
+    for (const p of w.major) assertEquals(wedgeOf(p, "major"), w.index);
+    for (const p of w.minor) assertEquals(wedgeOf(p, "minor"), w.index);
+  }
+});
+
+Deno.test("every scale type has a ring, and every ring lists only its own types", () => {
+  let seen = 0;
+  for (const t of SCALE_TYPES) {
+    assert(["major", "minor", "both"].includes(SCALES[t].family), t);
+    assert(VARIANTS.major.includes(t) || VARIANTS.minor.includes(t), `${t} is on no ring`);
+    seen++;
+  }
+  assert(seen >= 13);
+  for (const fam of ["major", "minor"] as const) {
+    assertEquals(VARIANTS[fam][0], fam === "major" ? "major" : "natural-minor");
+    for (const t of VARIANTS[fam]) assert(inFamily(t, fam), `${t} listed under ${fam}`);
+  }
+  assertEquals(familyOf("chromatic"), "major");
+  assertEquals(familyOf("dorian"), "minor");
+});
+
+Deno.test("resolveTonic keeps a usable spelling and respells an unusable one", () => {
+  assertEquals(nameOf(resolveTonic(P("Cb"), "major")), "C♭"); // 7 flats: fine
+  assertEquals(nameOf(resolveTonic(P("Cb"), "mixolydian")), "B"); // F♭ major: 8 flats
+  assertEquals(nameOf(resolveTonic(P("A#"), "natural-minor")), "A♯"); // 7 sharps: fine
+  assertEquals(nameOf(resolveTonic(P("A#"), "dorian")), "B♭"); // G♯ major: 8 sharps
+  assertEquals(nameOf(resolveTonic(P("F#"), "major")), "F♯"); // either is fine; keep it
+  // Whatever comes back is always offered for that type.
+  for (const t of SCALE_TYPES) {
+    for (const w of circleOfFifths()) {
+      for (const p of [...w.major, ...w.minor]) {
+        const r = resolveTonic(p, t);
+        assertEquals(pitchClass(r), pitchClass(p));
+        assert(
+          tonicOptions(t)[pitchClass(p)].spellings.some((s) => nameOf(s) === nameOf(r)),
+          `${nameOf(p)} ${t} -> ${nameOf(r)}`,
+        );
+      }
+    }
+  }
+});
+
+Deno.test("neighbourhood: C major and A minor light the same six wedges", () => {
+  const cMaj = neighbourhood(0, "major");
+  const num = (ring: string, i: number) =>
+    cMaj.find((x) => x.ring === ring && x.index === i)?.numeral;
+  assertEquals([num("major", 11), num("major", 0), num("major", 1)], ["IV", "I", "V"]); // F C G
+  assertEquals([num("minor", 11), num("minor", 0), num("minor", 1)], ["ii", "vi", "iii"]); // Dm Am Em
+  const aMin = neighbourhood(0, "minor");
+  const numM = (ring: string, i: number) =>
+    aMin.find((x) => x.ring === ring && x.index === i)?.numeral;
+  assertEquals([numM("minor", 11), numM("minor", 0), numM("minor", 1)], ["iv", "i", "v"]); // Dm Am Em
+  assertEquals([numM("major", 11), numM("major", 0), numM("major", 1)], ["VI", "III", "VII"]); // F C G
+  // Wraps around the top.
+  assert(neighbourhood(11, "major").some((x) => x.index === 0 && x.numeral === "V"));
+});
+
+Deno.test("signature labels", () => {
+  assertEquals(signatureShort(0), "");
+  assertEquals(signatureShort(2), "2♯");
+  assertEquals(signatureShort(-3), "3♭");
+  assertEquals(signatureLong(0), "no sharps or flats");
+  assertEquals(signatureLong(1), "1 sharp");
+  assertEquals(signatureLong(-4), "4 flats");
+});
+
+Deno.test("compareByCircle: key-signature order, relatives together, keyless last", () => {
+  const s = (t: string, type: Parameters<typeof resolveTonic>[1]) => ({ tonic: P(t), type });
+  const list = [
+    s("C", "blues"),
+    s("E", "natural-minor"),
+    s("F", "major"),
+    s("G", "major"),
+    s("C", "major"),
+    s("A", "harmonic-minor"),
+    s("D", "dorian"), // no sharps or flats, like C major
+    s("G", "chromatic"),
+    s("Bb", "major"),
+  ].sort(compareByCircle);
+  assertEquals(list.map((x) => `${nameOf(x.tonic)} ${x.type}`), [
+    "C major",
+    "A harmonic-minor",
+    "D dorian",
+    "G major",
+    "E natural-minor",
+    "B♭ major",
+    "F major",
+    // Keyless scales go last, by their tonic's wedge on their own ring:
+    // G chromatic sits at wedge 1 outside, C blues at wedge 9 inside (C minor).
+    "G chromatic",
+    "C blues",
+  ]);
 });
