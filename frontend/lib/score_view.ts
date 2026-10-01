@@ -59,7 +59,11 @@ export class ScoreView {
   onRender: () => void = () => {};
 
   constructor(private readonly container: HTMLElement) {
-    this.osmd = new OpenSheetMusicDisplay(container, {
+    // OSMD sizes the score to its element's outer width; an inner element
+    // takes the scrolling box's content width, so nothing overflows sideways.
+    const page = document.createElement("div");
+    container.replaceChildren(page);
+    this.osmd = new OpenSheetMusicDisplay(page, {
       backend: "svg",
       autoResize: false, // resized below, so marks can be put back
       followCursor: false,
