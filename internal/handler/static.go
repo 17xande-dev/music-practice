@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -31,6 +32,8 @@ var contentTypes = map[string]string{
 	// The licence notices, and the starter scores the songs page offers.
 	".txt":      "text/plain; charset=utf-8",
 	".musicxml": "application/vnd.recordare.musicxml+xml",
+	// The web app manifest, for installing the site.
+	".webmanifest": "application/manifest+json",
 }
 
 type asset struct {
@@ -133,6 +136,41 @@ func (a *Assets) URL(name string) string {
 	// Visible in the page rather than silently absent, so a mistyped name
 	// fails loudly while it is being written.
 	return "/static/missing/" + name
+}
+
+// Version is a hash over every asset's digest: it changes whenever any
+// served file does, which is what the service worker's caches key on.
+func (a *Assets) Version() string {
+	set, err := a.current()
+	if err != nil {
+		return "unavailable"
+	}
+	names := make([]string, 0, len(set))
+	for n := range set {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	h := sha256.New()
+	for _, n := range names {
+		fmt.Fprintf(h, "%s %s\n", n, set[n].etag)
+	}
+	return hex.EncodeToString(h.Sum(nil))[:12]
+}
+
+// ServiceWorker serves the bundled worker at the site root (so its scope is
+// every page), prefixed with the asset version. Never cached by HTTP: the
+// browser compares it byte for byte to find a new deploy.
+func (a *Assets) ServiceWorker(w http.ResponseWriter, r *http.Request) {
+	set, err := a.current()
+	x, ok := set["dist/sw.js"]
+	if err != nil || !ok {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	fmt.Fprintf(w, "const VERSION = %q;\n", a.Version())
+	w.Write(x.body)
 }
 
 func (a *Assets) ServeHTTP(w http.ResponseWriter, r *http.Request) {

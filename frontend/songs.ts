@@ -47,6 +47,9 @@ import { playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
 
+import { registerServiceWorker } from "./lib/pwa.ts";
+
+registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const ui = {

@@ -7,7 +7,7 @@ COPY frontend/ ./frontend/
 RUN mkdir -p internal/handler/static/dist
 # Populate the cache from the lockfile first, so a missing or wrong lock entry
 # fails the build loudly instead of silently refetching something else.
-RUN deno install --frozen --entrypoint frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts
+RUN deno install --frozen --entrypoint frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts frontend/sw.ts
 RUN deno task bundle
 
 # Stage 2: compile the server. go:embed reads static/dist at compile time, so

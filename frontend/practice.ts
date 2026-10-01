@@ -62,6 +62,9 @@ import {
   VARIANTS,
 } from "./lib/theory.ts";
 
+import { registerServiceWorker } from "./lib/pwa.ts";
+
+registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const ui = {

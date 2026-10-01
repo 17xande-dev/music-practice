@@ -179,3 +179,42 @@ func TestLicenceNoticesAreServed(t *testing.T) {
 		t.Error("the About page does not link the licence notices")
 	}
 }
+
+// The service worker must be served from the root (its scope is the
+// whole site), never HTTP-cached, and versioned by the assets so a deploy
+// replaces the old worker and its caches.
+func TestServiceWorker(t *testing.T) {
+	h := newTestHandler(t)
+	rec := get(t, h, "/sw.js")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/javascript") {
+		t.Errorf("content-type %q", ct)
+	}
+	if cc := rec.Header().Get("Cache-Control"); cc != "no-cache" {
+		t.Errorf("cache-control %q", cc)
+	}
+	if !regexp.MustCompile(`^const VERSION = "[0-9a-f]{12}";\n`).MatchString(rec.Body.String()) {
+		t.Errorf("worker does not start with its version: %.60q", rec.Body.String())
+	}
+	page := get(t, h, "/").Body.String()
+	if !strings.Contains(page, `rel="manifest" href="/static/manifest.webmanifest?v=`) {
+		t.Error("pages do not link the web app manifest")
+	}
+	if m := get(t, h, "/static/manifest.webmanifest"); m.Header().Get("Content-Type") != "application/manifest+json" {
+		t.Errorf("manifest content-type %q", m.Header().Get("Content-Type"))
+	}
+}
+
+// Any change to any asset gives a new version.
+func TestAssetVersionFollowsContent(t *testing.T) {
+	a := NewAssets(fstest.MapFS{"a.js": {Data: []byte("1")}, "b.css": {Data: []byte("x")}}, false)
+	b := NewAssets(fstest.MapFS{"a.js": {Data: []byte("1")}, "b.css": {Data: []byte("y")}}, false)
+	if a.Version() == b.Version() {
+		t.Error("different assets, same version")
+	}
+	if a.Version() != NewAssets(fstest.MapFS{"a.js": {Data: []byte("1")}, "b.css": {Data: []byte("x")}}, false).Version() {
+		t.Error("same assets, different version")
+	}
+}

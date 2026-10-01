@@ -58,7 +58,7 @@ var pageFiles = []string{"practice.html", "songs.html", "progress.html", "about.
 // Bundles are the Deno outputs the pages load. Checked at boot so a binary
 // built without `make bundle` refuses to start instead of serving dead pages.
 var Bundles = []string{
-	"dist/practice.js", "dist/songs.js", "dist/progress.js", "dist/pitch_worklet.js",
+	"dist/practice.js", "dist/songs.js", "dist/progress.js", "dist/pitch_worklet.js", "dist/sw.js",
 }
 
 // New builds the handler, parsing every template up front so a template
@@ -109,6 +109,7 @@ func (h *Handler) Routes() http.Handler {
 	mux.HandleFunc("GET /progress", h.page("progress.html", "Progress"))
 	mux.HandleFunc("GET /about", h.page("about.html", "About"))
 	mux.Handle("GET /static/", h.assets)
+	mux.HandleFunc("GET /sw.js", h.assets.ServiceWorker)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("ok\n"))

@@ -55,6 +55,11 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
   0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo), `bpm` (40–200), `beat` (notes
   per beat: 1, 2, 4), `fingers` (1 or 0).
+- **Installable, works offline:** a web app manifest and a service worker. After one visit every
+  page, bundle and starter piece is cached, so the site runs without a connection; pages are fetched
+  network-first so a deploy shows on the next visit online.
+- **Latency calibration:** next to the latency offset, "Measure" plays a count-in and eight clicks;
+  tapping along (any key, or a guitar pluck) measures the median delay and sets the offset.
 - **No instrument?** The computer keyboard works as a fallback (<kbd>A</kbd>–<kbd>J</kbd> for white
   keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys). It plays
   pitch classes, and the octave is picked for you.
@@ -121,6 +126,10 @@ frontend/
   lib/song_player.ts        songs: count-in, metronome, accompaniment and listen playback
   lib/song_library.ts       songs: uploaded scores in IndexedDB, file checks
   lib/song_session.ts       songs: history records, validation, bests
+  lib/calibration.ts        latency calibration: tap matching and the click run
+  lib/share_url.ts          scale exercises ⇄ query strings
+  lib/pwa.ts lib/sw_assets.ts  service worker registration, precache list
+  sw.ts                     the service worker (bundle; served at /sw.js with a version)
   lib/fretboard_view.ts     SVG fretboard (guitar's counterpart to the keyboard)
   lib/pluck.ts              synthetic plucked notes for tests and the test hook
   pitch_worklet.ts          AudioWorklet: runs the detector every ~5 ms (third bundle)
