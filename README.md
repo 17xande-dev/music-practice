@@ -19,6 +19,13 @@ and an on-screen keyboard, and grades it.
 - **Progress:** stage 1 has no accounts. Every run is saved in your browser's localStorage, and the
   Progress page shows trends, per-scale bests and recent sessions. History can be exported and
   imported as JSON.
+- **Guitar:** plug an electric guitar into the computer through a USB audio interface (a Rocksmith
+  Real Tone cable, for example) and choose Guitar. The page detects the played note from the sound
+  itself, using the McLeod Pitch Method in an AudioWorklet. You pick a fretboard position, and the
+  fretboard shows that one fingering. Grading is by pitch: the same pitch can be played in several
+  places, which one pickup can't tell apart, but inside a position each pitch has a single place.
+  The staff uses standard guitar notation (treble clef, sounding an octave lower). A tuner readout
+  shows the detected note and cents.
 - **No instrument?** The computer keyboard works as a fallback (<kbd>A</kbd>–<kbd>J</kbd> for white
   keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys). It plays
   pitch classes, and the octave is picked for you.
@@ -30,6 +37,9 @@ Safari. It also requires a **secure context**: `http://localhost` is fine for de
 real deployment must be served over **HTTPS**, or the browser hides the API entirely. The page
 detects each case (no support, insecure origin, permission refused) and says so. The
 computer-keyboard fallback works everywhere.
+
+Guitar input uses getUserMedia and an AudioWorklet, which all current browsers support, Safari
+included. It also needs HTTPS, and permission to use the audio input.
 
 ## Develop
 
@@ -71,6 +81,13 @@ frontend/
   lib/metronome.ts          clicks scheduled on the audio clock
   lib/keyboard_view.ts      SVG piano
   lib/circle_view.ts        circle-of-fifths key picker (SVG)
+  lib/fft.ts lib/pitch.ts   radix-2 FFT and MPM pitch detector (ported from pitchy, MIT)
+  lib/note_tracker.ts       pitch frames → note on/off events (onsets, stability, gate)
+  lib/audio_input.ts        guitar audio input: device choice, worklet, tracker, tuner
+  lib/guitar.ts             tuning, position boxes, fingering layout
+  lib/fretboard_view.ts     SVG fretboard (guitar's counterpart to the keyboard)
+  lib/pluck.ts              synthetic plucked notes for tests and the test hook
+  pitch_worklet.ts          AudioWorklet: runs the detector every ~5 ms (third bundle)
   lib/staff_view.ts         VexFlow staff / grand staff
   lib/timing_chart.ts       per-note timing chart (tempo results)
   lib/accuracy_chart.ts     accuracy trend (progress page)
@@ -112,7 +129,7 @@ and no Node toolchain.
   allow `data:` for VexFlow's embedded fonts.
 - No served template contains an inline style, event handler or script. A test walks every page to
   enforce this, because the CSP would silently refuse them and handler tests never run JavaScript.
-- `Permissions-Policy` grants `midi` to this origin only.
+- `Permissions-Policy` grants `midi` and `microphone` (for guitar) to this origin only.
 - The static route serves only listed file extensions.
 - Nothing about a visitor reaches the server. History stays in their browser, and imported files are
   validated and rebuilt field by field before storage.
@@ -160,9 +177,11 @@ the origin (526 through Cloudflare), check
 
 ## Decisions still open
 
-| Decision                                            | Trigger                                                                     |
-| --------------------------------------------------- | --------------------------------------------------------------------------- |
-| Stage 2: accounts, server-side history (SQLite)     | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Fingering hints on the staff                        | After stage 1 feedback                                                      |
-| Microphone pitch input for acoustic instruments     | If players without MIDI matter                                              |
-| Arpeggios, contrary motion, scales in thirds/sixths | After scales settle                                                         |
+| Decision                                                         | Trigger                                                                     |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Stage 2: accounts, server-side history (SQLite)                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
+| Fingering hints on the staff                                     | After stage 1 feedback                                                      |
+| Learn each string's sound (calibration) to guess string and fret | After guitar feedback                                                       |
+| ML pitch engine (CREPE/SPICE) and ML fret-position estimation    | If MPM struggles with real-world signals                                    |
+| Acoustic instruments via microphone (more noise and room sound)  | If players without a DI cable matter                                        |
+| Arpeggios, contrary motion, scales in thirds/sixths              | After scales settle                                                         |

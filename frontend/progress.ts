@@ -39,7 +39,9 @@ function minutes(ms: number): string {
 const HANDS = { rh: "RH", lh: "LH", both: "Hands together" } as const;
 
 function exerciseLabel(s: Session): string {
-  return `${scaleTitle(s.tonic, s.type)} · ${HANDS[s.hands]} · ${s.octaves} oct${
+  // Guitar plays one line, so "hands" means nothing there; say guitar instead.
+  const who = s.instrument === "guitar" ? "Guitar" : HANDS[s.hands];
+  return `${scaleTitle(s.tonic, s.type)} · ${who} · ${s.octaves} oct${
     s.direction === "up" ? " up" : ""
   }`;
 }
