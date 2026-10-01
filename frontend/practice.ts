@@ -188,6 +188,10 @@ function renderPicker() {
   }
   for (const input of ui.variants.querySelectorAll<HTMLInputElement>("input")) {
     input.checked = input.value === pick.type;
+    // Guitar's pitch tracker hears one note at a time, so no chord drills.
+    const chord = !!SCALES[input.value as ScaleType].chord;
+    input.disabled = chord && instrument === "guitar";
+    input.parentElement!.title = input.disabled ? "Chords can't be graded on guitar" : "";
   }
 }
 
@@ -494,9 +498,14 @@ function showProgress() {
     ui.status.textContent = "Done — press Restart or Space to go again.";
     return;
   }
-  const names = step.notes.map((n) =>
-    (steps[0].notes.length > 1 ? `${n.hand.toUpperCase()} ` : "") + noteLabel(n.spelled)
-  );
+  // "RH E♭4 G4 B♭4 + LH E♭3 G3 B♭3": one group per hand.
+  const names = (["rh", "lh"] as const)
+    .map((hand) => {
+      const notes = step.notes.filter((n) => n.hand === hand).map((n) => noteLabel(n.spelled));
+      if (!notes.length) return "";
+      return (options.hands === "both" ? `${hand.toUpperCase()} ` : "") + notes.join(" ");
+    })
+    .filter(Boolean);
   const cursor = engine instanceof NotesEngine ? engine.cursor : 0;
   const where = mode === "tempo"
     ? "Press Start (or Space) for a one-bar count-in"
@@ -700,7 +709,11 @@ function showResults(s: Summary) {
     if (s.unevenness !== null) rows.push(stat("Evenness", pct(Math.max(0, 1 - s.unevenness))));
   }
   if (s.velocityStd !== null) rows.push(stat("Dynamics spread", `±${Math.round(s.velocityStd)}`));
-  if (steps[0].notes.length > 1) rows.push(stat("Hands apart", `${s.notTogether} of ${s.total}`));
+  if (SCALES[options.type].chord) {
+    rows.push(stat("Chords spread", `${s.notTogether} of ${s.total}`));
+  } else if (options.hands === "both") {
+    rows.push(stat("Hands apart", `${s.notTogether} of ${s.total}`));
+  }
   ui.stats.replaceChildren(...rows);
   ui.resultsNote.textContent = resultsNote(s);
   // Shown before the chart is drawn: it sizes itself to its container,
@@ -936,6 +949,10 @@ function setInstrument(next: Instrument) {
     x.hidden = next !== "piano";
   }
   view = next === "guitar" ? fretboard : keyboard;
+  if (next === "guitar" && SCALES[pick.type].chord) {
+    pick = { ...pick, type: pick.ring === "major" ? "major-arpeggio" : "minor-arpeggio" };
+  }
+  renderPicker();
   // A position spans about two octaves; more would mean shifting.
   for (const o of ui.octaves.options) o.disabled = next === "guitar" && Number(o.value) > 2;
   if (next === "guitar" && Number(ui.octaves.value) > 2) ui.octaves.value = "2";

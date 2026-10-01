@@ -434,6 +434,8 @@ kbd {
   input:hover + span { border-color: var(--target); }
   input:checked + span { background: var(--target); border-color: var(--target); color: #fff; }
   input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+  input:disabled { cursor: not-allowed; }
+  input:disabled + span { opacity: 0.45; border-style: dashed; }
 }
 
 .exercise {

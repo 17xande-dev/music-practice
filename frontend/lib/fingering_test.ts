@@ -6,6 +6,7 @@ import {
   type ExerciseOptions,
   type PitchName,
   SCALE_TYPES,
+  SCALES,
   type ScaleType,
   tonicOptions,
 } from "./theory.ts";
@@ -151,7 +152,8 @@ Deno.test("pentatonic and blues: thumb off black keys, groups of two to four", (
 // a semitone apart (B♭ blues: E and F).
 Deno.test("every scale in every key gets a playable fingering", () => {
   const BLACK = new Set([1, 3, 6, 8, 10]);
-  for (const type of SCALE_TYPES) {
+  // Block-chord exercises are checked by the triad test below.
+  for (const type of SCALE_TYPES.filter((t) => !SCALES[t].chord)) {
     for (const { spellings } of tonicOptions(type)) {
       for (const tonic of spellings) {
         for (const hands of ["rh", "lh"] as const) {
@@ -216,4 +218,66 @@ Deno.test("guitar: G major in 2nd position, string by string", () => {
   const f = guitarFingering(steps, places, box).map((x) => x[0]).join("");
   // E string G3 A5 · A: B2 C3 D5 · D: E2 F♯4 G5 · G: A2 B4 C5 · B: D3 E5 · e: F♯2 G3.
   assertEquals(f, "241241341342412");
+});
+
+// Two octaves up, from the arpeggio table (colorinmypiano.com, Joy Morin).
+const ARP_RH: Record<string, string> = {
+  "C major-arpeggio": "1231235",
+  "D major-arpeggio": "1231235",
+  "Gb major-arpeggio": "1231235",
+  "Eb major-arpeggio": "2124124",
+  "Bb major-arpeggio": "2124124",
+  "Db major-arpeggio": "2124124",
+  "A minor-arpeggio": "1231235",
+  "F# minor-arpeggio": "2124124",
+  "Bb minor-arpeggio": "2312312",
+  "Eb minor-arpeggio": "1231235",
+};
+const ARP_LH: Record<string, string> = {
+  "C major-arpeggio": "5421421",
+  "F major-arpeggio": "5421421",
+  "E major-arpeggio": "5321321",
+  "B major-arpeggio": "5321321",
+  "Gb major-arpeggio": "5321321",
+  "Ab major-arpeggio": "2142142",
+  "G minor-arpeggio": "5421421",
+  "C# minor-arpeggio": "2142142",
+  "Bb minor-arpeggio": "3213212",
+};
+
+Deno.test("arpeggios: the standard fingering in each key group", () => {
+  for (const [hands, table] of [["rh", ARP_RH], ["lh", ARP_LH]] as const) {
+    for (const [name, want] of Object.entries(table)) {
+      const [tonic, type] = name.split(" ");
+      assertEquals(fingers(tonic, type as ScaleType, hands, 2), want, `${name} ${hands}`);
+    }
+  }
+});
+
+Deno.test("arpeggios: coming down retraces the fingers", () => {
+  assertEquals(fingers("C", "major-arpeggio", "rh", 1, "updown"), "1235321");
+  assertEquals(fingers("C", "major-arpeggio", "lh", 1, "updown"), "5421245");
+});
+
+Deno.test("triad inversions: 135 / 125 in the right hand, 531 / 521 in the left", () => {
+  const steps = buildSteps({
+    tonic: P("C"),
+    type: "major-inversions",
+    octaves: 1,
+    direction: "up",
+    hands: "both",
+  });
+  // Root, first inversion, second inversion, root: RH (low to high) then LH.
+  assertEquals(steps.map((s) => s.notes.map((n) => n.midi)), [
+    [60, 64, 67, 48, 52, 55],
+    [64, 67, 72, 52, 55, 60],
+    [67, 72, 76, 55, 60, 64],
+    [72, 76, 79, 60, 64, 67],
+  ]);
+  assertEquals(pianoFingering(steps).map((f) => f.join("")), [
+    "135531",
+    "125531",
+    "135521",
+    "135531",
+  ]);
 });

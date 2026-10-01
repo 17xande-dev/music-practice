@@ -5,8 +5,11 @@ guitar). You connect the instrument in the browser, pick a scale or open a score
 shows your playing live on the music and an on-screen keyboard, and grades it.
 
 - **Scales:** major, the three minors (natural, harmonic, melodic), the other five modes, major and
-  minor pentatonic, blues and chromatic. All 12 keys are offered, spelled properly: F♯ major shows
-  E♯, G♯ harmonic minor shows F𝄪, and C♯/D♭ are both offered where both are in use.
+  minor pentatonic, blues and chromatic; plus major and minor arpeggios (root position, fingered
+  from the standard arpeggio tables) and triad inversions as block chords (root, first and second
+  inversion up the keyboard, fingered 1-3-5 / 1-2-5 and 5-3-1 / 5-2-1). Chord drills are piano only:
+  the guitar's pitch tracker hears one note at a time. All 12 keys are offered, spelled properly: F♯
+  major shows E♯, G♯ harmonic minor shows F𝄪, and C♯/D♭ are both offered where both are in use.
 - **Picking a key:** a circle of fifths, with major keys outside and relative minors inside. Tap a
   key, then pick a variant (Lydian, harmonic minor, blues…). Each outer wedge shows its key
   signature, and the selected key's neighbours are shaded and labelled with Roman numerals.

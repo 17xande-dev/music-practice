@@ -114,10 +114,97 @@ function formOf(midis: number[], tonicPc: number): number[] {
   return [...new Set(midis.map((m) => mod(m - tonicPc, 12)))].sort((a, b) => a - b);
 }
 
+// ---- Arpeggios ----------------------------------------------------------------
+//
+// Root-position arpeggios follow a table, as teachers teach them: the
+// fingering depends on the black/white shape of the triad, so it is
+// grouped by key (Joy Morin, "Scale & Arpeggio Fingerings for Piano",
+// colorinmypiano.com, which agrees with the common scale books).
+// Each pattern gives the finger on the root, third and fifth in the
+// middle of a run, and on the root at the bottom and top ends.
+
+interface ArpPattern {
+  root: number;
+  third: number;
+  fifth: number;
+  bottom: number;
+  top: number;
+}
+const ARP = {
+  // RH 123 1235: C, G, F, D, A, E, B, G♭ major; most minors.
+  rh123: { root: 1, third: 2, fifth: 3, bottom: 1, top: 5 },
+  // RH 2 124 124: E♭, A♭, D♭, B♭ major; F♯, C♯, G♯ minor.
+  rh124: { root: 4, third: 1, fifth: 2, bottom: 2, top: 4 },
+  // RH 23 123 12: B♭ minor.
+  rh23: { root: 2, third: 3, fifth: 1, bottom: 2, top: 2 },
+  // LH 5421 421: C, G, F major; most minors.
+  lh5421: { root: 1, third: 4, fifth: 2, bottom: 5, top: 1 },
+  // LH 5321 321: D, A, E, B, G♭ major.
+  lh5321: { root: 1, third: 3, fifth: 2, bottom: 5, top: 1 },
+  // LH 21 421 42: the black-key-rooted triads with a white third.
+  lh21: { root: 2, third: 1, fifth: 4, bottom: 2, top: 2 },
+  // LH 321 321 2: B♭ minor.
+  lh321: { root: 3, third: 2, fifth: 1, bottom: 3, top: 2 },
+} satisfies Record<string, ArpPattern>;
+
+/** The arpeggio pattern for a root (pitch class) and quality, per hand. */
+function arpPattern(rootPc: number, minor: boolean, hand: Hand): ArpPattern {
+  if (!minor) {
+    if ([3, 8, 1, 10].includes(rootPc)) return hand === "rh" ? ARP.rh124 : ARP.lh21; // E♭ A♭ D♭ B♭
+    if ([0, 7, 5].includes(rootPc)) return hand === "rh" ? ARP.rh123 : ARP.lh5421; // C G F
+    return hand === "rh" ? ARP.rh123 : ARP.lh5321; // D A E B G♭
+  }
+  if ([6, 1, 8].includes(rootPc)) return hand === "rh" ? ARP.rh124 : ARP.lh21; // F♯ C♯ G♯
+  if (rootPc === 10) return hand === "rh" ? ARP.rh23 : ARP.lh321; // B♭
+  return hand === "rh" ? ARP.rh123 : ARP.lh5421;
+}
+
+function arpeggioFingers(line: { midi: number }[], hand: Hand, minor: boolean): number[] {
+  const rootPc = mod(line[0].midi, 12);
+  const p = arpPattern(rootPc, minor, hand);
+  const lo = Math.min(...line.map((x) => x.midi));
+  const hi = Math.max(...line.map((x) => x.midi));
+  return line.map(({ midi }) => {
+    const deg = mod(midi - rootPc, 12);
+    if (deg === 0 && midi === lo) return p.bottom;
+    if (deg === 0 && midi === hi) return p.top;
+    return deg === 0 ? p.root : deg === 7 ? p.fifth : p.third;
+  });
+}
+
+// ---- Block chords ----------------------------------------------------------------
+
+/**
+ * Triads in any inversion, as taught: the right hand plays 1-3-5, or
+ * 1-2-5 when the top two notes are a fourth apart (first inversion); the
+ * left hand plays 5-3-1, or 5-2-1 when the bottom two are a fourth apart
+ * (second inversion).
+ */
+function triadFingers(midis: number[], hand: Hand): number[] {
+  const sorted = [...midis].sort((a, b) => a - b);
+  const [a, b, c] = sorted;
+  const byPitch = hand === "rh" ? [1, c - b >= 5 ? 2 : 3, 5] : [5, b - a >= 5 ? 2 : 3, 1];
+  return midis.map((m) => byPitch[sorted.indexOf(m)]);
+}
+
+function chordFingers(step: Step): (number | null)[] {
+  const out: (number | null)[] = step.notes.map(() => null);
+  for (const hand of ["rh", "lh"] as const) {
+    const idx = step.notes.map((n, i) => (n.hand === hand ? i : -1)).filter((i) => i >= 0);
+    if (idx.length !== 3) continue;
+    triadFingers(idx.map((i) => step.notes[i].midi), hand).forEach((f, k) => (out[idx[k]] = f));
+  }
+  return out;
+}
+
 /** Fingers for one hand's line through the exercise. */
 function handFingers(line: { midi: number; up: boolean }[], hand: Hand): number[] {
   const tonicPc = mod(line[0].midi, 12);
   const upForm = formOf(line.filter((x) => x.up).map((x) => x.midi), tonicPc);
+  // A root-position triad arpeggio (major or minor) uses the table.
+  if (upForm.join() === "0,4,7" || upForm.join() === "0,3,7") {
+    return arpeggioFingers(line, hand, upForm[1] === 3);
+  }
   const down = line.filter((x) => !x.up).map((x) => x.midi);
   const downForm = down.length ? formOf(down, tonicPc) : upForm;
   const lo = Math.min(...line.map((x) => x.midi));
@@ -168,6 +255,9 @@ function handFingers(line: { midi: number; up: boolean }[], hand: Hand): number[
  */
 export function pianoFingering(steps: readonly Step[]): Fingers {
   if (!steps.length) return [];
+  if (steps[0].notes.length > 2 || steps[0].notes.filter((n) => n.hand === "rh").length > 1) {
+    return steps.map(chordFingers);
+  }
   const out: Fingers = steps.map((s) => s.notes.map(() => null));
   steps[0].notes.forEach((first, h) => {
     // The turning note at the top belongs to the way down: in melodic

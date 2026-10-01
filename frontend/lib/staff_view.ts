@@ -94,6 +94,7 @@ export class StaffView {
   private lineOf: number[] = [];
   private marks: (StepMark | null)[] = [];
   private lastWidth = 0;
+  private systemH = SINGLE_SYSTEM;
 
   constructor(private container: HTMLElement) {
     new ResizeObserver(() => {
@@ -146,12 +147,20 @@ export class StaffView {
     this.lineOf = [];
     if (!this.steps.length) return;
 
-    const hands: Hand[] = this.steps[0].notes.map((n) => n.hand);
+    const hands: Hand[] = [...new Set(this.steps[0].notes.map((n) => n.hand))];
     const grand = hands.length > 1;
     const per = notesPerLine(width);
     const lines: (readonly Step[])[] = [];
     for (let i = 0; i < this.steps.length; i += per) lines.push(this.steps.slice(i, i + per));
-    const systemH = grand ? GRAND_SYSTEM : SINGLE_SYSTEM;
+    // Chord fingers stack one above another: make room for the extra rows.
+    const perHand = Math.max(
+      1,
+      ...this.steps.map((s) => s.notes.filter((n) => n.hand === hands[0]).length),
+    );
+    const extra = this.fingers ? (perHand - 1) * 14 : 0;
+    const topPad = TOP_PAD + extra;
+    const systemH = (grand ? GRAND_SYSTEM : SINGLE_SYSTEM) + 2 * extra;
+    this.systemH = systemH;
 
     const renderer = new Renderer(this.container as HTMLDivElement, Renderer.Backends.SVG);
     renderer.resize(width, lines.length * systemH);
@@ -173,23 +182,33 @@ export class StaffView {
       const voices: Voice[] = [];
       const notesByHand: StaveNote[][] = [];
       hands.forEach((hand, h) => {
-        const midis = line.map((s) => s.notes[h].midi);
+        // This hand's notes in each step, low to high (a chord, or one note),
+        // with their index in the step for looking up fingers.
+        const handNotes = (s: Step) =>
+          s.notes.map((n, i) => ({ n, i })).filter((x) => x.n.hand === hand)
+            .sort((a, b) => a.n.midi - b.n.midi);
+        const midis = line.flatMap((s) => handNotes(s).map((x) => x.n.midi));
         const clef = this.guitar ? "treble" : clefFor(midis, hand);
-        const stave = new Stave(left, top + TOP_PAD + h * STAFF_GAP, width - left - 8);
+        const stave = new Stave(left, top + topPad + h * STAFF_GAP, width - left - 8);
         if (this.guitar) stave.addClef("treble", "default", "8vb");
         else stave.addClef(clef);
         stave.addKeySignature(key).setContext(ctx);
         staves.push(stave);
+        const below = hand === "lh" && grand;
         const notes = line.map((s) => {
+          const chord = handNotes(s);
           const note = new StaveNote({
-            keys: [vfKey(writtenPitch(s.notes[h].spelled, this.guitar))],
+            keys: chord.map((x) => vfKey(writtenPitch(x.n.spelled, this.guitar))),
             duration: this.duration,
             clef,
             autoStem: true,
           });
-          const finger = this.fingers?.[s.index]?.[h];
-          if (finger !== undefined && finger !== null) {
-            const below = hand === "lh" && grand;
+          // A chord's fingers stack as printed: the lowest note's finger
+          // nearest the staff above it, the highest nearest the staff below.
+          const order = below ? [...chord].reverse() : chord;
+          for (const x of order) {
+            const finger = this.fingers?.[s.index]?.[x.i];
+            if (finger === undefined || finger === null) continue;
             note.addModifier(
               new Annotation(String(finger)).setVerticalJustification(
                 below ? AnnotationVerticalJustify.BOTTOM : AnnotationVerticalJustify.TOP,
@@ -262,7 +281,7 @@ export class StaffView {
     if (line === undefined) return;
     const top = this.systemTops[line];
     const c = this.container;
-    const h = (this.steps[0]?.notes.length ?? 1) > 1 ? GRAND_SYSTEM : SINGLE_SYSTEM;
+    const h = this.systemH;
     if (top < c.scrollTop || top + h > c.scrollTop + c.clientHeight) {
       c.scrollTo({ top, behavior: "smooth" });
     }

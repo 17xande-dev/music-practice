@@ -49,7 +49,10 @@ export interface Note {
 
 export interface Step {
   index: number;
-  /** One note for a single hand; two (RH first, then LH) for hands together. */
+  /**
+   * The notes to play together, right hand's first. One per hand for scales
+   * and arpeggios; a triad per hand for chord exercises.
+   */
   notes: Note[];
   direction: "up" | "down";
 }
@@ -67,7 +70,11 @@ export type ScaleType =
   | "major-pentatonic"
   | "minor-pentatonic"
   | "blues"
-  | "chromatic";
+  | "chromatic"
+  | "major-arpeggio"
+  | "minor-arpeggio"
+  | "major-inversions"
+  | "minor-inversions";
 
 interface ScaleDef {
   label: string;
@@ -91,6 +98,12 @@ interface ScaleDef {
    * under both.
    */
   family: Family | "both";
+  /**
+   * Block chords rather than single notes: the triad on `up`/`letters`
+   * through its inversions (root, first, second, root an octave up…).
+   * Guitar can't be graded on these: its pitch tracker hears one note.
+   */
+  chord?: boolean;
 }
 
 export type Family = "major" | "minor";
@@ -193,6 +206,37 @@ export const SCALES: Record<ScaleType, ScaleDef> = {
     family: "both",
     up: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     letters: [],
+  },
+  // Arpeggios are scales of three notes, so they run through the same code.
+  "major-arpeggio": {
+    label: "Major arpeggio",
+    family: "major",
+    up: [0, 4, 7],
+    letters: [0, 2, 4],
+    relMajor: [0, 0],
+  },
+  "minor-arpeggio": {
+    label: "Minor arpeggio",
+    family: "minor",
+    up: [0, 3, 7],
+    letters: [0, 2, 4],
+    relMajor: [3, 2],
+  },
+  "major-inversions": {
+    label: "Major triad inversions",
+    family: "major",
+    up: [0, 4, 7],
+    letters: [0, 2, 4],
+    relMajor: [0, 0],
+    chord: true,
+  },
+  "minor-inversions": {
+    label: "Minor triad inversions",
+    family: "minor",
+    up: [0, 3, 7],
+    letters: [0, 2, 4],
+    relMajor: [3, 2],
+    chord: true,
   },
 };
 
@@ -309,7 +353,15 @@ export function tonicOptions(type: ScaleType): TonicOption[] {
  * seven-note scales, chromatic last because it has no third.
  */
 export const VARIANTS: Record<Family, ScaleType[]> = {
-  major: ["major", "lydian", "mixolydian", "major-pentatonic", "chromatic"],
+  major: [
+    "major",
+    "lydian",
+    "mixolydian",
+    "major-pentatonic",
+    "chromatic",
+    "major-arpeggio",
+    "major-inversions",
+  ],
   minor: [
     "natural-minor",
     "harmonic-minor",
@@ -320,6 +372,8 @@ export const VARIANTS: Record<Family, ScaleType[]> = {
     "minor-pentatonic",
     "blues",
     "chromatic",
+    "minor-arpeggio",
+    "minor-inversions",
   ],
 };
 
@@ -548,6 +602,40 @@ function handLine(
 }
 
 /**
+ * One hand's block chords for an inversions exercise: chord k stacks the
+ * triad's tones k, k+1 and k+2, so k = 0, 1, 2 are root position, first
+ * and second inversion, and k = 3 is root position an octave up.
+ */
+function chordLine(o: ExerciseOptions, tonicMidi: number): Spelled[][] {
+  const def = SCALES[o.type];
+  const tone = (j: number): Spelled =>
+    spell(
+      tonicMidi + def.up[j % 3] + 12 * Math.floor(j / 3),
+      letterAt(o.tonic.letter, def.letters[j % 3]),
+    );
+  const up = Array.from(
+    { length: 3 * o.octaves + 1 },
+    (_, k) => [tone(k), tone(k + 1), tone(k + 2)],
+  );
+  return o.direction === "updown" ? [...up, ...up.slice(0, -1).reverse()] : up;
+}
+
+function chordSteps(o: ExerciseOptions, hands: Hand[]): Step[] {
+  const lines = hands.map((hand) => {
+    const tonicMidi = o.tonicMidi ?? midiOf({ ...o.tonic, octave: startOctave(o, hand) });
+    return { hand, chords: chordLine(o, tonicMidi) };
+  });
+  const top = 3 * o.octaves;
+  return lines[0].chords.map((_, i) => ({
+    index: i,
+    direction: i <= top ? "up" : "down",
+    notes: lines.flatMap((l) =>
+      l.chords[i].map((spelled) => ({ midi: midiOf(spelled), spelled, hand: l.hand }))
+    ),
+  }));
+}
+
+/**
  * The exercise as steps. Ascending ends on the top tonic; up-and-down turns
  * there without repeating it and ends back on the starting tonic.
  */
@@ -556,6 +644,7 @@ export function buildSteps(o: ExerciseOptions): Step[] {
     throw new RangeError(`octaves must be 1–4, got ${o.octaves}`);
   }
   const hands: Hand[] = o.hands === "both" ? ["rh", "lh"] : [o.hands];
+  if (SCALES[o.type].chord) return chordSteps(o, hands);
   const lines = hands.map((hand) => {
     const tonicMidi = o.tonicMidi ?? midiOf({ ...o.tonic, octave: startOctave(o, hand) });
     return { hand, ...handLine(o, tonicMidi) };
