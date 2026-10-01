@@ -39,6 +39,7 @@ import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { better, type Instrument, ProgressStore, type Session } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
+import { fromQuery, toQuery } from "./lib/share_url.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
 import { renderTimingChart } from "./lib/timing_chart.ts";
 import { CircleView } from "./lib/circle_view.ts";
@@ -98,6 +99,7 @@ const ui = {
   status: el("exercise-status"),
   start: el<HTMLButtonElement>("start"),
   restart: el<HTMLButtonElement>("restart"),
+  copyLink: el<HTMLButtonElement>("copy-link"),
   keyboard: el("keyboard"),
   staff: el("staff"),
   results: el("results"),
@@ -236,9 +238,12 @@ const DURATIONS: Record<number, NoteDuration> = { 1: "q", 2: "8", 4: "16" };
 
 // ---- Remembered settings ------------------------------------------------------
 
-/** Put the last-used choices back into the form (each is validated on read). */
+/**
+ * Put the last-used choices back into the form (each is validated on
+ * read), with anything a shared link specifies taking precedence.
+ */
 function restoreSettings() {
-  const saved = store.settings();
+  const saved = { ...store.settings(), ...fromQuery(location.search) };
   const type = saved.type ?? "major";
   pick = {
     type,
@@ -276,6 +281,46 @@ function persistSettings() {
     a4,
     fingering: ui.fingering.checked,
   });
+  syncUrl();
+}
+
+/**
+ * Keep the address bar describing the exercise on screen, so copying the
+ * URL shares it. replaceState: changing an option isn't a page to go back to.
+ */
+function syncUrl() {
+  const o = readOptions();
+  const t = tempoSettings();
+  const query = toQuery({
+    instrument,
+    tonic: o.tonic,
+    type: o.type,
+    hands: ui.hands.value as ExerciseOptions["hands"],
+    octaves: Number(ui.octaves.value),
+    direction: o.direction,
+    mode: ui.mode.value as Mode,
+    bpm: t.bpm,
+    notesPerBeat: t.notesPerBeat,
+    position: Number(ui.position.value),
+    fingering: ui.fingering.checked,
+  });
+  history.replaceState(history.state, "", `${location.pathname}?${query}`);
+}
+
+let copiedTimer = 0;
+async function copyLink() {
+  syncUrl();
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(location.href);
+    copied = true;
+  } catch {
+    // Clipboard blocked (permissions, an insecure origin): the address
+    // bar already holds the link, so point there instead.
+  }
+  ui.copyLink.textContent = copied ? "Link copied" : "Copy the address bar";
+  clearTimeout(copiedTimer);
+  copiedTimer = setTimeout(() => (ui.copyLink.textContent = "Copy link"), 2000);
 }
 
 function rebuild() {
@@ -962,6 +1007,7 @@ ui.restart.addEventListener("click", () => {
   reset();
   ui.restart.blur();
 });
+ui.copyLink.addEventListener("click", () => void copyLink());
 document.addEventListener("keydown", (e) => {
   const t = e.target as HTMLElement;
   if (e.code !== "Space" || ["BUTTON", "SELECT", "INPUT", "A"].includes(t.tagName)) return;
@@ -975,6 +1021,7 @@ ui.storageWarning.hidden = store.available;
 restoreSettings();
 renderPicker();
 setInstrument(ui.instrument.value as Instrument); // also builds the exercise
+syncUrl();
 
 // Test hook: lets browser automation play notes through exactly the path a
 // MIDI message takes, since DevTools cannot provide a real MIDI device.

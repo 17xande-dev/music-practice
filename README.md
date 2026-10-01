@@ -43,6 +43,15 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   clicking a measure, or "practise the weakest measures", sets up that passage. Fingering printed in
   the file shows with "Show fingers". A piano written as one two-staff part or as separate
   right/left-hand parts is graded as two hands; in a voice-and-piano song, the piano part is graded.
+- **Shareable links:** the scales page keeps its address in step with the exercise on screen, e.g.
+  `/?instrument=piano&key=F%23&scale=harmonic-minor&hands=both&octaves=2&dir=updown&mode=tempo&bpm=90&beat=2`,
+  and "Copy link" copies it. Opening a link sets that exercise up; anything it leaves out keeps your
+  own setting. Device-specific settings (MIDI device, latency offset, tuning reference) aren't
+  shared. Parameters: `instrument` (piano, guitar), `key` (C, F#, Bb…), `scale` (major,
+  natural-minor, harmonic-minor, melodic-minor, dorian, phrygian, lydian, mixolydian, locrian,
+  major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
+  0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo), `bpm` (40–200), `beat` (notes
+  per beat: 1, 2, 4), `fingers` (1 or 0).
 - **No instrument?** The computer keyboard works as a fallback (<kbd>A</kbd>–<kbd>J</kbd> for white
   keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys). It plays
   pitch classes, and the octave is picked for you.
