@@ -26,10 +26,9 @@ function fingers(
   return pianoFingering(steps).map((f) => f.join("")).join(hands === "both" ? " " : "");
 }
 
-// One octave up, from the standard scale books (ABRSM, Alfred, Hanon). The
-// one choice books differ on is the first note of B♭ in the right hand:
-// some start on 2 for comfort; here it is 4, the finger B♭ gets everywhere
-// else, so every octave reads the same.
+// One octave up, as the standard scale books give them (Alfred's Complete
+// Book of Scales, pianoscales.org). B♭ in the right hand starts on 2, with
+// 4 on every B♭ after the first.
 const MAJOR_RH: Record<string, string> = {
   C: "12312345",
   G: "12312345",
@@ -43,7 +42,7 @@ const MAJOR_RH: Record<string, string> = {
   "C#": "23123412",
   Ab: "34123123",
   Eb: "31234123",
-  Bb: "41231234",
+  Bb: "21231234",
   F: "12341234",
   Cb: "12312345",
 };
@@ -73,7 +72,7 @@ const HARMONIC_RH: Record<string, string> = {
   "G#": "34123123",
   "D#": "31234123",
   Eb: "31234123",
-  Bb: "41231234",
+  Bb: "21231234",
   F: "12341234",
   C: "12312345",
   G: "12312345",
@@ -113,7 +112,8 @@ for (
 Deno.test("more octaves repeat the pattern; only the outer end changes", () => {
   assertEquals(fingers("C", "major", "rh", 2), "123123412312345");
   assertEquals(fingers("C", "major", "lh", 2), "543213214321321");
-  assertEquals(fingers("Bb", "major", "rh", 2), "412312341231234");
+  assertEquals(fingers("Bb", "major", "rh", 2), "212312341231234");
+  assertEquals(fingers("Bb", "major", "rh", 1, "updown"), "212312343213212");
 });
 
 Deno.test("coming down retraces the same fingers", () => {
@@ -181,11 +181,12 @@ Deno.test("every scale in every key gets a playable fingering", () => {
   }
 });
 
-Deno.test("an all-black scale still gets a fingering", () => {
-  // F♯ major pentatonic: F♯ G♯ A♯ C♯ D♯, no white keys at all.
-  const p = scalePattern([0, 2, 4, 7, 9], 6, "rh");
-  assertEquals(p.length, 5);
-  assert(p.includes(1));
+// F♯ major pentatonic is all black keys. The thumb crosses at the minor
+// thirds (A♯–C♯, D♯–F♯), following the keyboard's groups of black keys.
+Deno.test("an all-black scale crosses at its wide gaps", () => {
+  assertEquals(fingers("F#", "major-pentatonic", "rh"), "123123");
+  assertEquals(fingers("F#", "major-pentatonic", "lh"), "321213");
+  assertEquals(scalePattern([0, 2, 4, 7, 9], 6, "rh"), [1, 2, 3, 1, 2]);
 });
 
 Deno.test("guitar: one finger per fret, index on the position's first fret", () => {

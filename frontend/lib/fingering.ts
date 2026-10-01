@@ -14,13 +14,16 @@
 //  4. The thumb crosses where it's easiest: right hand, onto a white key
 //     just after a black one going up; left hand, from a white key just
 //     before a black one (the mirror image).
-//  5. At the end the hand reaches furthest: the top note of the right hand
+//  5. Where the thumb has to land on a black key (a pentatonic with no
+//     white keys to spare), it crosses at the scale's wide gaps.
+//  6. At the end the hand reaches furthest: the top note of the right hand
 //     and the bottom note of the left take 5 rather than 4 where possible.
 //
 // The fingering is a function of the scale note, the same in every octave,
 // except at the outer ends, where there is no next group: the right hand's
 // top note and the left hand's bottom note take the next finger along
-// instead of the thumb. These rules give the standard fingerings for every
+// instead of the thumb, and the right hand starts a scale on 2 rather than 4
+// when the thumb comes straight after (B♭ major: 2 1 2 3 1 2 3 4). These rules give the standard fingerings for every
 // major and harmonic minor key in both hands (see fingering_test.ts), and
 // carry over sensibly to the modes, pentatonic and blues scales.
 //
@@ -67,6 +70,13 @@ export function scalePattern(form: readonly number[], tonicPc: number, hand: Han
       while (!(mask & (1 << mod(d + k, n)))) k++;
       return k + 1;
     });
+    // Forced onto black keys, the thumb crosses at the scale's wide gaps
+    // (the minor thirds of a pentatonic), where the hand shifts anyway:
+    // right hand onto the note above a gap, left hand from the note below.
+    const gapBelow = (d: number) => mod(form[d] - form[mod(d - 1, n)], 12);
+    const wideBlackCrossings = thumbs.filter((t) =>
+      black[t] && (hand === "rh" ? gapBelow(t) : gapBelow(mod(t + 1, n))) >= 3
+    ).length;
     const easyCrossings = thumbs.filter((t) =>
       hand === "rh" ? black[mod(t - 1, n)] : black[mod(t + 1, n)]
     ).length;
@@ -77,6 +87,7 @@ export function scalePattern(form: readonly number[], tonicPc: number, hand: Han
       thumbs.length,
       !black[0] && !tonicThumb ? 1 : 0,
       -easyCrossings,
+      -wideBlackCrossings,
       -endFinger,
     ];
     if (!best || lexLess(score, best.score)) best = { pattern, score };
@@ -138,6 +149,15 @@ function handFingers(line: { midi: number; up: boolean }[], hand: Hand): number[
     const around = [fingers[i - 1], fingers[i + 1]].filter((f) => f !== undefined);
     if (around.length) fingers[i] = Math.min(5, Math.max(...around) + 1);
   });
+  // The right hand never starts (or finishes) a scale on 4 with the thumb
+  // next: B♭ major is taught 2 1 2 3 1 2 3 4, with 4 on the B♭s in between.
+  if (hand === "rh") {
+    line.forEach(({ midi }, i) => {
+      if (midi === lo && fingers[i] === 4 && (fingers[i - 1] === 1 || fingers[i + 1] === 1)) {
+        fingers[i] = 2;
+      }
+    });
+  }
   return fingers;
 }
 
