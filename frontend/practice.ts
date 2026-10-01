@@ -19,11 +19,21 @@ import {
   type Summary,
   TempoEngine,
 } from "./lib/engine.ts";
-import { AudioInput, type AudioState } from "./lib/audio_input.ts";
+import { AudioInput, type AudioState, type Reading } from "./lib/audio_input.ts";
 import { FretboardView } from "./lib/fretboard_view.ts";
 import { boxFor, layout, positionLabel, POSITIONS, tonicMidiFor } from "./lib/guitar.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
-import { pluckSequence } from "./lib/pluck.ts";
+import { pluck, pluckSequence } from "./lib/pluck.ts";
+import {
+  againstString,
+  DEFAULT_A4,
+  MAX_A4,
+  MIN_A4,
+  nearestString,
+  tuneAdvice,
+  TunerSmoother,
+  tuneState,
+} from "./lib/tuner.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { better, type Instrument, ProgressStore, type Session } from "./lib/progress_store.ts";
@@ -64,6 +74,15 @@ const ui = {
   tunerCents: el("tuner-cents"),
   level: el<HTMLMeterElement>("level"),
   fretboard: el("fretboard"),
+  tunerOpen: el<HTMLButtonElement>("tuner-open"),
+  tunerPanel: el("tuner-panel"),
+  tunerClose: el<HTMLButtonElement>("tuner-close"),
+  tunerStrings: el("tuner-strings"),
+  tunerBig: el("tuner-big"),
+  tunerHz: el("tuner-hz"),
+  tunerGauge: el("tuner-gauge"),
+  tunerAdvice: el("tuner-advice"),
+  a4: el<HTMLInputElement>("a4"),
   octaves: el<HTMLSelectElement>("octaves"),
   direction: el<HTMLSelectElement>("direction"),
   mode: el<HTMLSelectElement>("mode"),
@@ -228,6 +247,7 @@ function restoreSettings() {
   if (saved.notesPerBeat) ui.subdivision.value = String(saved.notesPerBeat);
   if (saved.latencyMs !== undefined) ui.latency.value = String(saved.latencyMs);
   if (saved.position !== undefined) ui.position.value = String(saved.position);
+  setReference(saved.a4 ?? DEFAULT_A4);
   ui.instrument.value = saved.instrument ?? "piano";
 }
 
@@ -246,6 +266,7 @@ function persistSettings() {
     latencyMs: t.latencyMs,
     instrument,
     position: Number(ui.position.value),
+    a4,
   });
 }
 
@@ -629,7 +650,8 @@ function setStatus(text: string, warn = false) {
 
 audio.onNote = (ev) => {
   blink(ev);
-  handleNote(ev);
+  // Tuning plucks open strings, which aren't the exercise: don't grade them.
+  if (!tunerOpen) handleNote(ev);
 };
 
 audio.onDevices = (devices) => {
@@ -646,7 +668,111 @@ audio.onReading = (r) => {
   if (ui.tunerNote.textContent !== note) ui.tunerNote.textContent = note;
   const cents = r.midi === null ? "" : `${r.cents > 0 ? "+" : ""}${r.cents}¢`;
   if (ui.tunerCents.textContent !== cents) ui.tunerCents.textContent = cents;
+  if (tunerOpen) {
+    pendingReading = r;
+    tunerFrameId ||= requestAnimationFrame(drawTuner);
+  }
 };
+
+// ---- Tuner ---------------------------------------------------------------------
+
+const STRING_NOTES = ["E2", "A2", "D3", "G3", "B3", "E4"];
+const SVG_NS = "http://www.w3.org/2000/svg";
+let tunerOpen = false;
+let lockedString: number | null = null;
+let a4 = DEFAULT_A4;
+let pendingReading: Reading | null = null;
+let tunerFrameId = 0;
+const smoother = new TunerSmoother();
+
+/**
+ * The gauge: −50 to +50 cents, a shaded in-tune zone (±5), and a needle.
+ * Built once; drawTuner only moves the needle and switches state classes.
+ */
+const gauge = (() => {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 420 74");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Tuning gauge, flat on the left, sharp on the right");
+  const x = (c: number) => 210 + c * 3.6; // ±50¢ → 30–390, room for labels
+  const add = (tag: string, attrs: Record<string, string | number>, text?: string) => {
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+    if (text) e.textContent = text;
+    svg.append(e);
+    return e;
+  };
+  add("rect", { class: "zone", x: x(-5), y: 8, width: x(5) - x(-5), height: 40, rx: 3 });
+  for (let c = -50; c <= 50; c += 10) {
+    add("line", {
+      class: c === 0 ? "tick centre" : "tick",
+      x1: x(c),
+      x2: x(c),
+      y1: c === 0 ? 6 : 18,
+      y2: 48,
+    });
+  }
+  add("text", { class: "label", x: x(-50), y: 68 }, "−50¢");
+  add("text", { class: "label", x: x(0), y: 68 }, "0");
+  add("text", { class: "label", x: x(50), y: 68 }, "+50¢");
+  const needle = add("line", { class: "needle", x1: x(0), x2: x(0), y1: 2, y2: 52 });
+  ui.tunerGauge.replaceChildren(svg);
+  return { svg, needle, x };
+})();
+
+function drawTuner() {
+  tunerFrameId = 0;
+  const r = pendingReading;
+  if (!r) return;
+  const freq = smoother.push(r.freq, r.t);
+  for (const b of ui.tunerStrings.querySelectorAll("button")) b.classList.remove("detected");
+  if (freq === null) {
+    ui.tunerBig.textContent = lockedString === null ? "–" : STRING_NOTES[lockedString];
+    ui.tunerHz.textContent = "";
+    ui.tunerAdvice.textContent = "Pluck a string";
+    gauge.svg.classList.remove("in-tune", "close", "flat", "sharp");
+    gauge.needle.classList.add("idle");
+    return;
+  }
+  const reading = lockedString === null
+    ? nearestString(freq, a4)
+    : againstString(freq, lockedString, a4);
+  const shown = Math.max(-50, Math.min(50, reading.cents));
+  gauge.needle.setAttribute("x1", String(gauge.x(shown)));
+  gauge.needle.setAttribute("x2", String(gauge.x(shown)));
+  gauge.needle.classList.remove("idle");
+  const state = tuneState(reading.cents);
+  gauge.svg.classList.remove("in-tune", "close", "flat", "sharp");
+  gauge.svg.classList.add(state);
+  ui.tunerBig.textContent = STRING_NOTES[reading.string];
+  const c = Math.round(reading.cents);
+  ui.tunerHz.textContent = `${c > 0 ? "+" : ""}${c}¢ · ${freq.toFixed(1)} Hz`;
+  const advice = Math.abs(reading.cents) > 50
+    ? (reading.cents < 0 ? "Well flat: keep tuning up" : "Well sharp: keep tuning down")
+    : tuneAdvice(reading.cents);
+  if (ui.tunerAdvice.textContent !== advice) ui.tunerAdvice.textContent = advice;
+  ui.tunerStrings.querySelector(`[data-string="${reading.string}"]`)?.classList.add("detected");
+}
+
+function setTuner(open: boolean) {
+  tunerOpen = open;
+  ui.tunerPanel.hidden = !open;
+  ui.tunerOpen.setAttribute("aria-expanded", String(open));
+  smoother.reset();
+  pendingReading = null;
+  if (open) {
+    reset(); // a run in progress would be graded on tuning plucks
+    ui.tunerAdvice.textContent = "Pluck a string";
+    ui.tunerPanel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+}
+
+function setReference(value: number) {
+  a4 = Math.round(Math.min(MAX_A4, Math.max(MIN_A4, value)));
+  ui.a4.value = String(a4);
+  audio.setReference(a4);
+  smoother.reset();
+}
 
 async function startGuitar(deviceId?: string) {
   setStatus("Connecting to your audio input…");
@@ -662,7 +788,10 @@ async function startGuitar(deviceId?: string) {
     setStatus(AUDIO_MESSAGES[state], true);
     return;
   }
-  setStatus(`Listening: ${ui.audioInput.selectedOptions[0]?.textContent ?? "audio input"}`);
+  setStatus(
+    `Listening: ${ui.audioInput.selectedOptions[0]?.textContent ?? "audio input"}. ` +
+      "Tune up first: an out-of-tune string can read as the wrong note.",
+  );
 }
 
 function showMidiStatus() {
@@ -688,6 +817,7 @@ function setInstrument(next: Instrument) {
     void startGuitar();
   } else {
     audio.stop();
+    setTuner(false);
     showMidiStatus();
   }
   rebuild();
@@ -721,6 +851,22 @@ ui.device.addEventListener("change", () => {
   midi.select(ui.device.value);
   const name = ui.device.selectedOptions[0]?.textContent;
   if (name && ui.device.value !== ALL_DEVICES) store.saveSettings({ device: name });
+});
+ui.tunerOpen.addEventListener("click", () => setTuner(!tunerOpen));
+ui.tunerClose.addEventListener("click", () => setTuner(false));
+ui.tunerStrings.addEventListener("click", (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-string]");
+  if (!b) return;
+  lockedString = b.dataset.string === "auto" ? null : Number(b.dataset.string);
+  for (const x of ui.tunerStrings.querySelectorAll("button")) {
+    x.setAttribute("aria-pressed", String(x === b));
+  }
+  smoother.reset();
+});
+ui.a4.addEventListener("change", () => {
+  setReference(Number(ui.a4.value) || DEFAULT_A4);
+  persistSettings();
+  rebuild();
 });
 ui.instrument.addEventListener("change", () => {
   setInstrument(ui.instrument.value as Instrument);
@@ -785,6 +931,8 @@ midi.init().then((state) => {
   // worklet → detector → note tracker, in place of the audio input.
   // Rendered first, then started at `startAt` (performance.now ms) if given:
   // rendering takes a noticeable moment, which must not count as lateness.
+  // Tuner: a plucked tone at any frequency (e.g. a detuned string).
+  toneTest: (freq: number, seconds = 2) => audio.play(pluck(freq, 48000, { seconds }), 48000),
   audioTest: async (midis: number[], spacing = 0.45, startAt?: number) => {
     const samples = pluckSequence(midis, 48000, spacing, { seconds: spacing + 0.2 });
     if (startAt !== undefined) {

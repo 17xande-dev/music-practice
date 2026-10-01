@@ -683,3 +683,78 @@ button.secondary.danger { background: transparent; color: var(--bad); border-col
 
 .data-status { margin: var(--gap-sm) 0 0; min-height: 1.55em; color: var(--ink-soft); font-size: var(--small); }
 .empty p { margin: 0; }
+
+/* ---- Tuner ----------------------------------------------------------------- */
+
+.tuner-panel {
+  display: grid;
+  gap: var(--gap-sm);
+
+  .tuner-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm);
+
+    h2 { margin: 0; }
+  }
+  .tuner-intro { margin: 0; color: var(--ink-soft); font-size: var(--small); }
+  .tuner-ref { max-width: 14rem; }
+}
+
+.tuner-strings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+
+  button {
+    min-width: 2.75rem;
+    background: var(--paper-raised);
+    color: var(--ink);
+    border-color: var(--rule);
+    font-weight: 600;
+
+    &:hover { background: var(--paper-sunk); }
+    &[aria-pressed="true"] { background: var(--target); border-color: var(--target); color: #fff; }
+    /* The string the tuner hears, when tuning on Auto. */
+    &.detected:not([aria-pressed="true"]) { border-color: var(--target); box-shadow: inset 0 0 0 1px var(--target); }
+  }
+}
+
+.tuner-display {
+  display: grid;
+  justify-items: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm) 0;
+}
+
+.tuner-big {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+
+  #tuner-big { font: 700 clamp(2.5rem, 2rem + 3vw, 3.5rem) / 1 var(--font); }
+  .tuner-hz { color: var(--ink-soft); font-size: var(--small); font-variant-numeric: tabular-nums; }
+}
+
+.tuner-gauge {
+  width: 100%;
+  max-width: 30rem;
+
+  svg { display: block; width: 100%; height: auto; }
+  .zone { fill: color-mix(in oklab, var(--ok) 22%, transparent); }
+  .tick { stroke: var(--ink-faint); stroke-width: 1.5; }
+  .tick.centre { stroke: var(--ink); stroke-width: 2.5; }
+  .label { font: 12px var(--font); fill: var(--ink-faint); text-anchor: middle; }
+  .needle { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; transition: x1 0.08s, x2 0.08s; }
+  .needle.idle { opacity: 0.25; }
+  .in-tune .needle { stroke: var(--ok); }
+  .close .needle { stroke: var(--early); }
+  .flat .needle, .sharp .needle { stroke: var(--bad); }
+}
+
+.tuner-advice {
+  margin: 0;
+  min-height: 1.55em;
+  font-weight: 650;
+}

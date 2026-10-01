@@ -30,8 +30,36 @@
     <span class="tuner-note" id="tuner-note">–</span>
     <span class="tuner-cents" id="tuner-cents"></span>
     <meter id="level" min="-70" max="0" low="-52" high="-6" optimum="-20" value="-70" aria-label="Input level"></meter>
+    <button id="tuner-open" type="button" class="secondary" aria-controls="tuner-panel" aria-expanded="false">Tuner</button>
   </div>
   <p class="qwerty-hint">No instrument? Play with your computer keyboard: <kbd>A</kbd>–<kbd>J</kbd> are the white keys C to B, and <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> the black keys. The octave is chosen for you.</p>
+</section>
+
+<section id="tuner-panel" class="panel tuner-panel" aria-labelledby="tuner-title" hidden>
+  <div class="tuner-head">
+    <h2 id="tuner-title">Tuner</h2>
+    <button id="tuner-close" type="button" class="secondary">Done tuning</button>
+  </div>
+  <p class="tuner-intro">Pluck one open string at a time and turn its peg until the needle sits in the middle. Grading pauses while the tuner is open.</p>
+  <div id="tuner-strings" class="tuner-strings" aria-label="String to tune">
+    <button type="button" data-string="auto" aria-pressed="true">Auto</button>
+    <button type="button" data-string="0" aria-pressed="false">E</button>
+    <button type="button" data-string="1" aria-pressed="false">A</button>
+    <button type="button" data-string="2" aria-pressed="false">D</button>
+    <button type="button" data-string="3" aria-pressed="false">G</button>
+    <button type="button" data-string="4" aria-pressed="false">B</button>
+    <button type="button" data-string="5" aria-pressed="false">e</button>
+  </div>
+  <div class="tuner-display">
+    <div class="tuner-big"><span id="tuner-big">–</span><span id="tuner-hz" class="tuner-hz"></span></div>
+    <div id="tuner-gauge" class="tuner-gauge"></div>
+    <p id="tuner-advice" class="tuner-advice" aria-live="polite">Pluck a string</p>
+  </div>
+  <div class="field tuner-ref">
+    <label for="a4">Reference pitch (A4, Hz)</label>
+    <input id="a4" type="number" min="415" max="466" step="1" value="440" inputmode="numeric"
+      title="440 is standard. Set it to match a guitar tuned to another reference, such as 432.">
+  </div>
 </section>
 
 <form id="scale-form" class="panel picker" aria-label="Choose a scale">
