@@ -16,7 +16,9 @@ import {
   type Summary,
   TempoEngine,
 } from "./lib/engine.ts";
+import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
+import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { ProgressStore } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
@@ -74,6 +76,8 @@ const ui = {
   accompany: el<HTMLInputElement>("song-accompany"),
   fingering: el<HTMLInputElement>("fingering"),
   latency: el<HTMLInputElement>("latency"),
+  calibrate: el<HTMLButtonElement>("calibrate"),
+  calibrateStatus: el("calibrate-status"),
   score: el("score"),
   keyboard: el("keyboard"),
   results: el("results"),
@@ -93,6 +97,7 @@ const keyboard = new KeyboardView(ui.keyboard);
 const player = new SongPlayer();
 const synth = new Synth();
 const midi = new Midi();
+const calibration = new Calibration(new Metronome());
 
 let library: SongLibrary | null = null;
 let song: { meta: SongMeta | null; score: Score } | null = null;
@@ -491,6 +496,12 @@ function again() {
 // ---- Input -----------------------------------------------------------------------
 
 function handleNote(ev: NoteEvent) {
+  if (calibration.active) {
+    if (ev.type === "on") calibration.tap(ev.t);
+    if (ev.type === "on") keyboard.press(ev.midi, "neutral");
+    else keyboard.release(ev.midi);
+    return;
+  }
   if (ev.type === "off") {
     keyboard.release(ev.midi);
     return;
@@ -758,6 +769,26 @@ function persist() {
   });
 }
 
+/**
+ * Measure the latency offset: a count-in and eight clicks, tapped along
+ * on the instrument (or computer keyboard). Note-ons go to the
+ * calibration meanwhile, not to the exercise.
+ */
+async function calibrate() {
+  if (calibration.active) return;
+  reset();
+  ui.calibrate.disabled = true;
+  ui.calibrateStatus.textContent =
+    "After the count-in, tap any key on your instrument along with every click…";
+  const r = await calibration.run();
+  ui.calibrate.disabled = false;
+  ui.calibrateStatus.textContent = describeLatency(r);
+  if (r.ok) {
+    ui.latency.value = String(r.setting);
+    persist();
+  }
+}
+
 // ---- Wiring --------------------------------------------------------------------------
 
 ui.form.addEventListener("change", (e) => {
@@ -772,6 +803,7 @@ ui.form.addEventListener("change", (e) => {
   rebuild();
 });
 ui.form.addEventListener("submit", (e) => e.preventDefault());
+ui.calibrate.addEventListener("click", () => void calibrate());
 ui.whole.addEventListener("click", () => {
   if (song) setRange(1, song.score.measureCount);
 });
@@ -895,6 +927,7 @@ void SongLibrary.open().then(async (lib) => {
   },
   engine: () => engine,
   practice: () => practice,
+  calibration,
   dueTimes: () => {
     const e = engine;
     return e instanceof TempoEngine ? practice!.steps.map((_, i) => e.dueAt(i)) : [];

@@ -1019,3 +1019,13 @@ label.button { display: inline-flex; align-items: center; }
   .song-name { font-weight: 650; }
   .song-meta { font-size: var(--small); color: var(--ink-soft); }
 }
+
+.latency-row {
+  display: flex;
+  gap: var(--gap-xs);
+  align-items: center;
+
+  input { flex: 1; min-width: 4rem; }
+}
+.field-note { margin: 0; font-size: var(--small); color: var(--ink-soft); max-width: 22rem; }
+.field-note:empty { display: none; }

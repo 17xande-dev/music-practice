@@ -36,6 +36,7 @@ import {
   tuneState,
 } from "./lib/tuner.ts";
 import { Metronome } from "./lib/metronome.ts";
+import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
 import { better, type Instrument, ProgressStore, type Session } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
@@ -91,6 +92,8 @@ const ui = {
   bpm: el<HTMLInputElement>("bpm"),
   subdivision: el<HTMLSelectElement>("subdivision"),
   latency: el<HTMLInputElement>("latency"),
+  calibrate: el<HTMLButtonElement>("calibrate"),
+  calibrateStatus: el("calibrate-status"),
   fingering: el<HTMLInputElement>("fingering"),
   device: el<HTMLSelectElement>("midi-input"),
   midiStatus: el("midi-status"),
@@ -120,6 +123,7 @@ const staff = new StaffView(ui.staff);
 const synth = new Synth();
 const midi = new Midi();
 const metronome = new Metronome();
+const calibration = new Calibration(metronome);
 const store = ProgressStore.fromWindow();
 
 type Mode = "notes" | "tempo";
@@ -508,6 +512,12 @@ function showProgress() {
 // ---- Input ------------------------------------------------------------------
 
 function handleNote(ev: NoteEvent) {
+  if (calibration.active) {
+    if (ev.type === "on") calibration.tap(ev.t);
+    if (ev.type === "on") view.press(ev.midi, "neutral");
+    else view.release(ev.midi);
+    return;
+  }
   if (ev.type === "off") {
     view.release(ev.midi);
     return;
@@ -942,6 +952,26 @@ function setInstrument(next: Instrument) {
 
 ui.position.replaceChildren(...POSITIONS.map((p) => new Option(positionLabel(p), String(p))));
 
+/**
+ * Measure the latency offset: a count-in and eight clicks, tapped along
+ * on the instrument (or computer keyboard). Note-ons go to the
+ * calibration meanwhile, not to the exercise.
+ */
+async function calibrate() {
+  if (calibration.active) return;
+  reset();
+  ui.calibrate.disabled = true;
+  ui.calibrateStatus.textContent =
+    "After the count-in, tap any key on your instrument along with every click…";
+  const r = await calibration.run();
+  ui.calibrate.disabled = false;
+  ui.calibrateStatus.textContent = describeLatency(r);
+  if (r.ok) {
+    ui.latency.value = String(r.setting);
+    persistSettings();
+  }
+}
+
 // ---- Wiring -----------------------------------------------------------------
 
 function toggleTempo() {
@@ -1008,6 +1038,7 @@ ui.restart.addEventListener("click", () => {
   ui.restart.blur();
 });
 ui.copyLink.addEventListener("click", () => void copyLink());
+ui.calibrate.addEventListener("click", () => void calibrate());
 document.addEventListener("keydown", (e) => {
   const t = e.target as HTMLElement;
   if (e.code !== "Space" || ["BUTTON", "SELECT", "INPUT", "A"].includes(t.tagName)) return;
@@ -1029,6 +1060,7 @@ syncUrl();
   note: (midiNote: number, on = true, t = performance.now()) =>
     midi.onNote({ type: on ? "on" : "off", midi: midiNote, velocity: 80, t }),
   targets: currentTargets,
+  calibration,
   engine: () => engine,
   // Guitar: synthesise plucked notes and play them through the real
   // worklet → detector → note tracker, in place of the audio input.
