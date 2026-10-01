@@ -71,6 +71,42 @@ export interface Score {
 
 export const DEFAULT_BPM = 100;
 
+/** A part (instrument) of the score, as far as choosing what to grade goes. */
+export interface PartInfo {
+  name: string;
+  staves: number;
+}
+
+/** Which parts to grade, and the staff number their first staff counts as. */
+export interface PartChoice {
+  part: number;
+  staffOffset: number;
+}
+
+const HAND_NAME = /\b(right|left|r\.?\s?h\.?|l\.?\s?h\.?|rechts|links|droite|gauche)\b/i;
+const KEYBOARD_NAME = /piano|pno|klavier|keyboard|clavier|cembalo|harpsichord|organ/i;
+
+/**
+ * The part or parts the player plays. A piano is usually one part on two
+ * staves; but some files write it as two parts ("Piano (right)", "Piano
+ * (left)"), which are graded together as right and left hand. In a song
+ * with voice and piano, the piano. Otherwise the first part.
+ */
+export function chooseParts(parts: readonly PartInfo[]): PartChoice[] {
+  if (!parts.length) return [];
+  const grand = parts.findIndex((p) => p.staves >= 2 && KEYBOARD_NAME.test(p.name));
+  if (grand >= 0) return [{ part: grand, staffOffset: 0 }];
+  const anyGrand = parts.findIndex((p) => p.staves >= 2);
+  // Two one-staff parts named as hands, next to each other: one piano.
+  for (let i = 0; i + 1 < parts.length; i++) {
+    const [a, b] = [parts[i], parts[i + 1]];
+    if (a.staves === 1 && b.staves === 1 && HAND_NAME.test(a.name) && HAND_NAME.test(b.name)) {
+      return [{ part: i, staffOffset: 0 }, { part: i + 1, staffOffset: 1 }];
+    }
+  }
+  return [{ part: anyGrand >= 0 ? anyGrand : 0, staffOffset: 0 }];
+}
+
 /** Build the score from the renderer's cursor walk. */
 export function buildScore(entries: readonly RawEntry[]): Score {
   const twoHands = entries.some((e) => e.notes.some((n) => n.staff > 0));

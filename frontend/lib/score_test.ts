@@ -3,6 +3,7 @@ import { NotesEngine, TempoEngine } from "./engine.ts";
 import {
   bpmAt,
   buildScore,
+  chooseParts,
   measureStats,
   msAt,
   practiceSteps,
@@ -169,4 +170,34 @@ Deno.test("weakest range: none when everything was clean", () => {
     weakestRange([{ measure: 1, steps: 2, clean: 2, wrong: 0, missed: 0, early: 0, late: 0 }]),
     null,
   );
+});
+
+Deno.test("parts: a piano on two staves, wherever it is", () => {
+  assertEquals(chooseParts([{ name: "Piano", staves: 2 }]), [{ part: 0, staffOffset: 0 }]);
+  assertEquals(
+    chooseParts([{ name: "Voice", staves: 1 }, { name: "Pianoforte", staves: 2 }]),
+    [{ part: 1, staffOffset: 0 }],
+  );
+});
+
+Deno.test("parts: a piano written as two parts plays as two hands", () => {
+  assertEquals(
+    chooseParts([{ name: "Piano (right)", staves: 1 }, { name: "Piano (left)", staves: 1 }]),
+    [{ part: 0, staffOffset: 0 }, { part: 1, staffOffset: 1 }],
+  );
+  assertEquals(
+    chooseParts([{ name: "Flute", staves: 1 }, { name: "RH", staves: 1 }, {
+      name: "LH",
+      staves: 1,
+    }]),
+    [{ part: 1, staffOffset: 0 }, { part: 2, staffOffset: 1 }],
+  );
+});
+
+Deno.test("parts: otherwise the first part", () => {
+  assertEquals(
+    chooseParts([{ name: "Violin I", staves: 1 }, { name: "Violin II", staves: 1 }]),
+    [{ part: 0, staffOffset: 0 }],
+  );
+  assertEquals(chooseParts([]), []);
 });

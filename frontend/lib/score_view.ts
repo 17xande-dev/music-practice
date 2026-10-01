@@ -10,7 +10,7 @@
 // "current" class instead.
 
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import type { RawEntry, RawNote } from "./score.ts";
+import { chooseParts, type RawEntry, type RawNote } from "./score.ts";
 import type { StepMark } from "./staff_view.ts";
 import { type Letter, spell } from "./theory.ts";
 
@@ -132,10 +132,11 @@ export class ScoreView {
     this.onRender();
   }
 
-  /** The instrument to grade: the first with two staves (a piano), else the first. */
-  private instrument(): OsmdInstrument | null {
+  /** The parts to grade (see chooseParts), each with its first staff's number. */
+  private played(): Map<OsmdInstrument, number> {
     const all = this.osmd.Sheet.Instruments as unknown as OsmdInstrument[];
-    return all.find((i) => i.Staves.length >= 2) ?? all[0] ?? null;
+    const choice = chooseParts(all.map((i) => ({ name: i.Name ?? "", staves: i.Staves.length })));
+    return new Map(choice.map((c) => [all[c.part], c.staffOffset]));
   }
 
   /**
@@ -145,10 +146,10 @@ export class ScoreView {
   walk(): RawEntry[] {
     const cursor = this.osmd.cursor;
     const rules = this.osmd.EngravingRules;
-    const played = this.instrument();
+    const played = this.played();
     const out: RawEntry[] = [];
     this.elements = [];
-    if (!cursor || !played) return out;
+    if (!cursor || !played.size) return out;
     cursor.reset();
     const it = cursor.iterator;
     let occurrence = 0;
@@ -166,7 +167,8 @@ export class ScoreView {
         const n = raw as unknown as OsmdNote;
         if (n.isRest() || n.IsGraceNote || !n.PrintObject || !n.Pitch) continue;
         const inst = n.ParentStaff.ParentInstrument;
-        if (inst !== played) continue;
+        const offset = played.get(inst);
+        if (offset === undefined) continue;
         const midi = n.halfTone + 12;
         const tie = n.NoteTie ? (n.NoteTie.StartNote === n ? "start" : "continue") : "none";
         const quarters = 4 *
@@ -183,10 +185,11 @@ export class ScoreView {
         notes.push({
           midi,
           spelled: spell(midi, LETTER_OF[n.Pitch.FundamentalNote] ?? "C"),
-          staff: Math.max(
-            0,
-            inst.Staves.indexOf((raw as unknown as { ParentStaff: unknown }).ParentStaff),
-          ),
+          staff: offset +
+            Math.max(
+              0,
+              inst.Staves.indexOf((raw as unknown as { ParentStaff: unknown }).ParentStaff),
+            ),
           tie,
           quarters,
           finger: n.Fingering?.value || undefined,

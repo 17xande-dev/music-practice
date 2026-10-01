@@ -898,6 +898,9 @@ label.button { display: inline-flex; align-items: center; }
   max-height: 32rem;
   overflow: auto;
   scroll-behavior: smooth;
+  /* OSMD lays out to the width it finds; reserving the scrollbar's room
+     stops a vertical scrollbar from then forcing a horizontal one. */
+  scrollbar-gutter: stable;
 
   svg { display: block; max-width: none; }
 
