@@ -234,13 +234,49 @@ the origin (526 through Cloudflare), check
 `docker inspect <container> --format '{{.State.Health.Status}}'` first. Coolify's own
 "running:healthy" status does not reflect Docker's health state.
 
-## Decisions still open
+## Roadmap
 
-| Decision                                                                            | Trigger                                                                     |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Stage 2: accounts, server-side history (SQLite)                                     | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Learn each string's sound (calibration) to guess string and fret                    | After guitar feedback                                                       |
-| ML pitch engine (CREPE/SPICE) and ML fret-position estimation                       | If MPM struggles with real-world signals                                    |
-| Acoustic instruments via microphone (more noise and room sound)                     | If players without a DI cable matter                                        |
-| Arpeggios, contrary motion, scales in thirds/sixths                                 | After scales settle                                                         |
-| Songs: speed trainer, guitar melody mode, MIDI import, transposing, built-in pieces | After songs feedback                                                        |
+Planned, not built yet. Each entry notes how it would fit what exists, so it can be picked up
+without re-deriving the design.
+
+**Practice and learning**
+
+- **Practice routine.** Turn the history into guidance: suggest scales not played lately or with the
+  lowest recent accuracy, the weakest measures of each song (from the stored per-measure results),
+  and a daily set ("10 minutes: two scales, one passage"), with a streak and a goal. Pure logic over
+  `ProgressStore` sessions and song sessions; a "Today" panel on the Progress page.
+- **Sight-reading exercises.** Generate short melodies in a key at a chosen difficulty (range,
+  intervals, rhythms, accidentals), shown on the VexFlow staff and graded by the existing engines.
+  The generator should be seeded so a melody can be shared by URL (see the share-link format).
+- **Ear training.** The app plays an interval, chord or short phrase with the synth and the player
+  answers on the instrument; graded by pitch class or exact pitch. Reuses `Synth`/`SongPlayer`, the
+  MIDI and guitar inputs, and the engines' note matching.
+- **Diatonic chord drills, contrary motion, scales in thirds and sixths.** The chord path
+  (`chordSteps`, block-chord fingering, multi-note staff) already exists for triad inversions.
+- **Help page.** Connecting MIDI and a guitar interface, what each grade means, calibration, and how
+  to export MusicXML from MuseScore and other editors. A static template like About.
+
+**Songs**
+
+- **Speed trainer:** start a passage slow and raise the tempo after each clean loop, up to a target.
+- **Guitar melody mode:** grade one line of a score through the guitar pitch tracker (part or voice
+  choice, monophonic).
+- **MIDI file import,** with quantisation and a clear "approximate notation" label.
+- **Transposition,** and **links for song practice options** (hands, measures, mode, tempo) so a
+  passage of your own song can be bookmarked.
+- **Pickup measures** numbered as printed (positions are counted from 1 today, so a score starting
+  with an upbeat is one off).
+
+**Stage 2: accounts**
+
+- Accounts and server-side history (SQLite). The localStorage export (`version: 1`, with
+  `songSessions`) is the import path.
+- **Sharing songs by link,** which needs scores stored on the server, and history across devices.
+- **Teacher view:** assign exercises and passages, see students' results and heat maps.
+
+**Guitar and audio research**
+
+- Learn each string's sound (calibration) to guess string and fret.
+- An ML pitch engine (CREPE/SPICE) and ML fret-position estimation, if MPM struggles with real-world
+  signals.
+- Acoustic instruments through a microphone (more noise and room sound).
