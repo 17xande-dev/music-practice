@@ -302,3 +302,17 @@ Deno.test("song sessions: hostile records are dropped and rebuilt clean", () => 
   assertEquals("extra" in got[0], false);
   assertEquals(validSongSession({ ...songRun(), id: "x", tempoPct: 500 }), false);
 });
+
+Deno.test("songs page settings are validated like the rest", () => {
+  const storage = new FakeStorage();
+  const store = new ProgressStore(storage);
+  store.saveSettings({ songMode: "listen", songTempo: 75, songLoop: true, lastSong: "abc" });
+  assertEquals(store.settings(), {
+    songMode: "listen",
+    songTempo: 75,
+    songLoop: true,
+    lastSong: "abc",
+  });
+  storage.setItem(SETTINGS_KEY, JSON.stringify({ songMode: "karaoke", songTempo: 5, songLoop: 1 }));
+  assertEquals(store.settings(), {});
+});

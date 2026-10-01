@@ -786,3 +786,157 @@ button.secondary.danger { background: transparent; color: var(--bad); border-col
   min-height: 1.55em;
   font-weight: 650;
 }
+
+/* ---- Songs ------------------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+button.small, .button.small { min-height: 2rem; padding: 0.2rem var(--gap-sm); font-size: var(--small); }
+label.button { display: inline-flex; align-items: center; }
+#upload:focus-visible + .drop-zone, label.button:focus-within { outline: 2px solid var(--ink); }
+
+.library { display: flex; flex-direction: column; gap: var(--gap-sm); }
+
+.drop-zone {
+  border: 2px dashed var(--rule);
+  border-radius: var(--radius);
+  padding: var(--gap-sm) var(--gap-md);
+  color: var(--ink-soft);
+  font-size: var(--small);
+
+  p { margin: 0; }
+  &.over { border-color: var(--target); background: color-mix(in oklab, var(--target), transparent 92%); }
+}
+
+.library-status { margin: 0; color: var(--ink-soft); font-size: var(--small); min-height: 1.4em; }
+.library-status.warn { color: var(--early); }
+
+.song-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: var(--gap-xs) var(--gap-sm);
+  }
+  li.current { border-color: var(--target); }
+  .song-open {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    background: transparent;
+    color: var(--ink);
+    text-align: left;
+    padding: var(--gap-xs);
+
+    &:hover { background: var(--paper-sunk); }
+  }
+  .song-name { font-weight: 650; overflow-wrap: anywhere; }
+  .song-meta { font-weight: 400; font-size: var(--small); color: var(--ink-soft); }
+}
+
+.song { display: flex; flex-direction: column; gap: var(--gap-md); }
+.song[hidden] { display: none; }
+
+.song-heading { min-width: min(100%, 20rem); flex: 1; }
+.song-title {
+  width: 100%;
+  font-size: var(--title-page);
+  font-weight: 700;
+  border-color: transparent;
+  background: transparent;
+  padding-inline: 0;
+
+  &:hover, &:focus { border-color: var(--rule); padding-inline: var(--gap-xs); }
+}
+.song-composer { margin: 0; color: var(--ink-soft); }
+.song-composer:empty { display: none; }
+
+.song-controls {
+  display: grid;
+  gap: var(--gap-sm) var(--gap-md);
+  grid-template-columns: repeat(auto-fill, minmax(clamp(9rem, 40vw, 13rem), 1fr));
+  align-items: start;
+
+  label.check { min-height: 1.9rem; }
+}
+
+.range-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs);
+
+  input { width: 4.5rem; }
+  span { color: var(--ink-soft); font-size: var(--small); }
+}
+
+/* OSMD draws in the container's text colour (read at render time). Marks
+   are classes on each note's group, as on the scales staff. */
+.score-scroll {
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  max-height: 32rem;
+  overflow: auto;
+  scroll-behavior: smooth;
+
+  svg { display: block; max-width: none; }
+
+  .vf-stavenote {
+    &.current { --mark: var(--target); }
+    &.ok { --mark: var(--ok); }
+    &.bad { --mark: var(--bad); }
+    &.early { --mark: var(--early); }
+    &.late { --mark: var(--late); }
+
+    &:is(.current, .ok, .bad, .early, .late) {
+      :not([fill="none"]) { fill: var(--mark); }
+      path { stroke: var(--mark); }
+    }
+  }
+}
+
+.heat-title { margin: var(--gap-md) 0 0; font-size: 1rem; }
+.heat-help { margin: var(--gap-xs) 0; color: var(--ink-soft); font-size: var(--small); }
+.heat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  .heat-cell {
+    min-width: 2.4rem;
+    min-height: 2.2rem;
+    padding: 0 var(--gap-xs);
+    font-size: var(--small);
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    border: 0;
+  }
+  /* Clean (4) to most trouble (0). Text stays white on every level. */
+  .level-4 { background: var(--ok); }
+  .level-3 { background: color-mix(in oklab, var(--ok), var(--early) 45%); }
+  .level-2 { background: var(--early); }
+  .level-1 { background: color-mix(in oklab, var(--early), var(--bad) 55%); }
+  .level-0 { background: var(--bad); }
+  .heat-cell:hover { filter: brightness(1.1); }
+}
+.results-actions { margin: var(--gap-sm) 0 0; }

@@ -30,7 +30,7 @@ func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder
 // pagePaths are every HTML page the server renders. The inline-content test
 // walks these, so a page added to Routes must be added here too — and the
 // minimum-count check stops the list silently emptying.
-var pagePaths = []string{"/", "/progress"}
+var pagePaths = []string{"/", "/songs", "/progress"}
 
 func TestPagesRender(t *testing.T) {
 	h := newTestHandler(t)
@@ -50,7 +50,9 @@ func TestPagesRender(t *testing.T) {
 // single flat template set would silently produce.
 func TestEachPageLoadsItsOwnBundle(t *testing.T) {
 	h := newTestHandler(t)
-	for path, want := range map[string]string{"/": "dist/practice.js", "/progress": "dist/progress.js"} {
+	for path, want := range map[string]string{
+		"/": "dist/practice.js", "/songs": "dist/songs.js", "/progress": "dist/progress.js",
+	} {
 		body := get(t, h, path).Body.String()
 		if !regexp.MustCompile(`src="/static/` + regexp.QuoteMeta(want) + `\?v=[0-9a-f]{12}"`).MatchString(body) {
 			t.Errorf("%s does not load hashed %s", path, want)

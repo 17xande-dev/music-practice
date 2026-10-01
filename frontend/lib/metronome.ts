@@ -30,6 +30,21 @@ export function clickTimes(
   return { countIn, beats, stepZero };
 }
 
+/**
+ * Map an audio-clock time to performance.now(). getOutputTimestamp pairs
+ * the two clocks at the moment a sample actually leaves the speakers, so
+ * the mapping includes output latency: the result is when a sound is
+ * *heard*, which is what a player aligns to.
+ */
+export function audioToPerf(ctx: AudioContext, audioTime: number): number {
+  const ts = ctx.getOutputTimestamp();
+  if (ts.contextTime !== undefined && ts.performanceTime !== undefined && ts.performanceTime > 0) {
+    return ts.performanceTime + (audioTime - ts.contextTime) * 1000;
+  }
+  // Fallback: assume "now" on both clocks, plus the reported latency.
+  return performance.now() + (audioTime - ctx.currentTime + (ctx.outputLatency || 0)) * 1000;
+}
+
 export class Metronome {
   private ctx: AudioContext | null = null;
   private out: GainNode | null = null;
@@ -66,22 +81,8 @@ export class Metronome {
     this.out = null;
   }
 
-  /**
-   * Map an audio-clock time to performance.now(). getOutputTimestamp pairs
-   * the two clocks at the moment a sample actually leaves the speakers, so
-   * the mapping includes output latency: the result is when the click is
-   * *heard*, which is what a player aligns to.
-   */
   private toPerf(audioTime: number): number {
-    const ctx = this.ctx!;
-    const ts = ctx.getOutputTimestamp();
-    if (
-      ts.contextTime !== undefined && ts.performanceTime !== undefined && ts.performanceTime > 0
-    ) {
-      return ts.performanceTime + (audioTime - ts.contextTime) * 1000;
-    }
-    // Fallback: assume "now" on both clocks, plus the reported latency.
-    return performance.now() + (audioTime - ctx.currentTime + (ctx.outputLatency || 0)) * 1000;
+    return audioToPerf(this.ctx!, audioTime);
   }
 
   private click(at: number, freq: number, level: number) {

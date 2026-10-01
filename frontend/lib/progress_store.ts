@@ -84,6 +84,14 @@ export interface Settings {
   a4: number;
   /** Show finger numbers on the staff, keyboard and fretboard. */
   fingering: boolean;
+  /** Songs page: how the last song was practised, and which song it was. */
+  songMode: "notes" | "tempo" | "listen";
+  songHands: "both" | "rh" | "lh";
+  songTempo: number;
+  songMetronome: boolean;
+  songAccompany: boolean;
+  songLoop: boolean;
+  lastSong: string;
 }
 
 export interface ExportFile {
@@ -233,6 +241,17 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
   if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.fingering === "boolean") out.fingering = x.fingering;
+  if (["notes", "tempo", "listen"].includes(x.songMode as string)) {
+    out.songMode = x.songMode as Settings["songMode"];
+  }
+  if (["both", "rh", "lh"].includes(x.songHands as string)) {
+    out.songHands = x.songHands as Settings["songHands"];
+  }
+  if (isNum(x.songTempo) && x.songTempo >= 10 && x.songTempo <= 200) out.songTempo = x.songTempo;
+  for (const k of ["songMetronome", "songAccompany", "songLoop"] as const) {
+    if (typeof x[k] === "boolean") out[k] = x[k] as boolean;
+  }
+  if (typeof x.lastSong === "string" && x.lastSong.length <= 64) out.lastSong = x.lastSong;
   if (typeof x.audioDevice === "string" && x.audioDevice.length <= 200) {
     out.audioDevice = x.audioDevice;
   }

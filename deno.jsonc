@@ -1,9 +1,10 @@
 {
   // The frontend: TypeScript under frontend/, bundled by Deno into
   // internal/handler/static/dist/, which the Go binary embeds. The pages
-  // themselves are Go templates, so only the two TS entry points are bundled
+  // themselves are Go templates, so only the TS entry points are bundled
   // (not HTML, as in teleprompter) and without --code-splitting, so their
-  // output names stay fixed: dist/practice.js, dist/progress.js, and
+  // output names stay fixed: dist/practice.js, dist/songs.js (with the score
+  // renderer, so the scales page doesn't load it), dist/progress.js, and
   // dist/pitch_worklet.js (the guitar pitch tracker, loaded by URL into an
   // AudioWorklet, so it must be a file of its own). Go's
   // {{asset}} adds the content hash to the URL, so no hashed filenames are
@@ -23,8 +24,8 @@
   "tasks": {
     // Cleans first, so a renamed entry never leaves its old output to be
     // embedded. The glob skips dotfiles, so dist/.gitkeep survives.
-    "bundle": "deno task clean && deno bundle frontend/practice.ts frontend/progress.ts frontend/pitch_worklet.ts --platform browser --minify --sourcemap=linked --outdir internal/handler/static/dist",
-    "bundle-watch": "deno bundle --watch frontend/practice.ts frontend/progress.ts frontend/pitch_worklet.ts --platform browser --sourcemap=linked --outdir internal/handler/static/dist",
+    "bundle": "deno task clean && deno bundle frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts --platform browser --minify --sourcemap=linked --outdir internal/handler/static/dist",
+    "bundle-watch": "deno bundle --watch frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts --platform browser --sourcemap=linked --outdir internal/handler/static/dist",
     "clean": "rm -rf internal/handler/static/dist/*",
     "check": "deno check frontend",
     // --no-check: types are covered by `deno task check`.
@@ -37,6 +38,10 @@
     // its "bravura" entry, which embeds the Bravura and Academico fonts as
     // data: URIs (hence the CSP's font-src data:); the default "core" path
     // would fetch them from a CDN at runtime.
-    "vexflow": "npm:vexflow@5.0.0"
+    "vexflow": "npm:vexflow@5.0.0",
+    // Song scores: renders MusicXML (and zipped .mxl) and walks it with a
+    // cursor. BSD-3. Pinned exactly like VexFlow, for the same reason; it
+    // carries its own VexFlow 1.x fork, used only on the songs page.
+    "opensheetmusicdisplay": "npm:opensheetmusicdisplay@2.1.3"
   }
 }

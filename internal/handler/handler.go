@@ -53,11 +53,13 @@ type Handler struct {
 // layout. One set per page, because every page defines "content": in a single
 // flat set the last file parsed would silently win and pages would render as
 // each other.
-var pageFiles = []string{"practice.html", "progress.html"}
+var pageFiles = []string{"practice.html", "songs.html", "progress.html"}
 
 // Bundles are the Deno outputs the pages load. Checked at boot so a binary
 // built without `make bundle` refuses to start instead of serving dead pages.
-var Bundles = []string{"dist/practice.js", "dist/progress.js", "dist/pitch_worklet.js"}
+var Bundles = []string{
+	"dist/practice.js", "dist/songs.js", "dist/progress.js", "dist/pitch_worklet.js",
+}
 
 // New builds the handler, parsing every template up front so a template
 // error is a startup failure.
@@ -102,7 +104,8 @@ func (h *Handler) parsePages() (map[string]*template.Template, error) {
 // is the complete list of what the server answers.
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{$}", h.page("practice.html", "Practice"))
+	mux.HandleFunc("GET /{$}", h.page("practice.html", "Scales"))
+	mux.HandleFunc("GET /songs", h.page("songs.html", "Songs"))
 	mux.HandleFunc("GET /progress", h.page("progress.html", "Progress"))
 	mux.Handle("GET /static/", h.assets)
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
