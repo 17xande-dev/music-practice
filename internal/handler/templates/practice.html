@@ -6,13 +6,31 @@
 
 <section class="panel device" aria-label="Instrument">
   <div class="field">
-    <label for="midi-input">Instrument</label>
+    <label for="instrument">Instrument</label>
+    <select id="instrument" name="instrument">
+      <option value="piano">Piano / keyboard (MIDI)</option>
+      <option value="guitar">Guitar (audio input)</option>
+    </select>
+  </div>
+  <div class="field piano-only">
+    <label for="midi-input">MIDI device</label>
     <select id="midi-input" disabled>
       <option value="">Looking for MIDI devices…</option>
     </select>
   </div>
+  <div class="field guitar-only" hidden data-worklet="{{asset "dist/pitch_worklet.js"}}" id="audio-field">
+    <label for="audio-input">Audio input</label>
+    <select id="audio-input" disabled>
+      <option value="">Choose Guitar to connect…</option>
+    </select>
+  </div>
   <span id="midi-activity" class="activity" aria-hidden="true"></span>
   <p id="midi-status" class="status" role="status"></p>
+  <div class="tuner guitar-only" hidden aria-live="off">
+    <span class="tuner-note" id="tuner-note">–</span>
+    <span class="tuner-cents" id="tuner-cents"></span>
+    <meter id="level" min="-70" max="0" low="-52" high="-6" optimum="-20" value="-70" aria-label="Input level"></meter>
+  </div>
   <p class="qwerty-hint">No instrument? Play with your computer keyboard: <kbd>A</kbd>–<kbd>J</kbd> are the white keys C to B, and <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> the black keys. The octave is chosen for you.</p>
 </section>
 
@@ -24,7 +42,11 @@
     </fieldset>
   </div>
   <div class="picker-fields">
-  <div class="field">
+  <div class="field guitar-only" hidden>
+    <label for="position">Position</label>
+    <select id="position" name="position"></select>
+  </div>
+  <div class="field piano-only">
     <label for="hands">Hands</label>
     <select id="hands" name="hands">
       <option value="rh">Right hand</option>
@@ -87,7 +109,8 @@
     </div>
   </div>
   <div id="staff" class="staff-scroll"></div>
-  <div id="keyboard" class="keyboard-scroll"></div>
+  <div id="keyboard" class="keyboard-scroll piano-only"></div>
+  <div id="fretboard" class="fretboard-scroll guitar-only" hidden></div>
 </section>
 
 <section id="results" class="panel results" aria-labelledby="results-title" hidden>

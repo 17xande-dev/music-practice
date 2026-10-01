@@ -1,6 +1,11 @@
-// The practice page controller: wires the scale picker, the inputs (Web MIDI
-// and the computer keyboard), the grading engines, the metronome and the
-// views together.
+// The practice page controller: wires the scale picker, the inputs (Web MIDI,
+// guitar audio, and the computer keyboard), the grading engines, the
+// metronome and the views together.
+//
+// Two instruments. Piano reads MIDI and shows a keyboard. Guitar reads an
+// audio interface, detects the notes from the sound, and shows a fretboard
+// with the chosen position; both feed the same NoteEvents to the same
+// engines.
 //
 // Two modes. Notes-only is always armed: the first correct note starts the
 // run and the cursor waits for you. Tempo mode starts with a button (or
@@ -14,10 +19,14 @@ import {
   type Summary,
   TempoEngine,
 } from "./lib/engine.ts";
+import { AudioInput, type AudioState } from "./lib/audio_input.ts";
+import { FretboardView } from "./lib/fretboard_view.ts";
+import { boxFor, layout, positionLabel, POSITIONS, tonicMidiFor } from "./lib/guitar.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
+import { pluckSequence } from "./lib/pluck.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
-import { better, ProgressStore, type Session } from "./lib/progress_store.ts";
+import { better, type Instrument, ProgressStore, type Session } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
 import { renderTimingChart } from "./lib/timing_chart.ts";
@@ -29,6 +38,7 @@ import {
   familyOf,
   inFamily,
   keySignatureFifths,
+  nameOf,
   noteLabel,
   type PitchName,
   resolveTonic,
@@ -46,6 +56,14 @@ const ui = {
   circle: el("circle"),
   variants: el<HTMLFieldSetElement>("variants"),
   hands: el<HTMLSelectElement>("hands"),
+  instrument: el<HTMLSelectElement>("instrument"),
+  position: el<HTMLSelectElement>("position"),
+  audioField: el("audio-field"),
+  audioInput: el<HTMLSelectElement>("audio-input"),
+  tunerNote: el("tuner-note"),
+  tunerCents: el("tuner-cents"),
+  level: el<HTMLMeterElement>("level"),
+  fretboard: el("fretboard"),
   octaves: el<HTMLSelectElement>("octaves"),
   direction: el<HTMLSelectElement>("direction"),
   mode: el<HTMLSelectElement>("mode"),
@@ -70,6 +88,11 @@ const ui = {
 };
 
 const keyboard = new KeyboardView(ui.keyboard);
+const fretboard = new FretboardView(ui.fretboard);
+const audio = new AudioInput(ui.audioField.dataset.worklet!);
+let instrument: Instrument = "piano";
+/** Whichever instrument view is showing; both take the same calls. */
+let view: KeyboardView | FretboardView = keyboard;
 const staff = new StaffView(ui.staff);
 const synth = new Synth();
 const midi = new Midi();
@@ -151,12 +174,21 @@ circle.onSelect = ({ tonic, ring }) => {
 };
 
 function readOptions(): ExerciseOptions {
-  return {
+  const base: ExerciseOptions = {
     tonic: pick.tonic,
     type: pick.type,
     octaves: Number(ui.octaves.value),
     direction: ui.direction.value as ExerciseOptions["direction"],
     hands: ui.hands.value as ExerciseOptions["hands"],
+  };
+  if (instrument !== "guitar") return base;
+  // Guitar: one line, at most two octaves (what a position spans), starting
+  // where the chosen position puts the tonic.
+  return {
+    ...base,
+    hands: "rh",
+    octaves: Math.min(base.octaves, 2),
+    tonicMidi: tonicMidiFor(pick.tonic, boxFor(Number(ui.position.value))),
   };
 }
 
@@ -195,6 +227,8 @@ function restoreSettings() {
   if (saved.bpm) ui.bpm.value = String(saved.bpm);
   if (saved.notesPerBeat) ui.subdivision.value = String(saved.notesPerBeat);
   if (saved.latencyMs !== undefined) ui.latency.value = String(saved.latencyMs);
+  if (saved.position !== undefined) ui.position.value = String(saved.position);
+  ui.instrument.value = saved.instrument ?? "piano";
 }
 
 function persistSettings() {
@@ -210,6 +244,8 @@ function persistSettings() {
     bpm: t.bpm,
     notesPerBeat: t.notesPerBeat,
     latencyMs: t.latencyMs,
+    instrument,
+    position: Number(ui.position.value),
   });
 }
 
@@ -222,11 +258,22 @@ function rebuild() {
   steps = buildSteps(options);
   ui.title.textContent = scaleTitle(options.tonic, options.type);
   const all = steps.flatMap((s) => s.notes.map((n) => n.midi));
-  keyboard.setRange(Math.min(...all), Math.max(...all));
-  keyboard.setScale(all);
+  if (instrument === "guitar") {
+    const box = boxFor(Number(ui.position.value));
+    const names = new Map(steps.flatMap((s) => s.notes.map((n) => [n.midi, nameOf(n.spelled)])));
+    fretboard.setLayout(box, layout(all, box), names);
+  } else {
+    keyboard.setRange(Math.min(...all), Math.max(...all));
+    keyboard.setScale(all);
+  }
   // In tempo mode the staff shows the rhythm being asked for.
   const duration = mode === "tempo" ? DURATIONS[tempoSettings().notesPerBeat] : "q";
-  staff.render(steps, keySignatureFifths(options.tonic, options.type), duration);
+  staff.render(
+    steps,
+    keySignatureFifths(options.tonic, options.type),
+    duration,
+    instrument === "guitar",
+  );
   reset();
 }
 
@@ -236,7 +283,7 @@ function reset() {
   engine = mode === "notes" ? new NotesEngine(steps) : null;
   phase = "idle";
   shownCurrent = -1;
-  keyboard.releaseAll();
+  view.releaseAll();
   staff.clearMarks();
   ui.results.hidden = true;
   ui.start.textContent = "Start";
@@ -263,7 +310,7 @@ function finishTempo(e: TempoEngine) {
   metronome.stop();
   phase = "done";
   ui.start.textContent = "Start";
-  keyboard.setTargets([]);
+  view.setTargets([]);
   ui.status.textContent = "Done — press Start or Space to go again.";
   finishRun(e.summary());
 }
@@ -310,8 +357,8 @@ function setCurrent(i: number) {
   }
   shownCurrent = i;
   if (e.results[i].status === "pending") staff.mark(i, "current");
-  keyboard.setTargets(steps[i].notes.map((n) => n.midi));
-  keyboard.reveal(steps[i].notes[0].midi);
+  view.setTargets(steps[i].notes.map((n) => n.midi));
+  view.reveal(steps[i].notes[0].midi);
   staff.reveal(i);
 }
 
@@ -331,7 +378,7 @@ function currentTargets(): number[] {
 function showProgress() {
   if (engine instanceof TempoEngine) return; // the animation frame owns the view
   const step = currentStep();
-  keyboard.setTargets(currentTargets());
+  view.setTargets(currentTargets());
   if (!step) {
     ui.status.textContent = "Done — press Restart or Space to go again.";
     return;
@@ -346,7 +393,7 @@ function showProgress() {
     ? "Play the first note to begin"
     : `Note ${cursor + 1} of ${steps.length}`;
   ui.status.textContent = `${where} · ${cursor === 0 ? "first" : "next"}: ${names.join(" + ")}`;
-  keyboard.reveal(step.notes[0].midi);
+  view.reveal(step.notes[0].midi);
   staff.mark(step.index, "current");
   staff.reveal(step.index);
 }
@@ -355,17 +402,17 @@ function showProgress() {
 
 function handleNote(ev: NoteEvent) {
   if (ev.type === "off") {
-    keyboard.release(ev.midi);
+    view.release(ev.midi);
     return;
   }
   const grading = engine && !engine.done &&
     (mode === "notes" || phase === "countin" || phase === "playing");
   if (!grading) {
-    keyboard.press(ev.midi, "neutral");
+    view.press(ev.midi, "neutral");
     return;
   }
   const fb = engine!.input(ev);
-  keyboard.press(ev.midi, fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral");
+  view.press(ev.midi, fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral");
   if (fb.kind === "correct" && fb.stepDone) {
     const r = engine!.results[fb.step];
     // Notes-only: green only for a step played without a wrong note on the
@@ -405,14 +452,20 @@ listenQwerty((p) => {
 });
 
 let activityTimer = 0;
+/** Flash the activity light: proof the instrument is reaching the page. */
+function blink(ev: NoteEvent) {
+  if (ev.type !== "on") return;
+  ui.activity.classList.add("on");
+  clearTimeout(activityTimer);
+  activityTimer = setTimeout(() => ui.activity.classList.remove("on"), 120);
+}
+
 midi.onNote = (ev) => {
-  if (ev.type === "on") {
-    ui.activity.classList.add("on");
-    clearTimeout(activityTimer);
-    activityTimer = setTimeout(() => ui.activity.classList.remove("on"), 120);
-  }
+  blink(ev);
   handleNote(ev);
 };
+
+let midiState: MidiState | null = null;
 
 const MIDI_MESSAGES: Record<MidiState, string> = {
   unsupported:
@@ -424,11 +477,14 @@ const MIDI_MESSAGES: Record<MidiState, string> = {
 
 function showDevices(devices: MidiDevice[]) {
   const prev = ui.device.value;
+  // The status line belongs to whichever instrument is selected.
+  const status = (text: string) => {
+    if (instrument === "piano") ui.midiStatus.textContent = text;
+  };
   if (devices.length === 0) {
     ui.device.replaceChildren(new Option("No MIDI devices connected", ""));
     ui.device.disabled = true;
-    ui.midiStatus.textContent =
-      "Connect your instrument by USB or Bluetooth MIDI. It will appear here.";
+    status("Connect your instrument by USB or Bluetooth MIDI. It will appear here.");
     return;
   }
   const opts = devices.map((d) => new Option(d.name, d.id));
@@ -439,9 +495,7 @@ function showDevices(devices: MidiDevice[]) {
   const has = (v: string) => [...ui.device.options].some((o) => o.value === v);
   ui.device.value = has(prev) ? prev : remembered ?? opts[0].value;
   midi.select(ui.device.value);
-  ui.midiStatus.textContent = devices.length === 1
-    ? `Connected: ${devices[0].name}`
-    : `${devices.length} devices`;
+  status(devices.length === 1 ? `Connected: ${devices[0].name}` : `${devices.length} devices`);
 }
 
 // ---- Results ----------------------------------------------------------------
@@ -471,6 +525,7 @@ function finishRun(s: Summary) {
     tonic: options.tonic,
     type: options.type,
     hands: options.hands,
+    instrument,
     octaves: options.octaves,
     direction: options.direction,
     mode,
@@ -553,6 +608,93 @@ function resultsNote(s: Summary): string {
   return "Evenness is how steady your note spacing was; dynamics spread is how much your touch varied.";
 }
 
+// ---- Guitar ------------------------------------------------------------------
+
+const AUDIO_MESSAGES: Record<Exclude<AudioState, "ready">, string> = {
+  unsupported:
+    "This browser can't analyse audio input. Use a current Chrome, Edge or Firefox for guitar.",
+  insecure: "Audio input needs a secure (https) connection.",
+  denied:
+    "Microphone access was blocked. Allow it in the site settings so the guitar can be heard.",
+  nodevice: "No audio input found. Plug in your guitar interface (a Rocksmith cable, say).",
+};
+
+const PC_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const midiName = (m: number) => `${PC_NAMES[((m % 12) + 12) % 12]}${Math.floor(m / 12) - 1}`;
+
+function setStatus(text: string, warn = false) {
+  ui.midiStatus.textContent = text;
+  ui.midiStatus.classList.toggle("warn", warn);
+}
+
+audio.onNote = (ev) => {
+  blink(ev);
+  handleNote(ev);
+};
+
+audio.onDevices = (devices) => {
+  ui.audioInput.replaceChildren(...devices.map((d) => new Option(d.label, d.id)));
+  ui.audioInput.disabled = devices.length === 0;
+  if (audio.deviceId) ui.audioInput.value = audio.deviceId;
+};
+
+// The tuner readout: the note the guitar is sounding, how far off pitch, and
+// the input level, so the cable and tuning can be checked before playing.
+audio.onReading = (r) => {
+  ui.level.value = r.rms > 0 ? Math.max(-70, 20 * Math.log10(r.rms)) : -70;
+  const note = r.midi === null ? "–" : midiName(r.midi);
+  if (ui.tunerNote.textContent !== note) ui.tunerNote.textContent = note;
+  const cents = r.midi === null ? "" : `${r.cents > 0 ? "+" : ""}${r.cents}¢`;
+  if (ui.tunerCents.textContent !== cents) ui.tunerCents.textContent = cents;
+};
+
+async function startGuitar(deviceId?: string) {
+  setStatus("Connecting to your audio input…");
+  let state = await audio.start(deviceId);
+  // Prefer the input used last time, found by name (ids change).
+  const saved = store.settings().audioDevice;
+  if (state === "ready" && !deviceId && saved) {
+    const d = (await audio.devices()).find((x) => x.label === saved);
+    if (d && d.id !== audio.deviceId) state = await audio.start(d.id);
+  }
+  if (instrument !== "guitar") return; // switched away while connecting
+  if (state !== "ready") {
+    setStatus(AUDIO_MESSAGES[state], true);
+    return;
+  }
+  setStatus(`Listening: ${ui.audioInput.selectedOptions[0]?.textContent ?? "audio input"}`);
+}
+
+function showMidiStatus() {
+  if (midiState === "ready") showDevices(midi.devices());
+  else if (midiState) setStatus(MIDI_MESSAGES[midiState], true);
+}
+
+/** Switch between piano (MIDI, keyboard) and guitar (audio, fretboard). */
+function setInstrument(next: Instrument) {
+  instrument = next;
+  ui.instrument.value = next;
+  for (const x of document.querySelectorAll<HTMLElement>(".guitar-only")) {
+    x.hidden = next !== "guitar";
+  }
+  for (const x of document.querySelectorAll<HTMLElement>(".piano-only")) {
+    x.hidden = next !== "piano";
+  }
+  view = next === "guitar" ? fretboard : keyboard;
+  // A position spans about two octaves; more would mean shifting.
+  for (const o of ui.octaves.options) o.disabled = next === "guitar" && Number(o.value) > 2;
+  if (next === "guitar" && Number(ui.octaves.value) > 2) ui.octaves.value = "2";
+  if (next === "guitar") {
+    void startGuitar();
+  } else {
+    audio.stop();
+    showMidiStatus();
+  }
+  rebuild();
+}
+
+ui.position.replaceChildren(...POSITIONS.map((p) => new Option(positionLabel(p), String(p))));
+
 // ---- Wiring -----------------------------------------------------------------
 
 function toggleTempo() {
@@ -567,7 +709,7 @@ ui.variants.addEventListener("change", (e) => {
   renderPicker();
   rebuild();
 });
-for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision]) {
+for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision, ui.position]) {
   s.addEventListener("change", rebuild);
 }
 // BPM and latency are read at Start, so editing them needs no rebuild —
@@ -580,6 +722,19 @@ ui.device.addEventListener("change", () => {
   const name = ui.device.selectedOptions[0]?.textContent;
   if (name && ui.device.value !== ALL_DEVICES) store.saveSettings({ device: name });
 });
+ui.instrument.addEventListener("change", () => {
+  setInstrument(ui.instrument.value as Instrument);
+  persistSettings(); // outside the form, so no form change event
+});
+ui.audioInput.addEventListener("change", () => {
+  const label = ui.audioInput.selectedOptions[0]?.textContent;
+  if (label) store.saveSettings({ audioDevice: label });
+  void startGuitar(ui.audioInput.value);
+});
+// Browsers only let audio run after a user gesture.
+for (const type of ["pointerdown", "keydown"]) {
+  document.addEventListener(type, () => void audio.resume());
+}
 ui.start.addEventListener("click", () => {
   toggleTempo();
   ui.start.blur();
@@ -600,21 +755,23 @@ ui.storageWarning.hidden = store.available;
 
 restoreSettings();
 renderPicker();
-rebuild();
+setInstrument(ui.instrument.value as Instrument); // also builds the exercise
 
 midi.onDevices = showDevices;
 // Chrome asks permission for Web MIDI and the promise waits on the prompt,
 // so say what it is waiting for rather than "looking" indefinitely.
 const promptHint = setTimeout(() => {
-  ui.midiStatus.textContent = "Allow MIDI access in your browser's prompt to use your instrument.";
+  if (instrument === "piano") {
+    setStatus("Allow MIDI access in your browser's prompt to use your instrument.");
+  }
 }, 1500);
 midi.init().then((state) => {
   clearTimeout(promptHint);
+  midiState = state;
   if (state === "ready") return;
   ui.device.replaceChildren(new Option("MIDI unavailable", ""));
   ui.device.disabled = true;
-  ui.midiStatus.textContent = MIDI_MESSAGES[state];
-  ui.midiStatus.classList.add("warn");
+  if (instrument === "piano") setStatus(MIDI_MESSAGES[state], true);
 });
 
 // Test hook: lets browser automation play notes through exactly the path a
@@ -624,4 +781,15 @@ midi.init().then((state) => {
     midi.onNote({ type: on ? "on" : "off", midi: midiNote, velocity: 80, t }),
   targets: currentTargets,
   engine: () => engine,
+  // Guitar: synthesise plucked notes and play them through the real
+  // worklet → detector → note tracker, in place of the audio input.
+  // Rendered first, then started at `startAt` (performance.now ms) if given:
+  // rendering takes a noticeable moment, which must not count as lateness.
+  audioTest: async (midis: number[], spacing = 0.45, startAt?: number) => {
+    const samples = pluckSequence(midis, 48000, spacing, { seconds: spacing + 0.2 });
+    if (startAt !== undefined) {
+      await new Promise((r) => setTimeout(r, Math.max(0, startAt - performance.now())));
+    }
+    return audio.play(samples, 48000);
+  },
 };

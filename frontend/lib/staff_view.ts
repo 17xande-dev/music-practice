@@ -46,6 +46,11 @@ export function vfKey(s: Spelled): string {
   return `${s.letter.toLowerCase()}${ACC[s.acc]}/${s.octave}`;
 }
 
+/** Guitar music is written an octave above where it sounds. */
+export function writtenPitch(s: Spelled, guitar: boolean): Spelled {
+  return guitar ? { ...s, octave: s.octave + 1 } : s;
+}
+
 /** VexFlow key-signature name for a circle-of-fifths position. */
 export function keySpec(fifths: number | null): string {
   return fifths === null ? "C" : MAJOR_BY_FIFTHS[fifths] ?? "C";
@@ -80,6 +85,7 @@ export class StaffView {
   private steps: readonly Step[] = [];
   private fifths: number | null = null;
   private duration: NoteDuration = "q";
+  private guitar = false;
   private groups: SVGElement[][] = [];
   private systemTops: number[] = [];
   private lineOf: number[] = [];
@@ -95,10 +101,21 @@ export class StaffView {
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.draw());
   }
 
-  render(steps: readonly Step[], fifths: number | null, duration: NoteDuration = "q") {
+  /**
+   * `guitar` draws standard guitar notation: treble clef with an 8 below,
+   * notes written an octave above where they sound, so the low E (E2) sits
+   * just below the staff rather than on five ledger lines.
+   */
+  render(
+    steps: readonly Step[],
+    fifths: number | null,
+    duration: NoteDuration = "q",
+    guitar = false,
+  ) {
     this.steps = steps;
     this.fifths = fifths;
     this.duration = duration;
+    this.guitar = guitar;
     this.marks = steps.map(() => null);
     this.draw();
   }
@@ -140,13 +157,15 @@ export class StaffView {
       const notesByHand: StaveNote[][] = [];
       hands.forEach((hand, h) => {
         const midis = line.map((s) => s.notes[h].midi);
-        const clef = clefFor(midis, hand);
+        const clef = this.guitar ? "treble" : clefFor(midis, hand);
         const stave = new Stave(left, top + TOP_PAD + h * STAFF_GAP, width - left - 8);
-        stave.addClef(clef).addKeySignature(key).setContext(ctx);
+        if (this.guitar) stave.addClef("treble", "default", "8vb");
+        else stave.addClef(clef);
+        stave.addKeySignature(key).setContext(ctx);
         staves.push(stave);
         const notes = line.map((s) =>
           new StaveNote({
-            keys: [vfKey(s.notes[h].spelled)],
+            keys: [vfKey(writtenPitch(s.notes[h].spelled, this.guitar))],
             duration: this.duration,
             clef,
             autoStem: true,

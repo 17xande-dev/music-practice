@@ -216,15 +216,33 @@ main > .inner { display: flex; flex-direction: column; gap: var(--gap-md); }
   select { width: 100%; }
 }
 
+/* Instrument choice, its input device, the activity light, status and (for
+   guitar) a tuner readout, wrapping onto as many rows as the width needs. */
 .device {
-  display: grid;
-  grid-template-columns: minmax(0, 22rem) auto 1fr;
+  display: flex;
+  flex-wrap: wrap;
   align-items: end;
   gap: var(--gap-sm) var(--gap-md);
 
-  .status { margin: 0; align-self: center; color: var(--ink-soft); font-size: var(--small); }
+  .field { flex: 1 1 14rem; max-width: 22rem; }
+  .status { margin: 0; align-self: center; flex: 1 1 12rem; color: var(--ink-soft); font-size: var(--small); }
   .status.warn { color: var(--early); }
-  .qwerty-hint { grid-column: 1 / -1; margin: 0; font-size: var(--small); color: var(--ink-faint); }
+  .qwerty-hint { flex-basis: 100%; margin: 0; font-size: var(--small); color: var(--ink-faint); }
+}
+
+.tuner {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  align-self: center;
+
+  .tuner-note {
+    min-width: 3.2ch;
+    font: 650 var(--title) var(--font);
+    font-variant-numeric: tabular-nums;
+  }
+  .tuner-cents { min-width: 4ch; color: var(--ink-soft); font-size: var(--small); font-variant-numeric: tabular-nums; }
+  meter { width: 7rem; height: 0.6rem; }
 }
 
 /* Blinks on every incoming MIDI note, so a silent connection is obvious. */
@@ -388,7 +406,7 @@ kbd {
 
 /* Wide content scrolls inside its own box; the page body never scrolls
    sideways. */
-.staff-scroll, .keyboard-scroll {
+.staff-scroll, .keyboard-scroll, .fretboard-scroll {
   overflow-x: auto;
   background: var(--paper-raised);
   border: 1px solid var(--rule);
@@ -422,7 +440,48 @@ kbd {
     }
   }
 }
-.keyboard-scroll { padding: var(--gap-sm); }
+.keyboard-scroll, .fretboard-scroll { padding: var(--gap-sm); }
+
+/* The guitar neck. Wood and wire tones are fixed (a fretboard looks like a
+   fretboard in either theme); the marks use the shared feedback colours. */
+.fretboard {
+  display: block;
+  width: 100%;
+  min-width: 46rem; /* narrower and the high frets crowd; scroll instead */
+  height: auto;
+
+  .board { fill: #3b2a1f; }
+  .box { fill: color-mix(in oklab, var(--target) 28%, transparent); }
+  .fret { stroke: #b9b2a6; stroke-width: 2; }
+  .nut { stroke: #ece6d8; stroke-width: 6; }
+  .string { stroke: #d8d2c4; }
+  .inlay { fill: #cbbfa8; opacity: 0.55; }
+  .fret-number, .string-name {
+    font: 11px var(--font);
+    fill: var(--ink-faint);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .string-name { text-anchor: start; }
+
+  .dot {
+    circle { fill: var(--paper-raised); stroke: var(--target); stroke-width: 2; }
+    text {
+      font: 600 10px var(--font);
+      fill: var(--ink);
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+    &.outside circle { stroke-dasharray: 3 2; }
+    &.target circle { fill: var(--target); }
+    &.target text { fill: #fff; }
+    &.down.ok circle { fill: var(--ok); stroke: var(--ok); }
+    &.down.bad circle { fill: var(--bad); stroke: var(--bad); }
+    &.down.neutral circle { fill: var(--ink-faint); }
+    &.down text { fill: #fff; }
+  }
+}
 
 .piano {
   display: block;
@@ -519,8 +578,7 @@ kbd {
 }
 
 @media (max-width: 40rem) {
-  .device { grid-template-columns: 1fr auto; }
-  .device .status { grid-column: 1 / -1; }
+  .device .field { max-width: none; }
 }
 
 /* ---- Progress page ------------------------------------------------------ */

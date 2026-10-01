@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { clefFor, keySpec, notesPerLine, vfKey } from "./staff_view.ts";
+import { clefFor, keySpec, notesPerLine, vfKey, writtenPitch } from "./staff_view.ts";
 
 Deno.test("VexFlow key strings carry the spelling", () => {
   assertEquals(vfKey({ letter: "F", acc: 1, octave: 4 }), "f#/4");
@@ -30,4 +30,10 @@ Deno.test("notes per line fit the width, within bounds", () => {
   assertEquals(notesPerLine(320), 6);
   assertEquals(notesPerLine(800), 15);
   assertEquals(notesPerLine(3000), 16);
+});
+
+Deno.test("guitar music is written an octave above where it sounds", () => {
+  const lowE = { letter: "E" as const, acc: 0, octave: 2 };
+  assertEquals(vfKey(writtenPitch(lowE, true)), "e/3"); // just below the treble staff
+  assertEquals(vfKey(writtenPitch(lowE, false)), "e/2");
 });

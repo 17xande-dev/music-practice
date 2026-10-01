@@ -195,3 +195,28 @@ Deno.test("validSession: tempo runs carry timing, notes-only runs do not", () =>
   assertFalse(validSession({ ...run({ mode: "tempo" }), id: "a" }));
   assertFalse(validSession({ ...run(), id: "a", correct: 30 })); // more correct than total
 });
+
+Deno.test("guitar fields: optional on sessions, validated in settings, separate bests", () => {
+  // Sessions from before guitar support have no instrument and still load.
+  assert(validSession({ ...run(), id: "old" }));
+  assert(validSession({ ...run(), id: "g", instrument: "guitar" }));
+  assertFalse(validSession({ ...run(), id: "x", instrument: "banjo" }));
+  // A guitar best never shadows the piano best for the same scale, and the
+  // piano key is unchanged from before.
+  assertFalse(exerciseKey(run()) === exerciseKey(run({ instrument: "guitar" })));
+  assertEquals(exerciseKey(run()), exerciseKey(run({ instrument: "piano" })));
+  const store = new ProgressStore(new FakeStorage());
+  store.saveSettings({
+    instrument: "guitar",
+    position: 5,
+    audioDevice: "Rocksmith USB Guitar Adapter",
+  });
+  store.saveSettings({ position: 40 as number }); // out of range: dropped
+  assertEquals(store.settings(), {
+    instrument: "guitar",
+    position: 5,
+    audioDevice: "Rocksmith USB Guitar Adapter",
+  });
+  const g = store.add(run({ instrument: "guitar" }));
+  assertEquals(store.sessions().find((s) => s.id === g.session.id)?.instrument, "guitar");
+});

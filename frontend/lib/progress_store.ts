@@ -30,8 +30,12 @@ export interface SessionTiming {
   meanSignedMs: number | null;
 }
 
+export type Instrument = "piano" | "guitar";
+
 export interface Session {
   id: string;
+  /** Absent on sessions recorded before guitar support: those are piano. */
+  instrument?: Instrument;
   /** Epoch milliseconds when the run finished. */
   ts: number;
   tonic: PitchName;
@@ -63,6 +67,11 @@ export interface Settings {
   latencyMs: number;
   /** MIDI input name (ids are not stable across reconnects). */
   device: string;
+  instrument: Instrument;
+  /** Guitar fretboard position: 0 = open, 1–12 = index finger at that fret. */
+  position: number;
+  /** Audio input label for guitar (device ids change across sessions). */
+  audioDevice: string;
 }
 
 export interface ExportFile {
@@ -74,9 +83,21 @@ export interface ExportFile {
 
 /** Sessions of the same exercise: comparable for personal bests and trends. */
 export function exerciseKey(
-  s: Pick<Session, "tonic" | "type" | "hands" | "octaves" | "direction" | "mode">,
+  s: Pick<Session, "tonic" | "type" | "hands" | "octaves" | "direction" | "mode" | "instrument">,
 ) {
-  return [s.tonic.letter, s.tonic.acc, s.type, s.hands, s.octaves, s.direction, s.mode].join("|");
+  const key: (string | number)[] = [
+    s.tonic.letter,
+    s.tonic.acc,
+    s.type,
+    s.hands,
+    s.octaves,
+    s.direction,
+    s.mode,
+  ];
+  // Guitar and piano bests are separate exercises. Piano keys are unchanged,
+  // so bests recorded before guitar support still match.
+  if (s.instrument === "guitar") key.push("guitar");
+  return key.join("|");
 }
 
 /** The same scale regardless of how it was practised, for the per-scale view. */
@@ -137,7 +158,8 @@ export function validSession(x: unknown): x is Session {
     isNum(x.accuracy) && x.accuracy >= 0 && x.accuracy <= 1 &&
     isCount(x.wrongNotes) && isNum(x.durationMs) && x.durationMs >= 0 &&
     isNumOrNull(x.unevenness) && isNumOrNull(x.velocityStd) && isCount(x.notTogether) &&
-    validTiming(x.timing) && (x.mode === "tempo") === (x.timing !== null);
+    validTiming(x.timing) && (x.mode === "tempo") === (x.timing !== null) &&
+    (x.instrument === undefined || x.instrument === "piano" || x.instrument === "guitar");
 }
 
 /**
@@ -149,6 +171,7 @@ export function cleanSession(s: Session): Session {
   return {
     id: s.id,
     ts: s.ts,
+    ...(s.instrument ? { instrument: s.instrument } : {}),
     tonic: { letter: s.tonic.letter, acc: s.tonic.acc },
     type: s.type,
     hands: s.hands,
@@ -192,6 +215,11 @@ export function validSettings(x: unknown): Partial<Settings> {
   if ([1, 2, 4].includes(x.notesPerBeat as number)) out.notesPerBeat = x.notesPerBeat as number;
   if (isNum(x.latencyMs) && x.latencyMs >= 0 && x.latencyMs <= 300) out.latencyMs = x.latencyMs;
   if (typeof x.device === "string" && x.device.length <= 200) out.device = x.device;
+  if (x.instrument === "piano" || x.instrument === "guitar") out.instrument = x.instrument;
+  if (isCount(x.position) && x.position <= 12) out.position = x.position;
+  if (typeof x.audioDevice === "string" && x.audioDevice.length <= 200) {
+    out.audioDevice = x.audioDevice;
+  }
   return out;
 }
 
