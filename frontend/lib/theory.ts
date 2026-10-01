@@ -442,6 +442,12 @@ export interface ExerciseOptions {
   octaves: number;
   direction: "up" | "updown";
   hands: "rh" | "lh" | "both";
+  /**
+   * The tonic's MIDI note, overriding the piano's startOctave. Guitar uses
+   * it to start the scale where the chosen fretboard position puts it.
+   * Only meaningful for a single hand.
+   */
+  tonicMidi?: number;
 }
 
 /**
@@ -551,7 +557,7 @@ export function buildSteps(o: ExerciseOptions): Step[] {
   }
   const hands: Hand[] = o.hands === "both" ? ["rh", "lh"] : [o.hands];
   const lines = hands.map((hand) => {
-    const tonicMidi = midiOf({ ...o.tonic, octave: startOctave(o, hand) });
+    const tonicMidi = o.tonicMidi ?? midiOf({ ...o.tonic, octave: startOctave(o, hand) });
     return { hand, ...handLine(o, tonicMidi) };
   });
 
