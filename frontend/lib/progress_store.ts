@@ -11,6 +11,14 @@
 
 import type { ExerciseOptions, PitchName, ScaleType } from "./theory.ts";
 import { SCALES } from "./theory.ts";
+import {
+  betterSong,
+  cleanSongSession,
+  SONG_SESSIONS_KEY,
+  songKey,
+  type SongSession,
+  validSongSession,
+} from "./song_session.ts";
 
 export const SESSIONS_KEY = "mp.v1.sessions";
 export const SETTINGS_KEY = "mp.v1.settings";
@@ -83,6 +91,8 @@ export interface ExportFile {
   version: number;
   exportedAt: string;
   sessions: Session[];
+  /** Song runs; absent in exports made before songs existed. */
+  songSessions?: SongSession[];
 }
 
 /** Sessions of the same exercise: comparable for personal bests and trends. */
@@ -314,8 +324,37 @@ export class ProgressStore {
     return { session, saved, previousBest };
   }
 
+  /** Every valid stored song session, oldest first. */
+  songSessions(): SongSession[] {
+    const raw = this.read(SONG_SESSIONS_KEY);
+    return Array.isArray(raw)
+      ? raw.filter(validSongSession).map(cleanSongSession).sort((a, b) => a.ts - b.ts)
+      : [];
+  }
+
+  /** Record a finished song run, with the previous best of the same practice. */
+  addSong(
+    run: Omit<SongSession, "id">,
+  ): { session: SongSession; saved: boolean; previousBest: SongSession | null } {
+    const session: SongSession = { ...run, id: newId() };
+    const all = this.songSessions();
+    const key = songKey(session);
+    const previousBest = all.filter((s) => songKey(s) === key)
+      .reduce<SongSession | null>((best, s) => (!best || betterSong(s, best) ? s : best), null);
+    all.push(session);
+    const saved = this.write(SONG_SESSIONS_KEY, all.slice(-MAX_SESSIONS));
+    return { session, saved, previousBest };
+  }
+
+  /** Forget a song's history (when the song itself is deleted). */
+  removeSong(songId: string): boolean {
+    return this.write(SONG_SESSIONS_KEY, this.songSessions().filter((s) => s.songId !== songId));
+  }
+
   clear(): boolean {
-    return this.write(SESSIONS_KEY, []);
+    const a = this.write(SESSIONS_KEY, []);
+    const b = this.write(SONG_SESSIONS_KEY, []);
+    return a && b;
   }
 
   settings(): Partial<Settings> {
@@ -332,6 +371,7 @@ export class ProgressStore {
       version: EXPORT_VERSION,
       exportedAt: now.toISOString(),
       sessions: this.sessions(),
+      songSessions: this.songSessions(),
     };
     return JSON.stringify(file, null, 2);
   }
@@ -367,7 +407,26 @@ export class ProgressStore {
       }
     }
     all.sort((a, b) => a.ts - b.ts);
-    const saved = added === 0 || this.write(SESSIONS_KEY, all.slice(-MAX_SESSIONS));
+    let saved = added === 0 || this.write(SESSIONS_KEY, all.slice(-MAX_SESSIONS));
+
+    // Song runs, in exports that have them.
+    if (Array.isArray(parsed.songSessions)) {
+      const songs = this.songSessions();
+      const songIds = new Set(songs.map((s) => s.id));
+      let songsAdded = 0;
+      for (const s of parsed.songSessions) {
+        if (!validSongSession(s)) invalid++;
+        else if (songIds.has(s.id)) duplicate++;
+        else {
+          songs.push(cleanSongSession(s));
+          songIds.add(s.id);
+          songsAdded++;
+        }
+      }
+      songs.sort((a, b) => a.ts - b.ts);
+      if (songsAdded) saved = this.write(SONG_SESSIONS_KEY, songs.slice(-MAX_SESSIONS)) && saved;
+      added += songsAdded;
+    }
     return { added, duplicate, invalid, saved };
   }
 }

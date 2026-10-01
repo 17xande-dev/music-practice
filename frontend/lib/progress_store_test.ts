@@ -8,6 +8,12 @@ import {
   SETTINGS_KEY,
   validSession,
 } from "./progress_store.ts";
+import {
+  betterSong,
+  SONG_SESSIONS_KEY,
+  type SongSession,
+  validSongSession,
+} from "./song_session.ts";
 
 /** An in-memory Storage, optionally refusing writes (a full quota). */
 class FakeStorage implements Storage {
@@ -230,4 +236,69 @@ Deno.test("guitar fields: optional on sessions, validated in settings, separate 
   });
   const g = store.add(run({ instrument: "guitar" }));
   assertEquals(store.sessions().find((s) => s.id === g.session.id)?.instrument, "guitar");
+});
+
+function songRun(over: Partial<SongSession> = {}): Omit<SongSession, "id"> {
+  return {
+    ts: 1_790_000_000_000,
+    songId: "song-1",
+    title: "Minuet in G",
+    hands: "rh",
+    from: 1,
+    to: 8,
+    mode: "tempo",
+    tempoPct: 80,
+    total: 40,
+    correct: 36,
+    accuracy: 0.9,
+    wrongNotes: 3,
+    durationMs: 20000,
+    timing: { onTime: 30, early: 3, late: 3, missed: 4, meanAbsMs: 25, meanSignedMs: 4 },
+    measures: [{ measure: 1, steps: 5, clean: 5 }, { measure: 2, steps: 5, clean: 3 }],
+    ...over,
+  };
+}
+
+Deno.test("song sessions: stored apart from scales, with bests per practice", () => {
+  const store = new ProgressStore(new FakeStorage());
+  const first = store.addSong(songRun());
+  assert(first.saved);
+  assertEquals(first.previousBest, null);
+  const second = store.addSong(songRun({ accuracy: 0.95, correct: 38, tempoPct: 90 }));
+  assertEquals(second.previousBest?.id, first.session.id);
+  // A different range is a different practice.
+  assertEquals(store.addSong(songRun({ from: 9, to: 16 })).previousBest, null);
+  assertEquals(store.songSessions().length, 3);
+  assertEquals(store.sessions(), []);
+  assert(betterSong(second.session, first.session));
+});
+
+Deno.test("song sessions: export, import and removal", () => {
+  const a = new ProgressStore(new FakeStorage());
+  a.add(run());
+  a.addSong(songRun());
+  const b = new ProgressStore(new FakeStorage());
+  assertEquals(b.importJSON(a.exportJSON()), { added: 2, duplicate: 0, invalid: 0, saved: true });
+  assertEquals(b.importJSON(a.exportJSON()).duplicate, 2);
+  assertEquals(b.songSessions()[0].title, "Minuet in G");
+  assert(b.removeSong("song-1"));
+  assertEquals(b.songSessions(), []);
+  assertEquals(b.sessions().length, 1);
+});
+
+Deno.test("song sessions: hostile records are dropped and rebuilt clean", () => {
+  const storage = new FakeStorage();
+  storage.setItem(
+    SONG_SESSIONS_KEY,
+    JSON.stringify([
+      { ...songRun(), id: "ok", extra: "x".repeat(1000) },
+      { ...songRun(), id: "bad-range", from: 5, to: 2 },
+      { ...songRun(), id: "bad-timing", mode: "notes" },
+      { ...songRun(), id: "bad-measure", measures: [{ measure: 1, steps: 1, clean: 2 }] },
+    ]),
+  );
+  const got = new ProgressStore(storage).songSessions();
+  assertEquals(got.map((s) => s.id), ["ok"]);
+  assertEquals("extra" in got[0], false);
+  assertEquals(validSongSession({ ...songRun(), id: "x", tempoPct: 500 }), false);
 });
