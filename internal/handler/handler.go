@@ -57,7 +57,7 @@ var pageFiles = []string{"practice.html", "progress.html"}
 
 // Bundles are the Deno outputs the pages load. Checked at boot so a binary
 // built without `make bundle` refuses to start instead of serving dead pages.
-var Bundles = []string{"dist/practice.js", "dist/progress.js"}
+var Bundles = []string{"dist/practice.js", "dist/progress.js", "dist/pitch_worklet.js"}
 
 // New builds the handler, parsing every template up front so a template
 // error is a startup failure.

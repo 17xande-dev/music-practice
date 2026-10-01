@@ -32,12 +32,14 @@ func TestCSPIsPinned(t *testing.T) {
 	}
 }
 
-// Without midi=(self) the browser refuses requestMIDIAccess outright, and the
-// whole app silently degrades to the computer-keyboard fallback.
-func TestPermissionsPolicyAllowsMIDI(t *testing.T) {
+// Without midi=(self) the browser refuses requestMIDIAccess outright, and
+// without microphone=(self) getUserMedia — so guitar input — fails the same
+// way. Pinned whole, so granting anything more is a deliberate edit here.
+func TestPermissionsPolicyAllowsMIDIAndMicrophone(t *testing.T) {
 	got := serve(Policy{}).Header().Get("Permissions-Policy")
-	if !strings.Contains(got, "midi=(self)") {
-		t.Errorf("Permissions-Policy %q does not grant midi to self", got)
+	want := "midi=(self), microphone=(self), camera=(), geolocation=(), payment=()"
+	if got != want {
+		t.Errorf("Permissions-Policy changed:\n got %s\nwant %s", got, want)
 	}
 }
 

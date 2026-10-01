@@ -57,10 +57,11 @@ const CSP = "default-src 'self'; " +
 	"form-action 'self'; " +
 	"frame-ancestors 'none'"
 
-// PermissionsPolicy grants Web MIDI to this origin only — the one powerful
-// feature the app uses — and nothing else. midi=(self) also keeps a framed
-// third-party page from ever prompting for it under our name.
-const PermissionsPolicy = "midi=(self), camera=(), microphone=(), geolocation=(), payment=()"
+// PermissionsPolicy grants this origin the two inputs the app reads: Web
+// MIDI (a keyboard) and the microphone (a guitar through an audio
+// interface, for pitch detection). Nothing else, and only to this origin, so
+// a framed third-party page can never prompt for either under our name.
+const PermissionsPolicy = "midi=(self), microphone=(self), camera=(), geolocation=(), payment=()"
 
 // SecurityHeaders sets the headers every response wants.
 func SecurityHeaders(p Policy) Middleware {
