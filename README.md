@@ -41,8 +41,9 @@ and an on-screen keyboard, and grades it.
 Web MIDI works in **Chrome, Edge and Firefox**, which asks for permission. It does not work in
 Safari. It also requires a **secure context**: `http://localhost` is fine for development, but any
 real deployment must be served over **HTTPS**, or the browser hides the API entirely. The page
-detects each case (no support, insecure origin, permission refused) and says so. The
-computer-keyboard fallback works everywhere.
+detects each case (no support, insecure origin, permission refused) and says so. MIDI access is only
+requested once Piano is chosen, so guitarists are never asked for it. The computer-keyboard fallback
+works everywhere.
 
 Guitar input uses getUserMedia and an AudioWorklet, which all current browsers support, Safari
 included. It also needs HTTPS, and permission to use the audio input.

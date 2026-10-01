@@ -835,9 +835,39 @@ async function startGuitar(deviceId?: string) {
   );
 }
 
+let midiStarted = false;
+
+/**
+ * Ask for MIDI the first time piano is chosen, not on page load: someone
+ * practising guitar is never prompted for a device they don't use.
+ */
+function startMidi() {
+  if (midiStarted) return;
+  midiStarted = true;
+  midi.onDevices = showDevices;
+  // Chrome asks permission for Web MIDI and the promise waits on the
+  // prompt, so say what it is waiting for rather than "looking" forever.
+  const promptHint = setTimeout(() => {
+    if (instrument === "piano") {
+      setStatus("Allow MIDI access in your browser's prompt to use your instrument.");
+    }
+  }, 1500);
+  midi.init().then((state) => {
+    clearTimeout(promptHint);
+    midiState = state;
+    if (state === "ready") return;
+    ui.device.replaceChildren(new Option("MIDI unavailable", ""));
+    ui.device.disabled = true;
+    if (instrument === "piano") setStatus(MIDI_MESSAGES[state], true);
+  });
+}
+
 function showMidiStatus() {
   if (midiState === "ready") showDevices(midi.devices());
   else if (midiState) setStatus(MIDI_MESSAGES[midiState], true);
+  // Still waiting on MIDI (its permission prompt, say): don't leave the
+  // guitar's last message showing.
+  else setStatus("Looking for MIDI instruments…");
 }
 
 /** Switch between piano (MIDI, keyboard) and guitar (audio, fretboard). */
@@ -859,6 +889,7 @@ function setInstrument(next: Instrument) {
   } else {
     audio.stop();
     setTuner(false);
+    startMidi();
     showMidiStatus();
   }
   rebuild();
@@ -944,23 +975,6 @@ ui.storageWarning.hidden = store.available;
 restoreSettings();
 renderPicker();
 setInstrument(ui.instrument.value as Instrument); // also builds the exercise
-
-midi.onDevices = showDevices;
-// Chrome asks permission for Web MIDI and the promise waits on the prompt,
-// so say what it is waiting for rather than "looking" indefinitely.
-const promptHint = setTimeout(() => {
-  if (instrument === "piano") {
-    setStatus("Allow MIDI access in your browser's prompt to use your instrument.");
-  }
-}, 1500);
-midi.init().then((state) => {
-  clearTimeout(promptHint);
-  midiState = state;
-  if (state === "ready") return;
-  ui.device.replaceChildren(new Option("MIDI unavailable", ""));
-  ui.device.disabled = true;
-  if (instrument === "piano") setStatus(MIDI_MESSAGES[state], true);
-});
 
 // Test hook: lets browser automation play notes through exactly the path a
 // MIDI message takes, since DevTools cannot provide a real MIDI device.
