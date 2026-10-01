@@ -94,6 +94,14 @@ export class AudioInput {
     }
   }
 
+  /**
+   * Browsers keep an AudioContext suspended until a user gesture; the page
+   * calls this on the first click or key press after listening starts.
+   */
+  async resume() {
+    if (this.ctx?.state === "suspended") await this.ctx.resume();
+  }
+
   /** The device currently in use. */
   get deviceId(): string | undefined {
     return this.stream?.getAudioTracks()[0]?.getSettings().deviceId;
@@ -172,7 +180,15 @@ export class AudioInput {
 
   private frame(m: WorkletMessage) {
     if (!this.listening) return;
-    const f: TimedFrame = { ...m, t: this.toPerf(m.t) - this.inputLatencyMs };
+    // toPerf maps audio-clock time to when a sample at that time would be
+    // *heard* (getOutputTimestamp includes output latency) — right for the
+    // metronome's clicks, wrong for input: a captured note would read late
+    // by the output latency, on top of the input latency. Both come off.
+    const outputLatencyMs = (this.ctx!.outputLatency || this.ctx!.baseLatency || 0) * 1000;
+    const f: TimedFrame = {
+      ...m,
+      t: this.toPerf(m.t) - outputLatencyMs - this.inputLatencyMs,
+    };
     for (const ev of this.tracker.push(f)) this.onNote(ev);
     const midi = m.freq > 0 && m.clarity >= 0.9 ? freqToMidi(m.freq) : null;
     this.onReading({
