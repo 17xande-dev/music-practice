@@ -72,6 +72,8 @@ export interface Settings {
   position: number;
   /** Audio input label for guitar (device ids change across sessions). */
   audioDevice: string;
+  /** Tuning reference, A4 in Hz (the tuner and guitar grading use it). */
+  a4: number;
 }
 
 export interface ExportFile {
@@ -217,6 +219,7 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (typeof x.device === "string" && x.device.length <= 200) out.device = x.device;
   if (x.instrument === "piano" || x.instrument === "guitar") out.instrument = x.instrument;
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
+  if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.audioDevice === "string" && x.audioDevice.length <= 200) {
     out.audioDevice = x.audioDevice;
   }

@@ -23,6 +23,10 @@ export interface Reading {
   midi: number | null;
   cents: number;
   rms: number;
+  /** Detected Hz, or 0 when there is no clear pitch (the tuner smooths these). */
+  freq: number;
+  /** performance.now() ms of the frame. */
+  t: number;
 }
 
 /** Device labels that mark a guitar interface, preferred when present. */
@@ -45,7 +49,8 @@ export class AudioInput {
   private node: AudioWorkletNode | null = null;
   private source: AudioNode | null = null;
   private stream: MediaStream | null = null;
-  private tracker = new NoteTracker();
+  private a4 = 440;
+  private tracker = new NoteTracker({ a4: this.a4 });
   private inputLatencyMs = 0;
   private listening = false;
 
@@ -100,6 +105,17 @@ export class AudioInput {
    */
   async resume() {
     if (this.ctx?.state === "suspended") await this.ctx.resume();
+  }
+
+  /**
+   * The reference pitch notes are graded against (A4 in Hz), so a guitar
+   * tuned to, say, A = 432 still reads its notes correctly. Ends any note
+   * in progress: it was named against the old reference.
+   */
+  setReference(a4: number) {
+    for (const ev of this.tracker.flush(performance.now())) this.onNote(ev);
+    this.a4 = a4;
+    this.tracker = new NoteTracker({ a4 });
   }
 
   /** The device currently in use. */
@@ -190,11 +206,14 @@ export class AudioInput {
       t: this.toPerf(m.t) - outputLatencyMs - this.inputLatencyMs,
     };
     for (const ev of this.tracker.push(f)) this.onNote(ev);
-    const midi = m.freq > 0 && m.clarity >= 0.9 ? freqToMidi(m.freq) : null;
+    const clear = m.freq > 0 && m.clarity >= 0.9;
+    const midi = clear ? freqToMidi(m.freq, this.a4) : null;
     this.onReading({
       midi: midi === null ? null : Math.round(midi),
       cents: midi === null ? 0 : Math.round((midi - Math.round(midi)) * 100),
       rms: m.rms,
+      freq: clear ? m.freq : 0,
+      t: f.t,
     });
   }
 
