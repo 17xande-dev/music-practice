@@ -200,3 +200,71 @@ Deno.test("tempo: mean signed deviation shows rushing", () => {
   assertEquals(t.onTime, 8);
   assertEquals(e.summary().accuracy, 1);
 });
+
+// Songs: steps at uneven times. Quarter, quarter, eighth, eighth, half at
+// 120 BPM: due at 0, 500, 1000, 1250, 1500 ms.
+const UNEVEN = [0, 500, 1000, 1250, 1500];
+
+Deno.test("tempo with offsets: each step is due at its own time", () => {
+  const steps = cMajor().slice(0, 5);
+  const e = new TempoEngine(steps, { bpm: 120, notesPerBeat: 1, startTime: 1000, offsets: UNEVEN });
+  assertEquals(UNEVEN.map((_, i) => e.dueAt(i)), [1000, 1500, 2000, 2250, 2500]);
+  steps.forEach((s, i) => e.input(on(s.notes[0].midi, e.dueAt(i) + 10)));
+  assert(e.results.every((r) => r.status === "ok" && r.grade === "on"));
+  assertEquals(e.interval, 375); // median gap
+});
+
+Deno.test("tempo with offsets: windows reach half way to each neighbour", () => {
+  const steps = cMajor().slice(0, 5);
+  const e = new TempoEngine(steps, { bpm: 120, notesPerBeat: 1, startTime: 0, offsets: UNEVEN });
+  assertEquals(e.stepAt(-251), -1);
+  assertEquals(e.stepAt(-240), 0);
+  assertEquals(e.stepAt(249), 0);
+  assertEquals(e.stepAt(251), 1);
+  assertEquals(e.stepAt(1120), 2); // eighths: the boundary is at 1125
+  assertEquals(e.stepAt(1130), 3);
+  assertEquals(e.stepAt(1630), 5); // past the last window (1500 + 125)
+  // A note 100 ms late on the first eighth still belongs to it, but is late.
+  e.input(on(64, 1100));
+  assertEquals(e.results[2].grade, "late");
+});
+
+Deno.test("tempo with offsets: tolerance shrinks around short notes only", () => {
+  // Two quarters at 120 BPM, then 32nds (62.5 ms apart).
+  const e = new TempoEngine(cMajor().slice(0, 5), {
+    bpm: 120,
+    notesPerBeat: 1,
+    startTime: 0,
+    offsets: [0, 500, 1000, 1062.5, 1125],
+  });
+  assertEquals(e.toleranceAt(0), 60);
+  assertEquals(e.toleranceAt(1), 60);
+  assertEquals(e.toleranceAt(2), 62.5 / 4); // the short gap after it counts
+  assertEquals(e.toleranceAt(4), 62.5 / 4);
+});
+
+Deno.test("tempo with offsets: missed steps close at their own window end", () => {
+  const e = new TempoEngine(cMajor().slice(0, 5), {
+    bpm: 120,
+    notesPerBeat: 1,
+    startTime: 0,
+    offsets: UNEVEN,
+  });
+  assertEquals(e.tick(1124), [0, 1]);
+  assertEquals(e.tick(1126), [2]);
+  assertEquals(e.tick(2000), [3, 4]);
+  assert(e.done);
+});
+
+Deno.test("tempo with offsets: rejects a bad offset list", () => {
+  const steps = cMajor().slice(0, 3);
+  let threw = 0;
+  for (const offsets of [[0, 100], [0, 100, 100]]) {
+    try {
+      new TempoEngine(steps, { bpm: 60, notesPerBeat: 1, startTime: 0, offsets });
+    } catch {
+      threw++;
+    }
+  }
+  assertEquals(threw, 2);
+});
