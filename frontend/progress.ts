@@ -4,6 +4,7 @@
 
 import { renderAccuracyChart } from "./lib/accuracy_chart.ts";
 import { better, ProgressStore, scaleKey, type Session } from "./lib/progress_store.ts";
+import { betterSong, type SongSession } from "./lib/song_session.ts";
 import { compareByCircle, scaleTitle } from "./lib/theory.ts";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -22,6 +23,9 @@ const ui = {
   clear: el<HTMLButtonElement>("clear"),
   clearConfirm: el<HTMLButtonElement>("clear-confirm"),
   status: el("data-status"),
+  songHistory: el("song-history"),
+  songsBody: el("songs-body"),
+  songRecentBody: el("song-recent-body"),
 };
 
 const store = ProgressStore.fromWindow();
@@ -80,11 +84,14 @@ function byScale(sessions: Session[]): Session[][] {
 
 function render() {
   const sessions = store.sessions();
+  const songSessions = store.songSessions();
+  const any = sessions.length + songSessions.length > 0;
   ui.warning.hidden = store.available;
-  ui.empty.hidden = sessions.length > 0 || !store.available;
+  ui.empty.hidden = any || !store.available;
   ui.history.hidden = sessions.length === 0;
-  ui.exportBtn.disabled = sessions.length === 0;
-  ui.clear.disabled = sessions.length === 0;
+  ui.exportBtn.disabled = !any;
+  ui.clear.disabled = !any;
+  renderSongs(songSessions);
   if (!sessions.length) return;
 
   const groups = byScale(sessions);
@@ -146,6 +153,70 @@ function render() {
   );
 }
 
+const HAND_LABEL = { both: "Both hands", rh: "RH", lh: "LH" } as const;
+
+function songPractice(s: SongSession): string {
+  const mode = s.mode === "tempo" ? `In time, ${s.tempoPct}%` : "Wait mode";
+  return `${HAND_LABEL[s.hands]} · m. ${s.from}${s.to > s.from ? `–${s.to}` : ""} · ${mode}`;
+}
+
+/** A row of small squares, one per measure, shaded like the songs page heat map. */
+function heatStrip(s: SongSession): HTMLTableCellElement {
+  const td = document.createElement("td");
+  const strip = document.createElement("div");
+  strip.className = "heat-mini";
+  for (const m of s.measures) {
+    const ratio = m.steps ? m.clean / m.steps : 1;
+    const cell = document.createElement("span");
+    cell.className = `level-${ratio === 1 ? 4 : Math.min(3, Math.floor(ratio * 4))}`;
+    cell.title = `Measure ${m.measure}: ${m.clean} of ${m.steps} clean`;
+    strip.append(cell);
+  }
+  td.append(strip);
+  return td;
+}
+
+/** Per-song bests and recent song runs. */
+function renderSongs(all: SongSession[]) {
+  ui.songHistory.hidden = all.length === 0;
+  if (!all.length) return;
+  const bySong = new Map<string, SongSession[]>();
+  for (const s of all) {
+    if (!bySong.has(s.songId)) bySong.set(s.songId, []);
+    bySong.get(s.songId)!.push(s);
+  }
+  const groups = [...bySong.values()].sort((a, b) => b.at(-1)!.ts - a.at(-1)!.ts);
+  ui.songsBody.replaceChildren(...groups.map((g) => {
+    // Across different practices (a hard passage, the whole piece) accuracy
+    // is the fair comparison; betterSong breaks ties.
+    const best = g.reduce((b, s) =>
+      s.accuracy > b.accuracy || (s.accuracy === b.accuracy && betterSong(s, b)) ? s : b
+    );
+    const tr = document.createElement("tr");
+    tr.append(
+      cell(g.at(-1)!.title),
+      cell(String(g.length), "num"),
+      cell(pct(best.accuracy), "num"),
+      cell(pct(g.at(-1)!.accuracy), "num"),
+      cell(day.format(g.at(-1)!.ts)),
+    );
+    return tr;
+  }));
+  ui.songRecentBody.replaceChildren(
+    ...all.slice(-RECENT).reverse().map((s) => {
+      const tr = document.createElement("tr");
+      tr.append(
+        cell(when.format(s.ts)),
+        cell(s.title),
+        cell(songPractice(s)),
+        cell(pct(s.accuracy), "num"),
+        heatStrip(s),
+      );
+      return tr;
+    }),
+  );
+}
+
 function drawTrend(groups = byScale(store.sessions())) {
   const g = groups.find((x) => scaleKey(x[0]) === ui.trendScale.value) ?? groups[0];
   if (g) renderAccuracyChart(ui.trendChart, g);
@@ -160,7 +231,9 @@ ui.exportBtn.addEventListener("click", () => {
   a.download = `music-practice-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  ui.status.textContent = `Exported ${store.sessions().length} sessions.`;
+  ui.status.textContent = `Exported ${
+    store.sessions().length + store.songSessions().length
+  } sessions.`;
 });
 
 ui.importInput.addEventListener("change", async () => {

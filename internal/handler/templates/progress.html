@@ -6,7 +6,7 @@
 <p id="storage-warning" class="notice warn" hidden>This browser isn't letting the site read saved data (a private window, perhaps), so there is no history to show.</p>
 
 <section id="empty" class="panel empty" hidden>
-  <p>No practice recorded yet. Finish a run on the <a href="/">practice page</a> and it will appear here.</p>
+  <p>No practice recorded yet. Finish a run of a <a href="/">scale</a> or a <a href="/songs">song</a> and it will appear here.</p>
 </section>
 
 <div id="history" hidden>
@@ -43,6 +43,24 @@
     </div>
   </section>
 </div>
+
+<section id="song-history" class="panel" aria-labelledby="songs-title" hidden>
+  <h2 id="songs-title">Songs</h2>
+  <div class="table-scroll">
+    <table class="data">
+      <thead><tr><th scope="col">Song</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Best</th><th scope="col" class="num">Latest</th><th scope="col">Last practised</th></tr></thead>
+      <tbody id="songs-body"></tbody>
+    </table>
+  </div>
+  <h3 class="subhead">Recent song runs</h3>
+  <p class="heat-help">The squares are the measures of each run, green where it was clean.</p>
+  <div class="table-scroll">
+    <table class="data">
+      <thead><tr><th scope="col">When</th><th scope="col">Song</th><th scope="col">Practice</th><th scope="col" class="num">Accuracy</th><th scope="col">By measure</th></tr></thead>
+      <tbody id="song-recent-body"></tbody>
+    </table>
+  </div>
+</section>
 
 <section class="panel" aria-labelledby="data-title">
   <h2 id="data-title">Your data</h2>

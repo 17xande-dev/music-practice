@@ -943,3 +943,18 @@ label.button { display: inline-flex; align-items: center; }
   .heat-cell:hover { filter: brightness(1.1); }
 }
 .results-actions { margin: var(--gap-sm) 0 0; }
+
+.subhead { margin: var(--gap-md) 0 var(--gap-xs); font-size: 1rem; }
+.heat-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 18rem;
+
+  span { width: 0.7rem; height: 0.7rem; border-radius: 2px; }
+  .level-4 { background: var(--ok); }
+  .level-3 { background: color-mix(in oklab, var(--ok), var(--early) 45%); }
+  .level-2 { background: var(--early); }
+  .level-1 { background: color-mix(in oklab, var(--early), var(--bad) 55%); }
+  .level-0 { background: var(--bad); }
+}
