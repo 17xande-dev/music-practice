@@ -1,8 +1,8 @@
 # Music Practice
 
-A site for practising scales on a MIDI instrument such as a digital piano. You connect the
-instrument in the browser, pick a scale, and play it. The page shows your playing live on a staff
-and an on-screen keyboard, and grades it.
+A site for practising scales and songs on a MIDI instrument such as a digital piano (scales also on
+guitar). You connect the instrument in the browser, pick a scale or open a score, and play. The page
+shows your playing live on the music and an on-screen keyboard, and grades it.
 
 - **Scales:** major, the three minors (natural, harmonic, melodic), the other five modes, major and
   minor pentatonic, blues and chromatic. All 12 keys are offered, spelled properly: F♯ major shows
@@ -32,6 +32,17 @@ and an on-screen keyboard, and grades it.
   and matches them for every major and harmonic minor key in both hands. Guitar uses one finger per
   fret in the chosen position, with 0 for open strings. Notes outside the box get no number, since
   the hand has to shift.
+- **Songs:** add a MusicXML score (`.musicxml` or zipped `.mxl`, as MuseScore, Sibelius, Finale and
+  Dorico export it) and practise it on the Songs page. The score is rendered in the page and kept in
+  your browser (IndexedDB), never uploaded. Three modes: _wait for each note_ (the cursor holds
+  until you play the right notes), _play in time_ (a count-in and a metronome that follows the
+  score's tempo marks; wrong, missed, early and late notes are graded), and _listen_ (the app plays
+  it). Each mode covers both hands or one, with the other hand optionally played for you, a range of
+  measures, and a tempo as a percentage of the marked one, and can repeat the selection. Repeats in
+  the score are played out. After a run, a heat map shows each measure from clean to troubled;
+  clicking a measure, or "practise the weakest measures", sets up that passage. Fingering printed in
+  the file shows with "Show fingers". A piano written as one two-staff part or as separate
+  right/left-hand parts is graded as two hands; in a voice-and-piano song, the piano part is graded.
 - **No instrument?** The computer keyboard works as a fallback (<kbd>A</kbd>–<kbd>J</kbd> for white
   keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys). It plays
   pitch classes, and the octave is picked for you.
@@ -80,7 +91,7 @@ internal/handler/           page templates + static assets, all go:embed'ed
   static/styles.css         the theme (custom properties, light and dark)
   static/dist/              Deno output — build artefact, not committed
 frontend/
-  practice.ts progress.ts   the two page controllers (bundle entry points)
+  practice.ts songs.ts progress.ts   the page controllers (bundle entry points)
   lib/theory.ts             spelled notes, scale definitions, the step sequence
   lib/engine.ts             grading: NotesEngine and TempoEngine (pure, no DOM)
   lib/midi.ts               Web MIDI input, hot-plug
@@ -93,6 +104,11 @@ frontend/
   lib/audio_input.ts        guitar audio input: device choice, worklet, tracker, tuner
   lib/guitar.ts             tuning, position boxes, fingering layout
   lib/fingering.ts          finger numbers: piano scale fingering, guitar finger-per-fret
+  lib/score.ts              songs: events, tempo map, selections → Steps, per-measure stats
+  lib/score_view.ts         songs: OpenSheetMusicDisplay rendering, cursor walk, note marks
+  lib/song_player.ts        songs: count-in, metronome, accompaniment and listen playback
+  lib/song_library.ts       songs: uploaded scores in IndexedDB, file checks
+  lib/song_session.ts       songs: history records, validation, bests
   lib/fretboard_view.ts     SVG fretboard (guitar's counterpart to the keyboard)
   lib/pluck.ts              synthetic plucked notes for tests and the test hook
   pitch_worklet.ts          AudioWorklet: runs the detector every ~5 ms (third bundle)
@@ -103,11 +119,11 @@ frontend/
   lib/*_test.ts             Deno tests
 ```
 
-Deno bundles only the two TypeScript entry points, not HTML, because the pages are Go templates.
-Stage 2 needs server-rendered pages for signed-in users. Without code-splitting the bundle names
-stay fixed (`dist/practice.js`, `dist/progress.js`), and Go's `{{asset}}` adds a content hash to
-each URL, so assets are cached `immutable` and a rebuild invalidates them. A binary built without
-the bundle refuses to start instead of serving pages whose scripts 404.
+Deno bundles only the TypeScript entry points, not HTML, because the pages are Go templates. Stage 2
+needs server-rendered pages for signed-in users. Without code-splitting the bundle names stay fixed
+(`dist/practice.js`, `dist/progress.js`), and Go's `{{asset}}` adds a content hash to each URL, so
+assets are cached `immutable` and a rebuild invalidates them. A binary built without the bundle
+refuses to start instead of serving pages whose scripts 404.
 
 **Timing.** MIDI events carry `performance.now()` timestamps from when they arrived. Metronome
 clicks are scheduled on the Web Audio clock, and `getOutputTimestamp()` maps them to the same
@@ -120,12 +136,13 @@ page. Plain DOM code keeps the bundle to VexFlow plus a few kilobytes and keeps 
 
 ### Dependencies
 
-`go.mod` has none: the server is stdlib only. The frontend has one runtime dependency:
+`go.mod` has none: the server is stdlib only. The frontend has two runtime dependencies:
 
-| Dependency                    | Why                                                                                                                                                                                                                                                                                                                                               |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm:vexflow@5.0.0`           | Staff notation. Clefs, key signatures, accidentals (including the naturals melodic minor needs), ledger lines and beaming are fiddly to get right by hand. Pinned exactly because rendering depends on its layout internals. Imported via `vexflow/bravura`, which embeds its fonts as data: URIs; the default build would fetch them from a CDN. |
-| `jsr:@std/assert` (test only) | Assertions for `deno test`                                                                                                                                                                                                                                                                                                                        |
+| Dependency                        | Why                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm:vexflow@5.0.0`               | Staff notation. Clefs, key signatures, accidentals (including the naturals melodic minor needs), ledger lines and beaming are fiddly to get right by hand. Pinned exactly because rendering depends on its layout internals. Imported via `vexflow/bravura`, which embeds its fonts as data: URIs; the default build would fetch them from a CDN.                                                                                                                                                                                                                                                                                                                         |
+| `npm:opensheetmusicdisplay@2.1.3` | Song scores. Renders MusicXML and `.mxl` (it unzips them itself) and walks the piece with a cursor that plays out repeats and reports pitch, staff, ties, fingering and tempo. BSD-3-Clause. Chosen over Verovio, whose WebAssembly build is ~7× larger and needs `'wasm-unsafe-eval'` plus a workaround for the `<style>` blocks in its SVG, both at odds with the CSP. It carries its own VexFlow 1.x and JSZip, and lives only in the songs bundle. Its cursor is an `<img>` with a `data:` URL, so it is never shown; the page marks notes by class instead. Its `drawFingerings` option can't turn fingerings back on, so the page sets the engraving rule directly. |
+| `jsr:@std/assert` (test only)     | Assertions for `deno test`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Deno supplies the bundler, type checker, linter, formatter and test runner. There is no npm project
 and no Node toolchain.
@@ -152,9 +169,11 @@ for others to reskin.
 - **Deno:** scale spelling across every tonic × type × octave count; fingering against the standard
   tables, plus a playability check over every scale, key and length; the grading engines driven by
   synthetic note streams (wrong notes, repeats, hands-together asynchrony, early/late/missed,
-  latency offset, fast subdivisions); MIDI parsing; the computer-keyboard octave choice; metronome
-  timing; staff clef and key helpers; chart ranges; and the progress store against in-memory, full
-  and throwing storage, including hostile imports.
+  latency offset, fast subdivisions, unevenly timed song steps); the song score model (ties,
+  repeats, tempo changes, hand selections, part choice, per-measure stats) and playback plans; song
+  file checks; MIDI parsing; the computer-keyboard octave choice; metronome timing; staff clef and
+  key helpers; chart ranges; and the progress store against in-memory, full and throwing storage,
+  including hostile imports.
 - **Go:** routes, the pinned security headers, the static extension gate, content-hashed asset URLs,
   the missing-bundle boot failure, and the no-inline-content rule.
 
@@ -162,7 +181,9 @@ The browser is the other half. UI changes are checked in Chrome through the DevT
 desktop and phone widths and in light and dark themes, with the console open for CSP violations.
 DevTools can't provide a MIDI device, so the practice page exposes
 `window.__practice.note(midi, on, t)`, which feeds a note through the same path a MIDI message
-takes. A real instrument still needs a human.
+takes. The songs page has `window.__songs` for the same purpose, and real scores (Clementi, Bach,
+Schumann `.mxl`, a Beethoven song with voice and piano) are checked by uploading them through the
+file input. A real instrument still needs a human.
 
 ## Deploying
 
@@ -186,10 +207,11 @@ the origin (526 through Cloudflare), check
 
 ## Decisions still open
 
-| Decision                                                         | Trigger                                                                     |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Stage 2: accounts, server-side history (SQLite)                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Learn each string's sound (calibration) to guess string and fret | After guitar feedback                                                       |
-| ML pitch engine (CREPE/SPICE) and ML fret-position estimation    | If MPM struggles with real-world signals                                    |
-| Acoustic instruments via microphone (more noise and room sound)  | If players without a DI cable matter                                        |
-| Arpeggios, contrary motion, scales in thirds/sixths              | After scales settle                                                         |
+| Decision                                                                            | Trigger                                                                     |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Stage 2: accounts, server-side history (SQLite)                                     | Start of stage 2. The localStorage export (`version: 1`) is the import path |
+| Learn each string's sound (calibration) to guess string and fret                    | After guitar feedback                                                       |
+| ML pitch engine (CREPE/SPICE) and ML fret-position estimation                       | If MPM struggles with real-world signals                                    |
+| Acoustic instruments via microphone (more noise and room sound)                     | If players without a DI cable matter                                        |
+| Arpeggios, contrary motion, scales in thirds/sixths                                 | After scales settle                                                         |
+| Songs: speed trainer, guitar melody mode, MIDI import, transposing, built-in pieces | After songs feedback                                                        |
