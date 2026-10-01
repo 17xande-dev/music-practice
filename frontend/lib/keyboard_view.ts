@@ -19,6 +19,7 @@ export type KeyMark = "ok" | "bad" | "neutral";
 export class KeyboardView {
   private svg: SVGSVGElement;
   private keys = new Map<number, SVGRectElement>();
+  private fingerLayer: SVGGElement = document.createElementNS(SVG, "g");
   private lo = 60;
   private hi = 72;
 
@@ -76,7 +77,9 @@ export class KeyboardView {
       const x = (leftWhite + 1) * WHITE_W - BLACK_W / 2;
       blackLayer.append(this.rect(m, x, 0, BLACK_W, BLACK_H, "black"));
     }
-    this.svg.append(whiteLayer, blackLayer, labels);
+    this.fingerLayer = document.createElementNS(SVG, "g");
+    this.fingerLayer.classList.add("fingers");
+    this.svg.append(whiteLayer, blackLayer, labels, this.fingerLayer);
   }
 
   private rect(
@@ -109,9 +112,28 @@ export class KeyboardView {
     this.toggleAll("in-scale", midis);
   }
 
-  /** Highlight what to play next. */
-  setTargets(midis: Iterable<number>) {
-    this.toggleAll("target", midis);
+  /**
+   * Highlight what to play next, with the finger to play it with written on
+   * the key when `fingers` is given (parallel to `midis`).
+   */
+  setTargets(midis: Iterable<number>, fingers?: readonly (number | null)[]) {
+    const list = [...midis];
+    this.toggleAll("target", list);
+    this.fingerLayer.replaceChildren();
+    if (!fingers) return;
+    list.forEach((m, i) => {
+      const key = this.keys.get(m);
+      if (key === undefined || fingers[i] === undefined || fingers[i] === null) return;
+      const black = isBlack(m);
+      const t = document.createElementNS(SVG, "text");
+      t.setAttribute(
+        "x",
+        String(Number(key.getAttribute("x")) + Number(key.getAttribute("width")) / 2),
+      );
+      t.setAttribute("y", String(black ? BLACK_H - 10 : WHITE_H - 26));
+      t.textContent = String(fingers[i]);
+      this.fingerLayer.append(t);
+    });
   }
 
   press(midi: number, mark: KeyMark) {

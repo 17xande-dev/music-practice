@@ -112,7 +112,8 @@ export class FretboardView {
 
   /**
    * Shade `box` and draw a dot for every note of the exercise where `layout`
-   * puts it, labelled with its spelled name.
+   * puts it, labelled with its spelled name, or with the finger that plays
+   * it when the page shows fingering.
    */
   setLayout(box: Box, layout: Map<number, FretPosition>, names: Map<number, string>) {
     this.box = box;
@@ -141,10 +142,19 @@ export class FretboardView {
     return g;
   }
 
+  /** Relabel the dots (note names or finger numbers) without redrawing. */
+  setLabels(labels: Map<number, string>) {
+    for (const [m, g] of this.dots) {
+      const t = g.querySelector("text");
+      if (t) t.textContent = labels.get(m) ?? "";
+    }
+  }
+
   /** The exercise's notes are always shown; kept for KeyboardView parity. */
   setScale(_midis: Iterable<number>) {}
 
-  setTargets(midis: Iterable<number>) {
+  /** The dots already carry the fingers, so `fingers` is for parity only. */
+  setTargets(midis: Iterable<number>, _fingers?: readonly (number | null)[]) {
     const on = new Set(midis);
     for (const [m, g] of this.dots) g.classList.toggle("target", on.has(m));
   }

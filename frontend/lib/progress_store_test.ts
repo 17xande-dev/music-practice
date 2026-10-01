@@ -146,6 +146,17 @@ Deno.test("settings keep valid fields and drop the rest", () => {
   assertEquals(store.settings(), { hands: "both" });
 });
 
+Deno.test("the fingering switch is remembered, and only as a boolean", () => {
+  const storage = new FakeStorage();
+  const store = new ProgressStore(storage);
+  store.saveSettings({ fingering: true });
+  assertEquals(store.settings().fingering, true);
+  store.saveSettings({ fingering: false });
+  assertEquals(store.settings().fingering, false);
+  storage.setItem(SETTINGS_KEY, JSON.stringify({ fingering: "yes" }));
+  assertEquals(store.settings(), {});
+});
+
 Deno.test("export then import into a fresh store restores everything; re-import adds nothing", () => {
   const a = new ProgressStore(new FakeStorage());
   a.add(run());

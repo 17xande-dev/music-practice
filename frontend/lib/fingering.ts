@@ -31,6 +31,9 @@
 import type { Box, FretPosition } from "./guitar.ts";
 import type { Hand, Step } from "./theory.ts";
 
+/** Fingers for every note of every step, shaped like the steps; null shows none. */
+export type Fingers = (number | null)[][];
+
 const BLACK = new Set([1, 3, 6, 8, 10]);
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 const isBlack = (midi: number) => BLACK.has(mod(midi, 12));
@@ -143,9 +146,9 @@ function handFingers(line: { midi: number; up: boolean }[], hand: Hand): number[
  * (`result[step][note]`, notes in the step's order). Each hand is fingered
  * on its own, as in any scale book.
  */
-export function pianoFingering(steps: readonly Step[]): number[][] {
+export function pianoFingering(steps: readonly Step[]): Fingers {
   if (!steps.length) return [];
-  const out = steps.map((s) => s.notes.map(() => 0));
+  const out: Fingers = steps.map((s) => s.notes.map(() => null));
   steps[0].notes.forEach((first, h) => {
     // The turning note at the top belongs to the way down: in melodic
     // minor the descent has other notes, and the hand sets up for them.
@@ -164,9 +167,11 @@ export function pianoFingering(steps: readonly Step[]): number[][] {
 /**
  * Guitar fingering in a position: one finger per fret, the index on the
  * box's first fret, a stretch taken by the index (below) or little finger
- * (above). 0 means an open string.
+ * (above). 0 means an open string. A note outside the box has no finger:
+ * the hand has to shift for it, and where to is the player's call.
  */
-export function guitarFinger(p: FretPosition, box: Box): number {
+export function guitarFinger(p: FretPosition, box: Box): number | null {
+  if (!p.inBox) return null;
   if (p.fret === 0) return 0;
   const first = Math.max(1, box.lo);
   return Math.min(4, Math.max(1, p.fret - first + 1));
@@ -177,11 +182,11 @@ export function guitarFingering(
   steps: readonly Step[],
   places: Map<number, FretPosition>,
   box: Box,
-): number[][] {
+): Fingers {
   return steps.map((s) =>
     s.notes.map((n) => {
       const p = places.get(n.midi);
-      return p ? guitarFinger(p, box) : 0;
+      return p ? guitarFinger(p, box) : null;
     })
   );
 }

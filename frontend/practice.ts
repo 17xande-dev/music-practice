@@ -20,6 +20,7 @@ import {
   TempoEngine,
 } from "./lib/engine.ts";
 import { AudioInput, type AudioState, type Reading } from "./lib/audio_input.ts";
+import { type Fingers, guitarFingering, pianoFingering } from "./lib/fingering.ts";
 import { FretboardView } from "./lib/fretboard_view.ts";
 import { boxFor, layout, positionLabel, POSITIONS, tonicMidiFor } from "./lib/guitar.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
@@ -89,6 +90,7 @@ const ui = {
   bpm: el<HTMLInputElement>("bpm"),
   subdivision: el<HTMLSelectElement>("subdivision"),
   latency: el<HTMLInputElement>("latency"),
+  fingering: el<HTMLInputElement>("fingering"),
   device: el<HTMLSelectElement>("midi-input"),
   midiStatus: el("midi-status"),
   activity: el("midi-activity"),
@@ -124,6 +126,10 @@ type TempoPhase = "idle" | "countin" | "playing" | "done";
 let options: ExerciseOptions;
 let mode: Mode = "notes";
 let steps: Step[] = [];
+/** The finger for each note of each step, shaped like `steps`. */
+let fingers: Fingers = [];
+/** Guitar dot labels: note names, and finger numbers for when they're shown. */
+let dotLabels = { names: new Map<number, string>(), fingers: new Map<number, string>() };
 /** Notes-only: always set. Tempo: set from Start until the next reset. */
 let engine: NotesEngine | TempoEngine | null = null;
 let phase: TempoPhase = "idle";
@@ -247,6 +253,7 @@ function restoreSettings() {
   if (saved.notesPerBeat) ui.subdivision.value = String(saved.notesPerBeat);
   if (saved.latencyMs !== undefined) ui.latency.value = String(saved.latencyMs);
   if (saved.position !== undefined) ui.position.value = String(saved.position);
+  if (saved.fingering !== undefined) ui.fingering.checked = saved.fingering;
   setReference(saved.a4 ?? DEFAULT_A4);
   ui.instrument.value = saved.instrument ?? "piano";
 }
@@ -267,6 +274,7 @@ function persistSettings() {
     instrument,
     position: Number(ui.position.value),
     a4,
+    fingering: ui.fingering.checked,
   });
 }
 
@@ -281,21 +289,54 @@ function rebuild() {
   const all = steps.flatMap((s) => s.notes.map((n) => n.midi));
   if (instrument === "guitar") {
     const box = boxFor(Number(ui.position.value));
-    const names = new Map(steps.flatMap((s) => s.notes.map((n) => [n.midi, nameOf(n.spelled)])));
-    fretboard.setLayout(box, layout(all, box), names);
+    const places = layout(all, box);
+    fingers = guitarFingering(steps, places, box);
+    const notes = steps.flatMap((s, i) => s.notes.map((n, h) => ({ n, f: fingers[i][h] })));
+    dotLabels = {
+      names: new Map(notes.map(({ n }) => [n.midi, nameOf(n.spelled)])),
+      fingers: new Map(notes.map(({ n, f }) => [n.midi, f === null ? "" : String(f)])),
+    };
+    fretboard.setLayout(box, places, showingFingers() ? dotLabels.fingers : dotLabels.names);
   } else {
+    fingers = pianoFingering(steps);
     keyboard.setRange(Math.min(...all), Math.max(...all));
     keyboard.setScale(all);
   }
   // In tempo mode the staff shows the rhythm being asked for.
-  const duration = mode === "tempo" ? DURATIONS[tempoSettings().notesPerBeat] : "q";
-  staff.render(
-    steps,
-    keySignatureFifths(options.tonic, options.type),
-    duration,
-    instrument === "guitar",
-  );
+  staff.render(steps, keySignatureFifths(options.tonic, options.type), {
+    duration: mode === "tempo" ? DURATIONS[tempoSettings().notesPerBeat] : "q",
+    guitar: instrument === "guitar",
+    fingers: showingFingers() ? fingers : null,
+  });
   reset();
+}
+
+function showingFingers(): boolean {
+  return ui.fingering.checked;
+}
+
+/**
+ * Show or hide finger numbers without restarting: switching them on halfway
+ * through a scale is exactly when someone wants them.
+ */
+function applyFingering() {
+  staff.setFingers(showingFingers() ? fingers : null);
+  if (instrument === "guitar") {
+    fretboard.setLabels(showingFingers() ? dotLabels.fingers : dotLabels.names);
+  }
+  showTargets(currentStep());
+}
+
+/** Highlight a step's notes as the next to play, with fingers if shown. */
+function showTargets(step: Step | undefined) {
+  if (!step) {
+    view.setTargets([]);
+    return;
+  }
+  view.setTargets(
+    step.notes.map((n) => n.midi),
+    showingFingers() ? fingers[step.index] : undefined,
+  );
 }
 
 function reset() {
@@ -378,7 +419,7 @@ function setCurrent(i: number) {
   }
   shownCurrent = i;
   if (e.results[i].status === "pending") staff.mark(i, "current");
-  view.setTargets(steps[i].notes.map((n) => n.midi));
+  showTargets(steps[i]);
   view.reveal(steps[i].notes[0].midi);
   staff.reveal(i);
 }
@@ -399,7 +440,7 @@ function currentTargets(): number[] {
 function showProgress() {
   if (engine instanceof TempoEngine) return; // the animation frame owns the view
   const step = currentStep();
-  view.setTargets(currentTargets());
+  showTargets(step);
   if (!step) {
     ui.status.textContent = "Done — press Restart or Space to go again.";
     return;
@@ -845,6 +886,7 @@ for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision, ui
 // BPM and latency are read at Start, so editing them needs no rebuild —
 // but it does end a run in progress, whose timing no longer matches.
 for (const s of [ui.bpm, ui.latency]) s.addEventListener("change", reset);
+ui.fingering.addEventListener("change", applyFingering);
 ui.form.addEventListener("change", persistSettings);
 // Remembered by name: a port's id changes when the instrument reconnects.
 ui.device.addEventListener("change", () => {

@@ -187,6 +187,27 @@ select, input {
 }
 
 label { font-size: var(--small); color: var(--ink-soft); }
+.field-label { font-size: var(--small); color: var(--ink-soft); }
+
+/* A checkbox sized to line up with the selects beside it. */
+label.check {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-height: 2.5rem;
+  font-size: inherit;
+  color: var(--ink);
+  cursor: pointer;
+
+  input {
+    min-height: 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--target);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -503,6 +524,13 @@ kbd {
   .labels text {
     font: 10px var(--font);
     fill: #6b7075;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+  /* The finger for the next note, on the highlighted key itself. */
+  .fingers text {
+    font: 700 13px var(--font);
+    fill: #fff;
     text-anchor: middle;
     pointer-events: none;
   }

@@ -5,6 +5,8 @@
 
 import {
   Accidental,
+  Annotation,
+  AnnotationVerticalJustify,
   Beam,
   Formatter,
   Fraction,
@@ -86,6 +88,7 @@ export class StaffView {
   private fifths: number | null = null;
   private duration: NoteDuration = "q";
   private guitar = false;
+  private fingers: readonly (readonly (number | null)[])[] | null = null;
   private groups: SVGElement[][] = [];
   private systemTops: number[] = [];
   private lineOf: number[] = [];
@@ -105,18 +108,32 @@ export class StaffView {
    * `guitar` draws standard guitar notation: treble clef with an 8 below,
    * notes written an octave above where they sound, so the low E (E2) sits
    * just below the staff rather than on five ledger lines.
+   *
+   * `fingers` (shaped like the steps: one number per note) writes a finger
+   * number by each note, above the staff, or below it for the left hand,
+   * as scale books do. 0 is an open string.
    */
   render(
     steps: readonly Step[],
     fifths: number | null,
-    duration: NoteDuration = "q",
-    guitar = false,
+    opts: {
+      duration?: NoteDuration;
+      guitar?: boolean;
+      fingers?: readonly (readonly (number | null)[])[] | null;
+    } = {},
   ) {
     this.steps = steps;
     this.fifths = fifths;
-    this.duration = duration;
-    this.guitar = guitar;
+    this.duration = opts.duration ?? "q";
+    this.guitar = opts.guitar ?? false;
+    this.fingers = opts.fingers ?? null;
     this.marks = steps.map(() => null);
+    this.draw();
+  }
+
+  /** Show or hide the finger numbers, keeping the marks made so far. */
+  setFingers(fingers: readonly (readonly (number | null)[])[] | null) {
+    this.fingers = fingers;
     this.draw();
   }
 
@@ -163,14 +180,25 @@ export class StaffView {
         else stave.addClef(clef);
         stave.addKeySignature(key).setContext(ctx);
         staves.push(stave);
-        const notes = line.map((s) =>
-          new StaveNote({
+        const notes = line.map((s) => {
+          const note = new StaveNote({
             keys: [vfKey(writtenPitch(s.notes[h].spelled, this.guitar))],
             duration: this.duration,
             clef,
             autoStem: true,
-          })
-        );
+          });
+          const finger = this.fingers?.[s.index]?.[h];
+          if (finger !== undefined && finger !== null) {
+            const below = hand === "lh" && grand;
+            note.addModifier(
+              new Annotation(String(finger)).setVerticalJustification(
+                below ? AnnotationVerticalJustify.BOTTOM : AnnotationVerticalJustify.TOP,
+              ),
+              0,
+            );
+          }
+          return note;
+        });
         notesByHand.push(notes);
         const voice = new Voice({ numBeats: notes.length, beatValue: 4 }).setMode(Voice.Mode.SOFT);
         voice.addTickables(notes);

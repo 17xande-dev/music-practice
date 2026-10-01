@@ -26,6 +26,12 @@ and an on-screen keyboard, and grades it.
   places, which one pickup can't tell apart, but inside a position each pitch has a single place.
   The staff uses standard guitar notation (treble clef, sounding an octave lower). A tuner readout
   shows the detected note and cents.
+- **Fingering:** a "Show fingers" switch, off by default and remembered, puts finger numbers on the
+  staff (above for the right hand, below for the left), on the key to play next, and in the
+  fretboard dots. Piano uses standard scale fingering, worked out from the rules scale books follow,
+  and matches them for every major and harmonic minor key in both hands. Guitar uses one finger per
+  fret in the chosen position, with 0 for open strings. Notes outside the box get no number, since
+  the hand has to shift.
 - **No instrument?** The computer keyboard works as a fallback (<kbd>A</kbd>–<kbd>J</kbd> for white
   keys, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys). It plays
   pitch classes, and the octave is picked for you.
@@ -85,6 +91,7 @@ frontend/
   lib/note_tracker.ts       pitch frames → note on/off events (onsets, stability, gate)
   lib/audio_input.ts        guitar audio input: device choice, worklet, tracker, tuner
   lib/guitar.ts             tuning, position boxes, fingering layout
+  lib/fingering.ts          finger numbers: piano scale fingering, guitar finger-per-fret
   lib/fretboard_view.ts     SVG fretboard (guitar's counterpart to the keyboard)
   lib/pluck.ts              synthetic plucked notes for tests and the test hook
   pitch_worklet.ts          AudioWorklet: runs the detector every ~5 ms (third bundle)
@@ -141,7 +148,8 @@ for others to reskin.
 
 `make check` runs everything CI runs:
 
-- **Deno:** scale spelling across every tonic × type × octave count; the grading engines driven by
+- **Deno:** scale spelling across every tonic × type × octave count; fingering against the standard
+  tables, plus a playability check over every scale, key and length; the grading engines driven by
   synthetic note streams (wrong notes, repeats, hands-together asynchrony, early/late/missed,
   latency offset, fast subdivisions); MIDI parsing; the computer-keyboard octave choice; metronome
   timing; staff clef and key helpers; chart ranges; and the progress store against in-memory, full
@@ -180,7 +188,6 @@ the origin (526 through Cloudflare), check
 | Decision                                                         | Trigger                                                                     |
 | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Stage 2: accounts, server-side history (SQLite)                  | Start of stage 2. The localStorage export (`version: 1`) is the import path |
-| Fingering hints on the staff                                     | After stage 1 feedback                                                      |
 | Learn each string's sound (calibration) to guess string and fret | After guitar feedback                                                       |
 | ML pitch engine (CREPE/SPICE) and ML fret-position estimation    | If MPM struggles with real-world signals                                    |
 | Acoustic instruments via microphone (more noise and room sound)  | If players without a DI cable matter                                        |

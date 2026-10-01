@@ -157,7 +157,7 @@ Deno.test("every scale in every key gets a playable fingering", () => {
         for (const hands of ["rh", "lh"] as const) {
           for (const octaves of [1, 2, 4]) {
             const steps = buildSteps({ tonic, type, octaves, direction: "updown", hands });
-            const f = pianoFingering(steps).map((x) => x[0]);
+            const f = pianoFingering(steps).map((x) => x[0]!); // piano always fingers every note
             const midis = steps.map((s) => s.notes[0].midi);
             const whites = new Set(midis.filter((m) => !BLACK.has(m % 12)).map((m) => m % 12));
             const [w0, w1] = [...whites].sort((a, b) => a - b);
@@ -197,6 +197,8 @@ Deno.test("guitar: one finger per fret, index on the position's first fret", () 
   const open = boxFor(0);
   assertEquals(guitarFinger({ string: 1, fret: 0, inBox: true }, open), 0);
   assertEquals(guitarFinger({ string: 1, fret: 3, inBox: true }, open), 3);
+  // Out of the box: the hand shifts, so no finger is claimed.
+  assertEquals(guitarFinger({ string: 5, fret: 8, inBox: false }, open), null);
 });
 
 Deno.test("guitar: G major in 2nd position, string by string", () => {
