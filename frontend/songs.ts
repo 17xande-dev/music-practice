@@ -169,7 +169,7 @@ async function renderLibrary() {
     return li;
   }));
   if (!songs.length && library) {
-    setLibraryStatus("No songs yet. Add a MusicXML score to start.");
+    setLibraryStatus("No songs of your own yet. Open a starter piece, or add a MusicXML score.");
   }
 }
 
@@ -813,6 +813,29 @@ ui.device.addEventListener("change", () => {
   const name = ui.device.selectedOptions[0]?.textContent;
   if (name && ui.device.value !== ALL_DEVICES) store.saveSettings({ device: name });
 });
+
+// Starter pieces are served with the site. Opening one adds a copy to the
+// library (so its history works like any song's), or opens the copy
+// already there.
+for (const b of document.querySelectorAll<HTMLButtonElement>("button.starter")) {
+  b.addEventListener("click", async () => {
+    const file = b.dataset.file!;
+    const existing = (await library?.list())?.find((s) => s.fileName === file);
+    if (existing) {
+      await openSong(existing.id);
+      return;
+    }
+    setLibraryStatus("Loading…");
+    try {
+      const res = await fetch(b.dataset.src!);
+      if (!res.ok) throw new Error(String(res.status));
+      await addFile(new File([await res.arrayBuffer()], file, { type: "application/xml" }));
+      ui.song.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      setLibraryStatus("That piece couldn't be loaded. Check your connection and try again.", true);
+    }
+  });
+}
 
 ui.upload.addEventListener("change", () => {
   const f = ui.upload.files?.[0];

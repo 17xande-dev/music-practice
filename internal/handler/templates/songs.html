@@ -25,6 +25,15 @@
   <div id="drop-zone" class="drop-zone">
     <p>Drop a MusicXML file here (<code>.musicxml</code> or <code>.mxl</code>). MuseScore, Sibelius, Finale and Dorico all export it, and many free scores on MuseScore.com and IMSLP come in it. Files stay in this browser.</p>
   </div>
+  <div class="starters">
+    <h3 class="subhead">Starter pieces</h3>
+    <ul class="starter-list">
+      <li><button type="button" class="starter secondary" data-src="{{asset "songs/twinkle-twinkle.musicxml"}}" data-file="twinkle-twinkle.musicxml"><span class="song-name">Twinkle, Twinkle, Little Star</span><span class="song-meta">Beginner · melody over a simple bass</span></button></li>
+      <li><button type="button" class="starter secondary" data-src="{{asset "songs/ode-to-joy.musicxml"}}" data-file="ode-to-joy.musicxml"><span class="song-name">Ode to Joy</span><span class="song-meta">Beginner · Beethoven</span></button></li>
+      <li><button type="button" class="starter secondary" data-src="{{asset "songs/minuet-in-g.musicxml"}}" data-file="minuet-in-g.musicxml"><span class="song-name">Minuet in G</span><span class="song-meta">Elementary · Petzold, simplified left hand</span></button></li>
+      <li><button type="button" class="starter secondary" data-src="{{asset "songs/bach-prelude-in-c.musicxml"}}" data-file="bach-prelude-in-c.musicxml"><span class="song-name">Prelude in C (opening)</span><span class="song-meta">Intermediate · Bach, BWV 846, bars 1–4</span></button></li>
+    </ul>
+  </div>
   <p id="library-status" class="library-status" role="status"></p>
   <ul id="song-list" class="song-list"></ul>
 </section>

@@ -998,3 +998,24 @@ label.button { display: inline-flex; align-items: center; }
   li + li { margin-top: var(--gap-xs); }
 }
 .site-footer a { color: inherit; }
+
+.starter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--gap-xs);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+
+  .starter {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    text-align: left;
+    font-weight: 400;
+  }
+  .song-name { font-weight: 650; }
+  .song-meta { font-size: var(--small); color: var(--ink-soft); }
+}
