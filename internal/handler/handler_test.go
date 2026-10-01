@@ -30,7 +30,7 @@ func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder
 // pagePaths are every HTML page the server renders. The inline-content test
 // walks these, so a page added to Routes must be added here too — and the
 // minimum-count check stops the list silently emptying.
-var pagePaths = []string{"/", "/songs", "/progress"}
+var pagePaths = []string{"/", "/songs", "/progress", "/about"}
 
 func TestPagesRender(t *testing.T) {
 	h := newTestHandler(t)
@@ -155,5 +155,27 @@ func TestCheckReportsMissingBundle(t *testing.T) {
 	err := a.Check("styles.css", "dist/practice.js")
 	if err == nil || !strings.Contains(err.Error(), "dist/practice.js") {
 		t.Errorf("Check error = %v", err)
+	}
+}
+
+// The third-party notices must stay published: the BSD-3 and OFL terms of
+// what the bundles ship require them, and the About page links to them.
+func TestLicenceNoticesAreServed(t *testing.T) {
+	h := newTestHandler(t)
+	rec := get(t, h, "/static/licenses.txt")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/plain") {
+		t.Errorf("content-type %q", ct)
+	}
+	body := rec.Body.String()
+	for _, want := range []string{"OpenSheetMusicDisplay", "BSD-3-Clause", "SIL Open Font License", "pitchy", "Steinberg"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("licenses.txt lacks %q", want)
+		}
+	}
+	if about := get(t, h, "/about").Body.String(); !strings.Contains(about, `href="/static/licenses.txt?v=`) {
+		t.Error("the About page does not link the licence notices")
 	}
 }

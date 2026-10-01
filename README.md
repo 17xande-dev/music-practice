@@ -171,6 +171,14 @@ and no Node toolchain.
 There are no `STATIC_DIR` or `TEMPLATE_DIR` overrides: this is a single deployment, not a project
 for others to reskin.
 
+## Licence
+
+MIT, see [LICENSE](LICENSE). The site ships third-party code and fonts under their own licences
+(MIT, BSD-3-Clause, and the SIL Open Font License for VexFlow's Bravura and Academico fonts). Their
+full texts and copyright notices are served at `/static/licenses.txt`, linked from the About page,
+and a test keeps them published. When a dependency is added or upgraded, update
+`internal/handler/static/licenses.txt` and the credits in `templates/about.html`.
+
 ## Testing
 
 `make check` runs everything CI runs:

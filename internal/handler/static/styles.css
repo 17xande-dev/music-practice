@@ -987,3 +987,14 @@ label.button { display: inline-flex; align-items: center; }
   .level-1 { background: color-mix(in oklab, var(--early), var(--bad) 55%); }
   .level-0 { background: var(--bad); }
 }
+
+/* ---- About ----------------------------------------------------------------- */
+
+.prose {
+  max-width: var(--measure);
+
+  h1 { font-size: var(--title-page); margin: 0 0 var(--gap-sm); }
+  h2 { margin: var(--gap-lg) 0 var(--gap-xs); font-size: var(--title); }
+  li + li { margin-top: var(--gap-xs); }
+}
+.site-footer a { color: inherit; }

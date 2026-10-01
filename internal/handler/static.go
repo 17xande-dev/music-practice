@@ -28,6 +28,9 @@ var contentTypes = map[string]string{
 	".png":   "image/png",
 	".ico":   "image/x-icon",
 	".woff2": "font/woff2",
+	// The licence notices, and the starter scores the songs page offers.
+	".txt":      "text/plain; charset=utf-8",
+	".musicxml": "application/vnd.recordare.musicxml+xml",
 }
 
 type asset struct {

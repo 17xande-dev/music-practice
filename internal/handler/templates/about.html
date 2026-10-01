@@ -1,0 +1,28 @@
+{{define "scripts"}}{{end}}
+
+{{define "content"}}
+<article class="prose">
+<h1>About Music Practice</h1>
+<p>A place to practise scales and pieces on a digital piano, keyboard or electric guitar, with your playing shown and graded as you go. It runs entirely in your browser.</p>
+
+<h2 id="privacy">Privacy</h2>
+<ul>
+  <li><strong>Your playing stays on your device.</strong> Notes from your instrument are graded in the browser and never sent anywhere.</li>
+  <li><strong>Your history and scores stay in this browser.</strong> Practice history is kept in local storage, and scores you add are kept in the browser's IndexedDB. Nothing is uploaded. Clearing site data, or the button on the Progress page, removes it; the Progress page can also export it.</li>
+  <li><strong>No accounts, no cookies, no ads.</strong> Visits are counted with Cloudflare Web Analytics, which uses no cookies and doesn't track you across sites.</li>
+</ul>
+
+<h2 id="open-source">Open source</h2>
+<p>The code is on <a href="https://github.com/17xande-dev/music-practice">GitHub</a> under the <a href="https://github.com/17xande-dev/music-practice/blob/master/LICENSE">MIT licence</a>. Issues and ideas are welcome there.</p>
+
+<h2 id="credits">Credits</h2>
+<p>Music Practice is built on the work of others:</p>
+<ul class="credits">
+  <li><a href="https://github.com/vexflow/vexflow">VexFlow</a> draws the scales staff (MIT), with the <a href="https://github.com/steinbergmedia/bravura">Bravura</a> and Academico fonts by Steinberg Media Technologies (SIL Open Font License 1.1).</li>
+  <li><a href="https://github.com/opensheetmusicdisplay/opensheetmusicdisplay">OpenSheetMusicDisplay</a> renders song scores (BSD-3-Clause), bundling VexFlow 1.2.93, JSZip, loglevel and typescript-collections (MIT).</li>
+  <li>The guitar's pitch detection is ported from <a href="https://github.com/ianprime0509/pitchy">pitchy</a> by Ian Johnson (MIT), an implementation of the McLeod Pitch Method.</li>
+  <li>The GitHub icon is from <a href="https://github.com/primer/octicons">Octicons</a> (MIT).</li>
+</ul>
+<p>The full licence texts and copyright notices are in <a href="{{asset "licenses.txt"}}">licenses.txt</a>.</p>
+</article>
+{{end}}
