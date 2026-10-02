@@ -18,6 +18,8 @@ import {
 } from "vexflow/bravura";
 import type { Hand, Spelled, Step } from "./theory.ts";
 
+const INK = "currentColor";
+
 export type StepMark = "current" | "ok" | "bad" | "early" | "late";
 /** VexFlow durations: quarter, eighth, sixteenth. */
 export type NoteDuration = "q" | "8" | "16";
@@ -101,8 +103,6 @@ export class StaffView {
       const w = this.container.clientWidth;
       if (this.steps.length && Math.abs(w - this.lastWidth) > 24) this.draw();
     }).observe(container);
-    // The ink colour is baked into the drawing, so a theme switch redraws.
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => this.draw());
   }
 
   /**
@@ -165,9 +165,10 @@ export class StaffView {
     const renderer = new Renderer(this.container as HTMLDivElement, Renderer.Backends.SVG);
     renderer.resize(width, lines.length * systemH);
     const ctx = renderer.getContext();
-    const ink = getComputedStyle(this.container).color || "#000";
-    ctx.setFillStyle(ink);
-    ctx.setStrokeStyle(ink);
+    // Everything is drawn in currentColor, so the sheet's colour (the site
+    // theme, or the sheet's own light/dark switch) is pure CSS: no redraw.
+    ctx.setFillStyle(INK);
+    ctx.setStrokeStyle(INK);
     const svg = this.container.querySelector("svg");
     svg?.setAttribute("role", "img");
     svg?.setAttribute("aria-label", "The scale in staff notation");
@@ -203,6 +204,9 @@ export class StaffView {
             clef,
             autoStem: true,
           });
+          // Stems and ledger lines carry their own style (black by default).
+          note.setStemStyle({ strokeStyle: INK });
+          note.setLedgerLineStyle({ strokeStyle: INK });
           // A chord's fingers stack as printed: the lowest note's finger
           // nearest the staff above it, the highest nearest the staff below.
           const order = below ? [...chord].reverse() : chord;

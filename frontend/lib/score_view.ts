@@ -77,9 +77,6 @@ export class ScoreView {
       const w = container.clientWidth;
       if (this.loaded && Math.abs(w - this.lastWidth) > 24) this.render();
     }).observe(container);
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-      if (this.loaded) this.render();
-    });
   }
 
   /**
@@ -124,7 +121,9 @@ export class ScoreView {
 
   private render() {
     this.lastWidth = this.container.clientWidth;
-    this.osmd.setOptions({ defaultColorMusic: getComputedStyle(this.container).color || "#000" });
+    // currentColor: the sheet's colour is CSS (site theme or the sheet's own
+    // light/dark switch), so switching needs no re-render.
+    this.osmd.setOptions({ defaultColorMusic: "currentColor" });
     this.osmd.render();
     const svg = this.container.querySelector("svg");
     svg?.setAttribute("role", "img");
