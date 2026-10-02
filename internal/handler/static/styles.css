@@ -1222,3 +1222,27 @@ button:has(> .icon) { display: inline-flex; align-items: center; gap: 0.4em; }
   &:hover { background: var(--paper-sunk); color: var(--ink); }
   .icon { width: 22px; height: 22px; }
 }
+
+/* ---- Song transport --------------------------------------------------------- */
+
+.score-page { cursor: pointer; }
+.transport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs) var(--gap-md);
+  padding: var(--gap-xs) var(--gap-sm);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+.transport-group { display: flex; align-items: center; gap: 2px; }
+.transport-view { margin-left: auto; gap: var(--gap-sm); }
+.transport-position {
+  font-size: var(--small);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  min-width: 7rem;
+}
+.transport .play-button { margin-inline: var(--gap-xs); }
+.icon-button:disabled { opacity: 0.4; }

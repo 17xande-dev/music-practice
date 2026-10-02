@@ -9,13 +9,15 @@
 // TempoEngine are shared with the scales page.
 
 import {
-  type Engine,
   type NoteEvent,
   NotesEngine,
   type StepResult,
+  summarize,
   type Summary,
   TempoEngine,
 } from "./lib/engine.ts";
+import type { Command } from "./lib/commands.ts";
+import { setPlaying } from "./lib/transport.ts";
 import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
@@ -31,7 +33,10 @@ import {
   practiceSteps,
   type Score,
   type Selection,
+  sliceFrom,
+  stepFromMeasure,
   stepOffsets,
+  stepOfRef,
   weakestRange,
 } from "./lib/score.ts";
 import { ScoreView } from "./lib/score_view.ts";
@@ -70,6 +75,11 @@ const ui = {
   status: el("exercise-status"),
   start: el<HTMLButtonElement>("start"),
   restart: el<HTMLButtonElement>("restart"),
+  stop: el<HTMLButtonElement>("stop"),
+  toStart: el<HTMLButtonElement>("to-start"),
+  prevMeasure: el<HTMLButtonElement>("prev-measure"),
+  nextMeasure: el<HTMLButtonElement>("next-measure"),
+  position: el("transport-position"),
   form: el<HTMLFormElement>("song-form"),
   mode: el<HTMLSelectElement>("song-mode"),
   hands: el<HTMLSelectElement>("song-hands"),
@@ -95,7 +105,7 @@ const ui = {
 };
 
 type Mode = "notes" | "tempo" | "listen";
-type Phase = "idle" | "countin" | "playing" | "done";
+type Phase = "idle" | "countin" | "playing" | "paused" | "done";
 
 const store = ProgressStore.fromWindow();
 const view = new ScoreView(ui.score);
@@ -112,6 +122,17 @@ let practice: Practice | null = null;
 let stepRefs: number[][] = [];
 let mode: Mode = "notes";
 let engine: NotesEngine | TempoEngine | null = null;
+/**
+ * A run is played in segments: each start, resume or seek begins a new
+ * engine on the selection from step `offset` on (sliceFrom). `attempted`
+ * keeps, per step of the selection, the latest result of each step played,
+ * so the run is scored over what was actually played (summarize).
+ */
+let offset = 0;
+let segment: Practice | null = null;
+let attempted = new Map<number, StepResult>();
+/** Where play starts or resumes (a step of the selection), when not playing. */
+let position = 0;
 let phase: Phase = "idle";
 let startTime = 0;
 let countIn: number[] = [];
@@ -306,25 +327,57 @@ function stop() {
   clearTimeout(loopTimer);
 }
 
+/** Keep the finished part of the current segment: its steps before `upto`. */
+function keepSegment(upto = Infinity) {
+  if (!engine) return;
+  engine.results.forEach((r, j) => {
+    if (j < upto && r.status !== "pending") attempted.set(offset + j, r);
+  });
+}
+
+/** Back to the start of the selection, nothing played. */
 function reset() {
   stop();
-  const steps = practice?.steps ?? [];
-  engine = mode === "notes" && steps.length ? new NotesEngine(steps) : null;
+  attempted = new Map();
+  position = 0;
   phase = "idle";
   shownCurrent = -1;
   keyboard.releaseAll();
   view.clearMarks();
   ui.results.hidden = true;
-  ui.start.hidden = mode === "notes";
-  ui.start.textContent = "Start";
+  beginWaiting(0);
   showProgress();
 }
 
+/** Wait mode: grade from step k on. (The other modes play from there on Play.) */
+function beginWaiting(k: number) {
+  engine = null;
+  segment = null;
+  offset = k;
+  if (mode !== "notes" || !practice?.steps.length) return;
+  segment = sliceFrom(practice, k);
+  engine = new NotesEngine(segment.steps);
+}
+
+const playingNow = () => phase === "countin" || phase === "playing";
+
+/** The play button, stop and the position readout, for the current state. */
+function showTransport() {
+  setPlaying(ui.start, playingNow(), mode === "listen" ? ["Listen", "Pause"] : ["Play", "Pause"]);
+  ui.start.hidden = mode === "notes";
+  ui.stop.disabled = !playingNow() && phase !== "paused";
+  const n = practice?.steps.length ?? 0;
+  const i = currentStep();
+  ui.position.textContent = n && i >= 0 ? `m. ${measureOf(i)} · ${i + 1}/${n}` : "";
+}
+
+/** The step the player is at, in the selection (-1 when finished). */
 function currentStep(): number {
   if (!practice?.steps.length) return -1;
-  if (engine instanceof NotesEngine) return engine.done ? -1 : engine.cursor;
+  if (engine instanceof NotesEngine) return engine.done ? -1 : offset + engine.cursor;
   if (phase === "done") return -1;
-  return Math.max(0, shownCurrent);
+  if (playingNow()) return Math.max(0, shownCurrent);
+  return position;
 }
 
 function fingersFor(i: number): (number | null)[] | undefined {
@@ -349,40 +402,62 @@ function measureOf(i: number): number {
   return practice?.events[i]?.measure ?? 0;
 }
 
-/** Status line and highlights (wait mode, and before Start). */
+/** Status line and highlights (wait mode, and before Play or while paused). */
 function showProgress() {
   if (!song || !practice) return;
+  showTransport();
   if (!practice.steps.length) {
     ui.status.textContent = "Nothing to play for this hand in these measures.";
     keyboard.setTargets([]);
     return;
   }
-  if (phase === "countin" || phase === "playing") return; // the frame owns the view
+  if (playingNow()) return; // the frame owns the view
   const i = currentStep();
   showTargets(i);
   if (i < 0) {
     view.hideCursor();
-    ui.status.textContent = "Done. Press Restart or Space to go again.";
+    ui.status.textContent = "Done. Press Restart (R) to go again.";
     return;
   }
+  // Move the "current" mark, leaving steps already graded as they are.
+  if (shownCurrent >= 0 && shownCurrent !== i && !attempted.has(shownCurrent)) {
+    view.mark(stepRefs[shownCurrent], null);
+  }
+  shownCurrent = i;
   view.mark(stepRefs[i], "current");
   view.showCursor(stepRefs[i]);
   view.reveal(stepRefs[i][0]);
   const n = practice.steps.length;
+  const where = `measure ${measureOf(i)}`;
   ui.status.textContent = mode === "notes"
-    ? (i === 0
-      ? `Play the first note to begin · measure ${measureOf(0)}`
-      : `Note ${i + 1} of ${n} · measure ${measureOf(i)}`)
+    ? (i === 0 && !attempted.size
+      ? `Play the first note to begin · ${where}`
+      : `Note ${i + 1} of ${n} · ${where}`)
+    : phase === "paused"
+    ? `Paused at ${where}. Space to resume.`
+    : i > 0
+    ? `Ready at ${where}. Space to play from here.`
     : mode === "tempo"
-    ? "Press Start (or Space) for a one-bar count-in."
-    : "Press Start (or Space) to listen.";
+    ? "Press Play (or Space) for a one-bar count-in."
+    : "Press Play (or Space) to listen.";
 }
 
 // ---- Tempo and listen ----------------------------------------------------------
 
-async function start() {
-  if (!song || !practice?.steps.length) return;
-  reset();
+/** Play (tempo or listen) from step k of the selection. */
+async function start(k = position) {
+  if (!song || !practice?.steps.length || mode === "notes") return;
+  stop();
+  if (phase === "done") {
+    // A finished run starts over.
+    attempted = new Map();
+    view.clearMarks();
+    k = 0;
+  }
+  ui.results.hidden = true;
+  offset = Math.min(Math.max(0, k), practice.steps.length - 1);
+  position = offset;
+  segment = sliceFrom(practice, offset);
   const pct = tempoPct();
   const sel = selection();
   const notes = mode === "listen"
@@ -390,30 +465,88 @@ async function start() {
     : ui.accompany.checked && sel.hands !== "both"
     ? "other"
     : "none";
-  const plan = playPlan(song.score, practice, {
+  const plan = playPlan(song.score, segment, {
     pct,
     metronome: mode !== "listen" && ui.metronome.checked,
     notes,
     countIn: mode === "tempo",
   });
-  ui.start.textContent = "Stop";
+  engine = null;
+  phase = mode === "tempo" ? "countin" : "playing";
+  if (shownCurrent >= 0 && !attempted.has(shownCurrent)) view.mark(stepRefs[shownCurrent], null);
+  shownCurrent = -1;
+  showTransport();
   const sched = await player.start(plan);
   startTime = sched.startTime;
   countIn = sched.countIn;
   endTime = startTime + plan.end;
   if (mode === "tempo") {
-    engine = new TempoEngine(practice.steps, {
-      bpm: (bpmAt(song.score.tempo, practice.startBeat) * pct) / 100,
+    engine = new TempoEngine(segment.steps, {
+      bpm: (bpmAt(song.score.tempo, segment.startBeat) * pct) / 100,
       notesPerBeat: 1,
       startTime,
       latencyMs: Number(ui.latency.value) || 0,
-      offsets: stepOffsets(song.score, practice, pct),
+      offsets: stepOffsets(song.score, segment, pct),
     });
-    phase = "countin";
-  } else {
-    phase = "playing";
   }
   frame = requestAnimationFrame(tick);
+}
+
+/** Stop playing, keeping the place: Space resumes from the step it reached. */
+function pause() {
+  if (!playingNow()) return;
+  stop();
+  const at = Math.max(offset, shownCurrent);
+  keepSegment(at - offset);
+  if (shownCurrent >= 0 && !attempted.has(shownCurrent)) view.mark(stepRefs[shownCurrent], null);
+  position = at;
+  phase = "paused";
+  engine = null;
+  showProgress();
+}
+
+function togglePlay() {
+  if (mode === "notes") return;
+  if (playingNow()) pause();
+  else void start();
+}
+
+/**
+ * Move to step k: while playing, carry on playing from there; in wait mode
+ * the cursor jumps there; otherwise it's where Play starts.
+ */
+function seek(k: number) {
+  if (!practice?.steps.length) return;
+  k = Math.min(Math.max(0, k), practice.steps.length - 1);
+  if (playingNow()) {
+    pause();
+    void start(k);
+    return;
+  }
+  if (phase === "done") {
+    attempted = new Map();
+    view.clearMarks();
+    phase = "idle";
+  }
+  if (mode === "notes") {
+    if (engine instanceof NotesEngine) keepSegment(engine.cursor);
+    beginWaiting(k);
+  }
+  position = k;
+  showProgress();
+}
+
+function skipMeasure(dir: -1 | 1) {
+  if (!practice?.steps.length) return;
+  const from = currentStep() < 0 ? practice.steps.length - 1 : currentStep();
+  seek(stepFromMeasure(practice, from, dir));
+}
+
+/** Back to the start; if it was playing, play again from the start. */
+function restart() {
+  const wasPlaying = playingNow();
+  reset();
+  if (wasPlaying) void start(0);
 }
 
 function markFor(r: StepResult): StepMark {
@@ -423,30 +556,37 @@ function markFor(r: StepResult): StepMark {
   return "ok";
 }
 
+/** Highlight step i of the selection as the one being played. */
 function setCurrent(i: number) {
   if (i === shownCurrent || !practice) return;
-  const r = engine?.results[shownCurrent];
-  if (shownCurrent >= 0 && (!r || r.status === "pending")) view.mark(stepRefs[shownCurrent], null);
+  const prev = engine?.results[shownCurrent - offset];
+  if (shownCurrent >= 0 && (!prev || prev.status === "pending")) {
+    view.mark(stepRefs[shownCurrent], null);
+  }
   shownCurrent = i;
-  if (!engine || engine.results[i].status === "pending") view.mark(stepRefs[i], "current");
+  const r = engine?.results[i - offset];
+  if (!r || r.status === "pending") view.mark(stepRefs[i], "current");
   view.showCursor(stepRefs[i]);
   showTargets(i);
   view.reveal(stepRefs[i][0]);
+  showTransport();
 }
 
 function tick() {
   const now = performance.now();
-  const steps = practice!.steps;
+  const seg = segment!;
   if (mode === "listen") {
     if (now >= endTime) {
       finishListen();
       return;
     }
-    const offsets = stepOffsets(song!.score, practice!, tempoPct());
-    let i = 0;
-    while (i + 1 < offsets.length && startTime + offsets[i + 1] <= now) i++;
-    if (now >= startTime) setCurrent(i);
-    ui.status.textContent = now < startTime ? "Listening…" : `Listening · measure ${measureOf(i)}`;
+    const offsets = stepOffsets(song!.score, seg, tempoPct());
+    let j = 0;
+    while (j + 1 < offsets.length && startTime + offsets[j + 1] <= now) j++;
+    if (now >= startTime) setCurrent(offset + j);
+    ui.status.textContent = now < startTime
+      ? "Listening…"
+      : `Listening · measure ${measureOf(offset + j)}`;
     frame = requestAnimationFrame(tick);
     return;
   }
@@ -456,41 +596,43 @@ function tick() {
     if (now >= e.dueAt(0) - e.toleranceAt(0) * 2) phase = "playing";
     else {
       ui.status.textContent = left > 0 ? `Count-in: ${left}…` : "Go!";
-      setCurrent(0);
+      setCurrent(offset);
     }
   }
   if (phase === "playing") {
-    for (const i of e.tick(now)) view.mark(stepRefs[i], markFor(e.results[i]));
+    for (const j of e.tick(now)) view.mark(stepRefs[offset + j], markFor(e.results[j]));
     if (e.done) {
-      finishTempo(e);
+      finishTempo();
       return;
     }
-    const i = Math.max(0, Math.min(steps.length - 1, e.stepAt(now - (e.opts.latencyMs ?? 0))));
-    setCurrent(i);
-    ui.status.textContent = `Measure ${measureOf(i)} · ${Math.round(e.opts.bpm)} BPM`;
+    const j = Math.max(0, Math.min(seg.steps.length - 1, e.stepAt(now - (e.opts.latencyMs ?? 0))));
+    setCurrent(offset + j);
+    ui.status.textContent = `Measure ${measureOf(offset + j)} · ${Math.round(e.opts.bpm)} BPM`;
   }
   frame = requestAnimationFrame(tick);
 }
 
-function finishTempo(e: TempoEngine) {
+function finishTempo() {
   player.stop();
+  keepSegment();
   phase = "done";
-  ui.start.textContent = "Start";
+  engine = null;
   keyboard.setTargets([]);
   view.hideCursor();
-  ui.status.textContent = "Done. Press Start (or Space) to go again.";
-  finishRun(e);
+  showTransport();
+  ui.status.textContent = "Done. Press Play (or Space) to go again.";
+  finishRun();
   again();
 }
 
 function finishListen() {
   player.stop();
   phase = "done";
-  ui.start.textContent = "Start";
   if (shownCurrent >= 0) view.mark(stepRefs[shownCurrent], null);
   keyboard.setTargets([]);
   view.hideCursor();
-  ui.status.textContent = "Done. Press Start (or Space) to listen again.";
+  showTransport();
+  ui.status.textContent = "Done. Press Play (or Space) to listen again.";
   again();
 }
 
@@ -499,8 +641,8 @@ function again() {
   if (!ui.loop.checked) return;
   ui.status.textContent += " Repeating…";
   loopTimer = setTimeout(() => {
-    if (mode === "notes") reset();
-    else void start();
+    reset();
+    if (mode !== "notes") void start(0);
   }, mode === "notes" ? 1200 : 2000);
 }
 
@@ -528,15 +670,17 @@ function handleNote(ev: NoteEvent) {
   if (fb.kind === "correct" && fb.stepDone) {
     const r = engine!.results[fb.step];
     view.mark(
-      stepRefs[fb.step],
+      stepRefs[offset + fb.step],
       engine instanceof TempoEngine ? markFor(r) : r.clean ? "ok" : "bad",
     );
-    if (engine instanceof NotesEngine) accompanyStep(fb.step);
+    if (engine instanceof NotesEngine) accompanyStep(offset + fb.step);
   }
   if (engine instanceof NotesEngine) {
+    const done = engine.done;
+    if (done) keepSegment();
     showProgress();
-    if (engine.done) {
-      finishRun(engine);
+    if (done) {
+      finishRun();
       again();
     }
   }
@@ -633,10 +777,18 @@ function stat(label: string, value: string): HTMLDivElement {
   return div;
 }
 
-function finishRun(e: Engine) {
-  if (!song || !practice) return;
-  const s = e.summary();
-  const stats = measureStats(practice, e.results);
+/** Score and record the run: every step attempted since the last reset. */
+function finishRun() {
+  if (!song || !practice || !attempted.size) return;
+  const steps = [...attempted.keys()].sort((a, b) => a - b);
+  const results = steps.map((k) => attempted.get(k)!);
+  const bpm = (bpmAt(song.score.tempo, practice.beats[steps[0]]) * tempoPct()) / 100;
+  const tolerance = mode === "tempo" ? Math.min(60, 60000 / bpm / 4) : 0;
+  const s = summarize(mode === "tempo" ? "tempo" : "notes", results, tolerance);
+  const stats = measureStats(
+    { ...practice, events: steps.map((k) => practice!.events[k]) },
+    results,
+  );
   showResults(s, stats);
   ui.best.hidden = true;
   if (s.correct === 0 && s.wrongNotes === 0) return; // nothing was played
@@ -647,7 +799,8 @@ function finishRun(e: Engine) {
     songId: song.meta?.id ?? "unsaved",
     title: ui.title.value || "Untitled",
     hands: sel.hands,
-    from: sel.from!,
+    // A run started part way in counts from the measure it started in.
+    from: Math.max(sel.from!, measureOf(steps[0])),
     to: sel.to!,
     mode: mode === "tempo" ? "tempo" : "notes",
     tempoPct: mode === "tempo" ? tempoPct() : 100,
@@ -830,27 +983,25 @@ ui.title.addEventListener("change", () => {
     void library?.update(song.meta.id, { title }).then(renderLibrary);
   }
 });
-ui.start.addEventListener("click", () => {
-  toggle();
-  ui.start.blur();
-});
-ui.restart.addEventListener("click", () => {
-  reset();
-  ui.restart.blur();
-});
-function toggle() {
-  if (phase === "countin" || phase === "playing") reset();
-  else void start();
+for (
+  const [b, run] of [
+    [ui.start, togglePlay],
+    [ui.stop, () => reset()],
+    [ui.restart, restart],
+    [ui.toStart, () => seek(0)],
+    [ui.prevMeasure, () => skipMeasure(-1)],
+    [ui.nextMeasure, () => skipMeasure(1)],
+  ] as const
+) {
+  b.addEventListener("click", () => {
+    run();
+    b.blur();
+  });
 }
-document.addEventListener("keydown", (e) => {
-  const t = e.target as HTMLElement;
-  if (e.code !== "Space" || !song || ["BUTTON", "SELECT", "INPUT", "A"].includes(t.tagName)) {
-    return;
-  }
-  e.preventDefault();
-  if (mode === "notes") reset();
-  else toggle();
-});
+// A click on the score moves the play position there.
+view.onSeek = (ref) => {
+  if (practice) seek(stepOfRef(practice, ref));
+};
 ui.device.addEventListener("change", () => {
   midi.select(ui.device.value);
   const name = ui.device.selectedOptions[0]?.textContent;
@@ -900,7 +1051,158 @@ ui.dropZone.addEventListener("drop", (e) => {
   if (f) void addFile(f);
 });
 
-installCommands(siteCommands());
+/** Set a form control and let its change handlers run, as if changed by hand. */
+function choose(select: HTMLSelectElement, value: string) {
+  select.value = value;
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+const hasSong = () => !!song;
+const toggleBox = (box: HTMLInputElement) => () => box.click();
+
+const commands: Command[] = [
+  {
+    id: "play",
+    label: "Play / pause",
+    group: "Playback",
+    shortcut: "Space",
+    keywords: ["start", "resume", "listen"],
+    enabled: () => hasSong() && mode !== "notes",
+    run: togglePlay,
+  },
+  {
+    id: "stop",
+    label: "Stop",
+    group: "Playback",
+    shortcut: "Escape",
+    enabled: hasSong,
+    run: () => reset(),
+  },
+  {
+    id: "restart",
+    label: "Restart from the beginning",
+    group: "Playback",
+    shortcut: "R",
+    enabled: hasSong,
+    run: restart,
+  },
+  {
+    id: "prev-measure",
+    label: "Previous measure",
+    group: "Navigate",
+    shortcut: "ArrowLeft",
+    repeatable: true,
+    keywords: ["back", "rewind"],
+    enabled: hasSong,
+    run: () => skipMeasure(-1),
+  },
+  {
+    id: "next-measure",
+    label: "Next measure",
+    group: "Navigate",
+    shortcut: "ArrowRight",
+    repeatable: true,
+    keywords: ["forward", "skip"],
+    enabled: hasSong,
+    run: () => skipMeasure(1),
+  },
+  {
+    id: "to-start",
+    label: "Go to the start",
+    group: "Navigate",
+    shortcut: "Home",
+    enabled: hasSong,
+    run: () => seek(0),
+  },
+  {
+    id: "whole",
+    label: "Practise the whole piece",
+    group: "Practice",
+    keywords: ["measures", "range"],
+    enabled: hasSong,
+    run: () => ui.whole.click(),
+  },
+  {
+    id: "weakest",
+    label: "Practise the weakest measures",
+    group: "Practice",
+    enabled: () => !ui.loopWeakest.hidden && !ui.results.hidden,
+    run: () => ui.loopWeakest.click(),
+  },
+  ...([
+    ["notes", "Mode: wait for each note", ["wait"]],
+    ["tempo", "Mode: play in time", ["tempo", "metronome"]],
+    ["listen", "Mode: listen", ["hear", "playback"]],
+  ] as const).map(([value, label, keywords]): Command => ({
+    id: `mode.${value}`,
+    label,
+    group: "Practice",
+    keywords: [...keywords],
+    enabled: hasSong,
+    run: () => choose(ui.mode, value),
+  })),
+  ...([["both", "Hands: both"], ["rh", "Hands: right only"], ["lh", "Hands: left only"]] as const)
+    .map(([value, label]): Command => ({
+      id: `hands.${value}`,
+      label,
+      group: "Practice",
+      enabled: () => hasSong() && !ui.hands.disabled,
+      run: () => choose(ui.hands, value),
+    })),
+  {
+    id: "loop",
+    label: "Repeat the selection on / off",
+    group: "Practice",
+    shortcut: "Alt+KeyL",
+    keywords: ["loop"],
+    run: toggleBox(ui.loop),
+  },
+  {
+    id: "metronome",
+    label: "Metronome on / off",
+    group: "Practice",
+    shortcut: "Alt+KeyM",
+    keywords: ["click"],
+    run: toggleBox(ui.metronome),
+  },
+  {
+    id: "accompany",
+    label: "Play the other hand on / off",
+    group: "Practice",
+    keywords: ["accompaniment"],
+    run: toggleBox(ui.accompany),
+  },
+  {
+    id: "fingering",
+    label: "Show / hide fingers",
+    group: "View",
+    shortcut: "Alt+KeyN",
+    keywords: ["fingering"],
+    run: toggleBox(ui.fingering),
+  },
+  {
+    id: "sheet",
+    label: "Music sheet light / dark",
+    group: "View",
+    shortcut: "Alt+KeyB",
+    keywords: ["theme"],
+    run: () => el("sheet-theme").click(),
+  },
+  {
+    id: "calibrate",
+    label: "Measure latency",
+    group: "Practice",
+    keywords: ["calibrate", "offset", "delay"],
+    run: () => void calibrate(),
+  },
+  ...[...document.querySelectorAll<HTMLButtonElement>("button.starter")].map((b): Command => ({
+    id: `starter.${b.dataset.file}`,
+    label: `Open ${b.querySelector(".song-name")?.textContent ?? b.dataset.file}`,
+    group: "Practice",
+    keywords: ["starter", "song", "piece"],
+    run: () => b.click(),
+  })),
+];
+installCommands([...siteCommands(), ...commands]);
 ui.storageWarning.hidden = store.available;
 sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.score], store);
 restore();
@@ -941,10 +1243,16 @@ void SongLibrary.open().then(async (lib) => {
   engine: () => engine,
   practice: () => practice,
   calibration,
+  /** Due times of the playing segment's steps, keyed by step of the selection. */
   dueTimes: () => {
     const e = engine;
-    return e instanceof TempoEngine ? practice!.steps.map((_, i) => e.dueAt(i)) : [];
+    return e instanceof TempoEngine
+      ? Object.fromEntries(segment!.steps.map((_, j) => [offset + j, e.dueAt(j)]))
+      : {};
   },
+  position: () => currentStep(),
+  phase: () => phase,
+  seek,
   add: (text: string, name = "test.musicxml") =>
     addFile(new File([text], name, { type: "application/xml" })),
 };

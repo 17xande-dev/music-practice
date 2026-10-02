@@ -91,6 +91,8 @@ export class ScoreView {
   private lastWidth = 0;
   /** Called after a re-render (resize, theme), when refs point at new elements. */
   onRender: () => void = () => {};
+  /** A click on the score: the note nearest the click (a RawNote.ref). */
+  onSeek: (ref: number) => void = () => {};
 
   constructor(private readonly container: HTMLElement) {
     // OSMD sizes the score to its element's outer width; an inner element
@@ -103,6 +105,10 @@ export class ScoreView {
     this.cursor.className = "score-cursor";
     this.cursor.setAttribute("aria-hidden", "true");
     this.cursor.hidden = true;
+    page.addEventListener("click", (e) => {
+      const ref = this.refAt(e.clientX, e.clientY);
+      if (ref !== null) this.onSeek(ref);
+    });
     this.osmd = new OpenSheetMusicDisplay(page, {
       backend: "svg",
       autoResize: false, // resized below, so marks can be put back
@@ -296,6 +302,28 @@ export class ScoreView {
     this.cursor.style.width = `${3 * zoom}px`;
     this.cursor.style.height = `${left.height}px`;
     this.cursor.hidden = false;
+  }
+
+  /**
+   * The note a click lands on: in the system under the click (its staves'
+   * band, with some room above and below), the first note at or right of
+   * the click, or that system's last note when clicking past the end.
+   */
+  refAt(clientX: number, clientY: number): number | null {
+    const box = this.page.getBoundingClientRect();
+    const x = clientX - box.left;
+    const y = clientY - box.top;
+    const slack = UNIT * this.osmd.Zoom * 3;
+    let best: number | null = null;
+    let bestX = Infinity;
+    let last: number | null = null;
+    let lastX = -Infinity;
+    this.spots.forEach((s, ref) => {
+      if (!s || y < s.top - slack || y > s.top + s.height + slack) return;
+      if (s.x >= x - slack / 2 && s.x < bestX) [best, bestX] = [ref, s.x];
+      if (s.x > lastX) [last, lastX] = [ref, s.x];
+    });
+    return best ?? last;
   }
 
   hideCursor() {

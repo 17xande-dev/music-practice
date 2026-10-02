@@ -46,11 +46,6 @@
       <p id="song-composer" class="song-composer"></p>
       <p id="exercise-status" class="exercise-status" aria-live="polite"></p>
     </div>
-    <div class="actions">
-      <button id="start" type="button" title="Start or stop (Space)">Start</button>
-      <button id="restart" type="button" class="secondary" title="Back to the beginning of the selection">Restart</button>
-      <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
-    </div>
   </div>
 
   <form id="song-form" class="panel song-controls" aria-label="Practice options">
@@ -101,6 +96,20 @@
     </div>
   </form>
 
+  <div id="transport" class="transport" role="toolbar" aria-label="Playback">
+    <div class="transport-group">
+      <button id="to-start" type="button" class="icon-button" aria-label="Go to start" title="Go to start (Home)">{{icon "to-start"}}</button>
+      <button id="prev-measure" type="button" class="icon-button" aria-label="Previous measure" title="Previous measure (←)">{{icon "skip-back"}}</button>
+      <button id="start" type="button" class="play-button" data-state="stopped" title="Play / pause (Space)">{{icon "play"}}{{icon "pause"}}<span class="label">Play</span></button>
+      <button id="stop" type="button" class="icon-button" aria-label="Stop" title="Stop (Esc)">{{icon "stop"}}</button>
+      <button id="next-measure" type="button" class="icon-button" aria-label="Next measure" title="Next measure (→)">{{icon "skip-forward"}}</button>
+      <button id="restart" type="button" class="icon-button" aria-label="Restart" title="Restart from the beginning (R)">{{icon "restart"}}</button>
+    </div>
+    <span id="transport-position" class="transport-position" aria-live="off"></span>
+    <div class="transport-group transport-view">
+      <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
+    </div>
+  </div>
   <div id="score" class="score-scroll sheet"></div>
   <div id="keyboard" class="keyboard-scroll"></div>
 </section>
