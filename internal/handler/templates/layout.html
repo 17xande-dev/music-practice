@@ -47,6 +47,13 @@
     <p>Your practice history is kept in this browser only. <a href="/about"{{if eq .Nav "about"}} aria-current="page"{{end}}>About, privacy and credits</a></p>
   </div>
 </footer>
+<dialog id="palette" class="palette" aria-labelledby="palette-title">
+  <h2 id="palette-title" class="visually-hidden">Commands</h2>
+  <input id="palette-input" class="palette-input" type="text" placeholder="Type a command…" autocomplete="off" spellcheck="false"
+    role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" aria-label="Search commands">
+  <div id="palette-list" class="palette-list" role="listbox" aria-label="Commands" tabindex="-1"></div>
+  <p class="palette-foot"><kbd>↑</kbd><kbd>↓</kbd> choose · <kbd>Enter</kbd> run · <kbd>Esc</kbd> close</p>
+</dialog>
 </body>
 </html>
 {{end}}

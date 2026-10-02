@@ -47,7 +47,9 @@ import { playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
 
+import { installCommands } from "./lib/palette.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
+import { siteCommands } from "./lib/site_commands.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
@@ -898,6 +900,7 @@ ui.dropZone.addEventListener("drop", (e) => {
   if (f) void addFile(f);
 });
 
+installCommands(siteCommands());
 ui.storageWarning.hidden = store.available;
 sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.score], store);
 restore();

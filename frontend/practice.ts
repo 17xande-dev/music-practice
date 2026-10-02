@@ -62,7 +62,9 @@ import {
   VARIANTS,
 } from "./lib/theory.ts";
 
+import { installCommands } from "./lib/palette.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
+import { siteCommands } from "./lib/site_commands.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
@@ -1068,6 +1070,7 @@ document.addEventListener("keydown", (e) => {
   else reset();
 });
 
+installCommands(siteCommands());
 ui.storageWarning.hidden = store.available;
 sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.staff], store);
 

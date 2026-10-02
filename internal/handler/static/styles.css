@@ -1153,3 +1153,55 @@ label.button { display: inline-flex; align-items: center; }
   gap: var(--gap-xs);
 }
 .sheet-switch-label { font-size: var(--small); color: var(--ink-soft); }
+
+/* ---- Command palette (lib/palette.ts) ------------------------------------ */
+
+.palette {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: min(32rem, calc(100vh - 4rem));
+  margin: 12vh auto auto;
+  padding: var(--gap-sm);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+
+  &[open] { display: flex; flex-direction: column; gap: var(--gap-xs); }
+  &::backdrop { background: rgb(0 0 0 / 0.45); }
+}
+.palette-input { width: 100%; }
+.palette-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+.palette-group {
+  padding: var(--gap-sm) var(--gap-sm) var(--gap-xs);
+  font-size: var(--small);
+  color: var(--ink-faint);
+}
+.palette-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: var(--gap-xs) var(--gap-sm);
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+
+  &[aria-selected="true"] { background: var(--paper-sunk); box-shadow: inset 3px 0 0 var(--accent); }
+  &[aria-disabled="true"] { opacity: 0.5; cursor: default; }
+}
+.palette-keys, .palette-foot kbd {
+  font: 0.8rem var(--font-mono);
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper-sunk);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.palette-empty { padding: var(--gap-sm); color: var(--ink-soft); }
+.palette-foot { margin: 0; font-size: var(--small); color: var(--ink-faint); display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }

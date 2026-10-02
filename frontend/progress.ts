@@ -7,7 +7,9 @@ import { better, ProgressStore, scaleKey, type Session } from "./lib/progress_st
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import { compareByCircle, scaleTitle } from "./lib/theory.ts";
 
+import { installCommands } from "./lib/palette.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
+import { siteCommands } from "./lib/site_commands.ts";
 
 registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -284,3 +286,5 @@ new ResizeObserver(() => {
 }).observe(ui.trendChart);
 
 render();
+
+installCommands(siteCommands());
