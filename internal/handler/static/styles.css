@@ -1,23 +1,34 @@
 /* Music Practice theme. Every knob is a custom property in :root, and the
-   dark palette overrides the same names, so nothing below hard-codes a colour. */
+   dark palette overrides the same names, so nothing below hard-codes a colour.
+
+   The palette is 17xande.dev's: a warm near-black and orange in the dark
+   theme (its values exactly), and the same warm hues on cream in the light
+   one. */
 :root {
-  --paper: #fbfbf9;
-  --paper-sunk: #f0f0ec;
-  --paper-raised: #fff;
-  --ink: #16181a;
-  --ink-soft: #4a4f55;
-  --ink-faint: #7c848c;
-  --rule: #deded8;
-  --accent: #1f4d5c;
+  --paper: #fbf7f1;
+  --paper-sunk: #f2ebe1;
+  --paper-raised: #fffdf9;
+  --ink: #1d1814;
+  --ink-soft: #5a4c3e;
+  --ink-faint: #776757;
+  --rule: #e4d9cb;
+  --accent: #a35400;
   --accent-ink: #fff;
 
-  /* Feedback colours for the keyboard, the staff and the results. */
+  /* Feedback colours for the keyboard, the staff and the results. The
+     current note is the brand orange, so early is blue rather than amber.
+     ok/early/late checked with the dataviz palette validator against the
+     raised surface (all pairs, CVD and normal vision). */
   --ok: #1d7a46;
   --bad: #c0392b;
-  --target: #2f6fd6;
-  --hint: #c9dcf5;
-  --early: #b7791f;
-  --late: #7b4fc4;
+  --target: #b35c00;
+  /* Text on a --target fill. */
+  --target-ink: #fff;
+  --hint: #f6dcb8;
+  --early: #2a6fb8;
+  --late: #a8378a;
+  /* Warnings (notices, status lines, the heat map's middle): amber. */
+  --warn: #9a6700;
 
   /* Piano keys stay literal white and black in both themes. */
   --key-white: #fff;
@@ -45,23 +56,24 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #131517;
-    --paper-sunk: #1b1e21;
-    --paper-raised: #202428;
-    --ink: #e8eaec;
-    --ink-soft: #b3b9bf;
-    --ink-faint: #858d95;
-    --rule: #33383d;
-    --accent: #7fc4d6;
-    --accent-ink: #0d1f24;
-    /* ok/early/late checked with the dataviz palette validator against
-       this surface: lightness band, chroma, CVD and contrast. */
+    --paper: #110d08;
+    --paper-sunk: #0a0805;
+    --paper-raised: #1d1814;
+    --ink: #f2ebe3;
+    --ink-soft: #c2b5a6;
+    --ink-faint: #9c8e7e;
+    --rule: #3a2f24;
+    --accent: #ffa500;
+    --accent-ink: #140e05;
+    /* Validated as in the light theme, against #1d1814. */
     --ok: #2fa36b;
     --bad: #ff6b5b;
-    --target: #6ea3ff;
-    --hint: #2a3f5e;
-    --early: #c28630;
-    --late: #9a7ede;
+    --target: #ffa500;
+    --target-ink: #140e05;
+    --hint: #3a250a;
+    --early: #4a9be0;
+    --late: #b9509f;
+    --warn: #e0a030;
   }
 }
 
@@ -177,7 +189,7 @@ a { color: var(--accent); }
   background: var(--paper-sunk);
   border-left: 4px solid var(--accent);
 
-  &.warn { border-left-color: var(--early); }
+  &.warn { border-left-color: var(--warn); }
   &.error { border-left-color: var(--bad); }
 }
 
@@ -276,7 +288,7 @@ main > .inner { display: flex; flex-direction: column; gap: var(--gap-md); }
 
   .field { flex: 1 1 14rem; max-width: 22rem; }
   .status { margin: 0; align-self: center; flex: 1 1 12rem; color: var(--ink-soft); font-size: var(--small); }
-  .status.warn { color: var(--early); }
+  .status.warn { color: var(--warn); }
   .qwerty-hint { flex-basis: 100%; margin: 0; font-size: var(--small); color: var(--ink-faint); }
 }
 
@@ -368,7 +380,7 @@ kbd {
     .name.small { font-size: 14px; }
     &.minor .name.small { font-size: 12px; }
     .sig { font: 10px var(--font); fill: var(--ink-faint); }
-    &.selected text { fill: #fff; }
+    &.selected text { fill: var(--target-ink); }
     &.selected .sig { fill: rgb(255 255 255 / 0.8); }
   }
 
@@ -432,7 +444,7 @@ kbd {
   }
 
   input:hover + span { border-color: var(--target); }
-  input:checked + span { background: var(--target); border-color: var(--target); color: #fff; }
+  input:checked + span { background: var(--target); border-color: var(--target); color: var(--target-ink); }
   input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
   input:disabled { cursor: not-allowed; }
   input:disabled + span { opacity: 0.45; border-style: dashed; }
@@ -527,7 +539,7 @@ kbd {
     }
     &.outside circle { stroke-dasharray: 3 2; }
     &.target circle { fill: var(--target); }
-    &.target text { fill: #fff; }
+    &.target text { fill: var(--target-ink); }
     &.down.ok circle { fill: var(--ok); stroke: var(--ok); }
     &.down.bad circle { fill: var(--bad); stroke: var(--bad); }
     &.down.neutral circle { fill: var(--ink-faint); }
@@ -561,7 +573,7 @@ kbd {
   /* The finger for the next note, on the highlighted key itself. */
   .fingers text {
     font: 700 13px var(--font);
-    fill: #fff;
+    fill: var(--target-ink);
     text-anchor: middle;
     pointer-events: none;
   }
@@ -774,7 +786,7 @@ button.secondary.danger { background: transparent; color: var(--bad); border-col
     font-weight: 600;
 
     &:hover { background: var(--paper-sunk); }
-    &[aria-pressed="true"] { background: var(--target); border-color: var(--target); color: #fff; }
+    &[aria-pressed="true"] { background: var(--target); border-color: var(--target); color: var(--target-ink); }
     /* The string the tuner hears, when tuning on Auto. */
     &.detected:not([aria-pressed="true"]) { border-color: var(--target); box-shadow: inset 0 0 0 1px var(--target); }
   }
@@ -808,7 +820,7 @@ button.secondary.danger { background: transparent; color: var(--bad); border-col
   .needle { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; transition: x1 0.08s, x2 0.08s; }
   .needle.idle { opacity: 0.25; }
   .in-tune .needle { stroke: var(--ok); }
-  .close .needle { stroke: var(--early); }
+  .close .needle { stroke: var(--warn); }
   .flat .needle, .sharp .needle { stroke: var(--bad); }
 }
 
@@ -847,7 +859,7 @@ label.button { display: inline-flex; align-items: center; }
 }
 
 .library-status { margin: 0; color: var(--ink-soft); font-size: var(--small); min-height: 1.4em; }
-.library-status.warn { color: var(--early); }
+.library-status.warn { color: var(--warn); }
 
 .song-list {
   list-style: none;
@@ -984,9 +996,9 @@ label.button { display: inline-flex; align-items: center; }
   }
   /* Clean (4) to most trouble (0). Text stays white on every level. */
   .level-4 { background: var(--ok); }
-  .level-3 { background: color-mix(in oklab, var(--ok), var(--early) 45%); }
-  .level-2 { background: var(--early); }
-  .level-1 { background: color-mix(in oklab, var(--early), var(--bad) 55%); }
+  .level-3 { background: color-mix(in oklab, var(--ok), var(--warn) 45%); }
+  .level-2 { background: var(--warn); }
+  .level-1 { background: color-mix(in oklab, var(--warn), var(--bad) 55%); }
   .level-0 { background: var(--bad); }
   .heat-cell:hover { filter: brightness(1.1); }
 }
@@ -1001,9 +1013,9 @@ label.button { display: inline-flex; align-items: center; }
 
   span { width: 0.7rem; height: 0.7rem; border-radius: 2px; }
   .level-4 { background: var(--ok); }
-  .level-3 { background: color-mix(in oklab, var(--ok), var(--early) 45%); }
-  .level-2 { background: var(--early); }
-  .level-1 { background: color-mix(in oklab, var(--early), var(--bad) 55%); }
+  .level-3 { background: color-mix(in oklab, var(--ok), var(--warn) 45%); }
+  .level-2 { background: var(--warn); }
+  .level-1 { background: color-mix(in oklab, var(--warn), var(--bad) 55%); }
   .level-0 { background: var(--bad); }
 }
 
@@ -1053,24 +1065,24 @@ label.button { display: inline-flex; align-items: center; }
    currentColor and their background is --paper-raised, so redefining the
    tokens on the sheet restyles it, marks included, without a redraw. */
 .sheet[data-sheet="light"] {
-  --paper-raised: #fff;
-  --ink: #16181a;
-  --rule: #deded8;
+  --paper-raised: #fffdf9;
+  --ink: #1d1814;
+  --rule: #e4d9cb;
   --ok: #1d7a46;
   --bad: #c0392b;
-  --target: #2f6fd6;
-  --early: #b7791f;
-  --late: #7b4fc4;
+  --target: #b35c00;
+  --early: #2a6fb8;
+  --late: #a8378a;
   color-scheme: light;
 }
 .sheet[data-sheet="dark"] {
-  --paper-raised: #202428;
-  --ink: #e8eaec;
-  --rule: #33383d;
+  --paper-raised: #1d1814;
+  --ink: #f2ebe3;
+  --rule: #3a2f24;
   --ok: #2fa36b;
   --bad: #ff6b5b;
-  --target: #6ea3ff;
-  --early: #c28630;
-  --late: #9a7ede;
+  --target: #ffa500;
+  --early: #4a9be0;
+  --late: #b9509f;
   color-scheme: dark;
 }

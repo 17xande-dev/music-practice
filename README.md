@@ -55,6 +55,12 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
   0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo), `bpm` (40–200), `beat` (notes
   per beat: 1, 2, 4), `fingers` (1 or 0).
+- **Song cursor:** a soft vertical band follows the current step across the whole system, in every
+  mode, like OpenSheetMusicDisplay's own cursor (which is an image the CSP won't load, so the page
+  draws an equivalent band from OSMD's layout).
+- **Look:** the palette is 17xande.dev's (warm near-black and orange in the dark theme, the same
+  hues on cream in the light one). The feedback colours are checked with a palette validator for
+  colour-blind separation and contrast.
 - **Light or dark sheet:** "Light sheet" / "Dark sheet" next to the music switches just the notation
   to black on white or white on dark, whatever the site theme; switching back follows the site
   again. The choice is remembered and applies to both the scales staff and song scores.
