@@ -41,6 +41,11 @@ interface OsmdGNote {
     };
   };
 }
+/**
+ * In the continuous view, how far across the box the cursor is held:
+ * near the left, so most of the box shows the notes coming up.
+ */
+const LINE_ANCHOR = 0.2;
 /** OSMD lays out in units of 10 px at zoom 1. */
 const UNIT = 10;
 
@@ -356,8 +361,11 @@ export class ScoreView {
     this.cursor.style.height = `${a.height}px`;
     this.cursor.hidden = false;
     if (this.line) {
-      // The page sits inside the scroll box; keep x a third of the way in.
-      const left = x + this.page.offsetLeft - this.container.clientWidth / 3;
+      // x is within the page; the page's own offset inside the scroll box
+      // (not offsetLeft, which is relative to an outer positioned element).
+      const inBox = this.page.getBoundingClientRect().left -
+        this.container.getBoundingClientRect().left + this.container.scrollLeft;
+      const left = x + inBox - this.container.clientWidth * LINE_ANCHOR;
       this.container.scrollTo({ left: Math.max(0, left), behavior: "instant" });
     }
   }
@@ -397,9 +405,9 @@ export class ScoreView {
     const view = this.container.getBoundingClientRect();
     if (this.line) {
       if (this.gliding) return; // glide() scrolls, continuously
-      // One long line: keep the current note a third of the way in, so
+      // One long line: keep the current note near the left, so most of
       // what's coming next is in view.
-      const want = view.left + view.width / 3;
+      const want = view.left + view.width * LINE_ANCHOR;
       if (Math.abs(box.left - want) > view.width / 6) {
         this.container.scrollBy({ left: box.left - want, behavior: "smooth" });
       }
