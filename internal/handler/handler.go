@@ -88,6 +88,7 @@ func New(o Options) (*Handler, error) {
 func (h *Handler) parsePages() (map[string]*template.Template, error) {
 	funcs := template.FuncMap{
 		"asset": h.assets.URL,
+		"icon":  icon,
 		// Arguments for the sun/moon switch template.
 		"switch": func(id, label string) map[string]string { return map[string]string{"ID": id, "Label": label} },
 	}

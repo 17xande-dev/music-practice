@@ -218,3 +218,19 @@ func TestAssetVersionFollowsContent(t *testing.T) {
 		t.Error("same assets, different version")
 	}
 }
+
+func TestIcons(t *testing.T) {
+	for name := range icons {
+		got, err := icon(name)
+		if err != nil || !strings.Contains(string(got), `aria-hidden="true"`) {
+			t.Errorf("icon %q: %v %q", name, err, got)
+		}
+	}
+	if _, err := icon("nope"); err == nil {
+		t.Error("an unknown icon should be an error")
+	}
+	// Pages use them: the scales page draws its transport icons.
+	if !strings.Contains(get(t, newTestHandler(t), "/").Body.String(), "icon-restart") {
+		t.Error("the scales page has no restart icon")
+	}
+}

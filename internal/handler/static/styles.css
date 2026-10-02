@@ -1205,3 +1205,20 @@ label.button { display: inline-flex; align-items: center; }
 }
 .palette-empty { padding: var(--gap-sm); color: var(--ink-soft); }
 .palette-foot { margin: 0; font-size: var(--small); color: var(--ink-faint); display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+
+/* ---- Icons and transport buttons ----------------------------------------- */
+
+.icon { width: 1.15em; height: 1.15em; flex: none; }
+button:has(> .icon) { display: inline-flex; align-items: center; gap: 0.4em; }
+.play-button[data-state="stopped"] .icon-pause,
+.play-button[data-state="playing"] .icon-play { display: none; }
+.icon-button {
+  padding: var(--gap-xs);
+  min-height: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 0;
+
+  &:hover { background: var(--paper-sunk); color: var(--ink); }
+  .icon { width: 22px; height: 22px; }
+}

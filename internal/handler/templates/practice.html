@@ -140,8 +140,8 @@
       <p id="exercise-status" class="exercise-status" aria-live="polite"></p>
     </div>
     <div class="actions">
-      <button id="start" type="button" class="tempo-only" hidden title="Start or stop (Space)">Start</button>
-      <button id="restart" type="button" class="secondary" title="Restart (Space in notes-only mode)">Restart</button>
+      <button id="start" type="button" class="tempo-only play-button" hidden title="Start or stop (Space)" data-state="stopped">{{icon "play"}}{{icon "pause"}}<span class="label">Start</span></button>
+      <button id="restart" type="button" class="secondary" title="Restart (R)">{{icon "restart"}}<span class="label">Restart</span></button>
       <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
       <button id="copy-link" type="button" class="secondary" title="Copy a link to this exact exercise to share it">Copy link</button>
     </div>

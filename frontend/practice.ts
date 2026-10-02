@@ -62,7 +62,9 @@ import {
   VARIANTS,
 } from "./lib/theory.ts";
 
+import type { Command } from "./lib/commands.ts";
 import { installCommands } from "./lib/palette.ts";
+import { setPlaying } from "./lib/transport.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
@@ -407,14 +409,14 @@ function reset() {
   view.releaseAll();
   staff.clearMarks();
   ui.results.hidden = true;
-  ui.start.textContent = "Start";
+  setPlaying(ui.start, false);
   showProgress();
 }
 
 async function startTempo() {
   reset();
   const t = tempoSettings();
-  ui.start.textContent = "Stop";
+  setPlaying(ui.start, true);
   const schedule = await metronome.start(t.bpm, t.notesPerBeat, steps.length);
   engine = new TempoEngine(steps, {
     bpm: t.bpm,
@@ -430,7 +432,7 @@ async function startTempo() {
 function finishTempo(e: TempoEngine) {
   metronome.stop();
   phase = "done";
-  ui.start.textContent = "Start";
+  setPlaying(ui.start, false);
   view.setTargets([]);
   ui.status.textContent = "Done — press Start or Space to go again.";
   finishRun(e.summary());
@@ -1062,15 +1064,93 @@ ui.restart.addEventListener("click", () => {
 });
 ui.copyLink.addEventListener("click", () => void copyLink());
 ui.calibrate.addEventListener("click", () => void calibrate());
-document.addEventListener("keydown", (e) => {
-  const t = e.target as HTMLElement;
-  if (e.code !== "Space" || ["BUTTON", "SELECT", "INPUT", "A"].includes(t.tagName)) return;
-  e.preventDefault();
-  if (mode === "tempo") toggleTempo();
-  else reset();
-});
+/** Set a form select and let its change handlers run, as if picked by hand. */
+function choose(select: HTMLSelectElement, value: string) {
+  select.value = value;
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
 
-installCommands(siteCommands());
+const commands: Command[] = [
+  {
+    id: "play",
+    label: "Play / pause",
+    group: "Playback",
+    shortcut: "Space",
+    keywords: ["start", "stop", "metronome"],
+    // Notes-only mode has nothing to play; Space starts over, as before.
+    run: () => (mode === "tempo" ? toggleTempo() : reset()),
+  },
+  { id: "restart", label: "Restart", group: "Playback", shortcut: "R", run: () => reset() },
+  { id: "stop", label: "Stop", group: "Playback", shortcut: "Escape", run: () => reset() },
+  {
+    id: "mode.notes",
+    label: "Grading: notes only",
+    group: "Practice",
+    keywords: ["wait"],
+    run: () => choose(ui.mode, "notes"),
+  },
+  {
+    id: "mode.tempo",
+    label: "Grading: with metronome",
+    group: "Practice",
+    keywords: ["tempo", "time"],
+    run: () => choose(ui.mode, "tempo"),
+  },
+  {
+    id: "instrument.piano",
+    label: "Instrument: piano",
+    group: "Practice",
+    keywords: ["midi", "keyboard"],
+    run: () => choose(ui.instrument, "piano"),
+  },
+  {
+    id: "instrument.guitar",
+    label: "Instrument: guitar",
+    group: "Practice",
+    keywords: ["audio"],
+    run: () => choose(ui.instrument, "guitar"),
+  },
+  {
+    id: "fingering",
+    label: "Show / hide fingers",
+    group: "View",
+    shortcut: "Alt+KeyN",
+    keywords: ["fingering"],
+    run: () => ui.fingering.click(),
+  },
+  {
+    id: "sheet",
+    label: "Music sheet light / dark",
+    group: "View",
+    shortcut: "Alt+KeyB",
+    keywords: ["theme"],
+    run: () => el("sheet-theme").click(),
+  },
+  {
+    id: "copy-link",
+    label: "Copy link to this exercise",
+    group: "Practice",
+    shortcut: "Alt+KeyC",
+    keywords: ["share", "url"],
+    run: () => void copyLink(),
+  },
+  {
+    id: "calibrate",
+    label: "Measure latency",
+    group: "Practice",
+    keywords: ["calibrate", "offset", "delay"],
+    run: () => void calibrate(),
+  },
+  {
+    id: "tuner",
+    label: "Open the tuner",
+    group: "Practice",
+    keywords: ["guitar", "tune"],
+    enabled: () => instrument === "guitar",
+    run: () => setTuner(true),
+  },
+];
+installCommands([...siteCommands(), ...commands]);
 ui.storageWarning.hidden = store.available;
 sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.staff], store);
 
