@@ -6,13 +6,43 @@
 // does, so marking never needs a re-render.
 //
 // OSMD's own cursor is never shown: it is an <img> with a data: URL, which
-// the CSP's img-src refuses. The notes of the current step get the
-// "current" class instead.
+// the CSP's img-src refuses. This view draws the same thing as a <div>: a
+// soft vertical band over the current step, spanning its system, placed
+// with OSMD's own geometry (Cursor.update, default type). The notes of the
+// current step also get the "current" class.
 
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { chooseParts, type RawEntry, type RawNote } from "./score.ts";
 import type { StepMark } from "./staff_view.ts";
 import { type Letter, spell } from "./theory.ts";
+
+/** Where the cursor band goes for a note, in px within the score. */
+interface Spot {
+  x: number;
+  top: number;
+  height: number;
+}
+
+/** OSMD's graphical model, as far as the cursor needs it. */
+interface OsmdBox {
+  AbsolutePosition: { x: number; y: number };
+  RelativePosition: { x: number; y: number };
+}
+interface OsmdSystem {
+  PositionAndShape: OsmdBox;
+  StaffLines: { PositionAndShape: OsmdBox; StaffHeight: number }[];
+}
+interface OsmdGNote {
+  getSVGGElement?(): SVGGElement;
+  parentVoiceEntry?: {
+    parentStaffEntry?: {
+      PositionAndShape: OsmdBox;
+      parentMeasure?: { ParentMusicSystem?: OsmdSystem };
+    };
+  };
+}
+/** OSMD lays out in units of 10 px at zoom 1. */
+const UNIT = 10;
 
 const MARKS: StepMark[] = ["current", "ok", "bad", "early", "late"];
 /** OSMD's NoteEnum: semitones above C of each natural letter. */
@@ -52,6 +82,10 @@ export class ScoreView {
   private osmd: OpenSheetMusicDisplay;
   /** SVG group of each RawNote.ref, rebuilt after every render. */
   private elements: (SVGGElement | null)[] = [];
+  private spots: (Spot | null)[] = [];
+  private page: HTMLElement;
+  private cursor: HTMLDivElement;
+  private cursorRefs: readonly number[] | null = null;
   private marks = new Map<number, StepMark>();
   private loaded = false;
   private lastWidth = 0;
@@ -62,7 +96,13 @@ export class ScoreView {
     // OSMD sizes the score to its element's outer width; an inner element
     // takes the scrolling box's content width, so nothing overflows sideways.
     const page = document.createElement("div");
+    page.className = "score-page";
     container.replaceChildren(page);
+    this.page = page;
+    this.cursor = document.createElement("div");
+    this.cursor.className = "score-cursor";
+    this.cursor.setAttribute("aria-hidden", "true");
+    this.cursor.hidden = true;
     this.osmd = new OpenSheetMusicDisplay(page, {
       backend: "svg",
       autoResize: false, // resized below, so marks can be put back
@@ -132,6 +172,9 @@ export class ScoreView {
     // freshly drawn elements.
     this.walk();
     for (const [ref, m] of this.marks) this.apply(ref, m);
+    // OSMD replaces the page's contents when it renders.
+    this.page.append(this.cursor);
+    if (this.cursorRefs) this.showCursor(this.cursorRefs);
     this.onRender();
   }
 
@@ -152,6 +195,7 @@ export class ScoreView {
     const played = this.played();
     const out: RawEntry[] = [];
     this.elements = [];
+    this.spots = [];
     if (!cursor || !played.size) return out;
     cursor.reset();
     const it = cursor.iterator;
@@ -178,13 +222,16 @@ export class ScoreView {
           (tie === "start" && n.NoteTie ? n.NoteTie.Duration.RealValue : n.Length.RealValue);
         const ref = this.elements.length;
         let el: SVGGElement | null = null;
+        let spot: Spot | null = null;
         try {
-          // deno-lint-ignore no-explicit-any
-          el = (rules.GNote(raw) as any)?.getSVGGElement?.() ?? null;
+          const g = rules.GNote(raw) as unknown as OsmdGNote | undefined;
+          el = g?.getSVGGElement?.() ?? null;
+          spot = this.spotOf(g);
         } catch {
           el = null;
         }
         this.elements.push(el);
+        this.spots.push(spot);
         notes.push({
           midi,
           spelled: spell(midi, LETTER_OF[n.Pitch.FundamentalNote] ?? "C"),
@@ -210,6 +257,50 @@ export class ScoreView {
     }
     cursor.reset();
     return out;
+  }
+
+  /** OSMD's cursor geometry for a note: its staff entry's x, its system's height. */
+  private spotOf(g: OsmdGNote | undefined): Spot | null {
+    const entry = g?.parentVoiceEntry?.parentStaffEntry;
+    const system = entry?.parentMeasure?.ParentMusicSystem;
+    if (!entry || !system?.StaffLines.length) return null;
+    const zoom = UNIT * this.osmd.Zoom;
+    const sy = system.PositionAndShape.AbsolutePosition.y;
+    const first = system.StaffLines[0];
+    const last = system.StaffLines[system.StaffLines.length - 1];
+    const top = sy + first.PositionAndShape.RelativePosition.y;
+    const bottom = sy + last.PositionAndShape.RelativePosition.y + last.StaffHeight;
+    return {
+      x: entry.PositionAndShape.AbsolutePosition.x * zoom,
+      top: top * zoom,
+      height: (bottom - top) * zoom,
+    };
+  }
+
+  /**
+   * Put the cursor band over the notes `refs` (one step), as OSMD would:
+   * 3 units wide, starting 1.5 before the leftmost note, the system's height.
+   */
+  showCursor(refs: readonly number[]) {
+    this.cursorRefs = refs;
+    const spots = refs.map((r) => this.spots[r]).filter((x): x is Spot => !!x);
+    if (!spots.length) {
+      this.cursor.hidden = true;
+      return;
+    }
+    const left = spots.reduce((a, b) => (b.x < a.x ? b : a));
+    const zoom = UNIT * this.osmd.Zoom;
+    // CSSOM, not a style attribute: the CSP governs only the latter.
+    this.cursor.style.left = `${left.x - 1.5 * zoom}px`;
+    this.cursor.style.top = `${left.top}px`;
+    this.cursor.style.width = `${3 * zoom}px`;
+    this.cursor.style.height = `${left.height}px`;
+    this.cursor.hidden = false;
+  }
+
+  hideCursor() {
+    this.cursorRefs = null;
+    this.cursor.hidden = true;
   }
 
   private apply(ref: number, mark: StepMark | null) {

@@ -359,10 +359,12 @@ function showProgress() {
   const i = currentStep();
   showTargets(i);
   if (i < 0) {
+    view.hideCursor();
     ui.status.textContent = "Done. Press Restart or Space to go again.";
     return;
   }
   view.mark(stepRefs[i], "current");
+  view.showCursor(stepRefs[i]);
   view.reveal(stepRefs[i][0]);
   const n = practice.steps.length;
   ui.status.textContent = mode === "notes"
@@ -425,6 +427,7 @@ function setCurrent(i: number) {
   if (shownCurrent >= 0 && (!r || r.status === "pending")) view.mark(stepRefs[shownCurrent], null);
   shownCurrent = i;
   if (!engine || engine.results[i].status === "pending") view.mark(stepRefs[i], "current");
+  view.showCursor(stepRefs[i]);
   showTargets(i);
   view.reveal(stepRefs[i][0]);
 }
@@ -472,6 +475,7 @@ function finishTempo(e: TempoEngine) {
   phase = "done";
   ui.start.textContent = "Start";
   keyboard.setTargets([]);
+  view.hideCursor();
   ui.status.textContent = "Done. Press Start (or Space) to go again.";
   finishRun(e);
   again();
@@ -483,6 +487,7 @@ function finishListen() {
   ui.start.textContent = "Start";
   if (shownCurrent >= 0) view.mark(stepRefs[shownCurrent], null);
   keyboard.setTargets([]);
+  view.hideCursor();
   ui.status.textContent = "Done. Press Start (or Space) to listen again.";
   again();
 }

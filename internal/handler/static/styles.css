@@ -921,6 +921,23 @@ label.button { display: inline-flex; align-items: center; }
 
 /* OSMD draws in the container's text colour (read at render time). Marks
    are classes on each note's group, as on the scales staff. */
+/* The song cursor: a soft band over the current step, across its system,
+   like OSMD's own (which the CSP can't load). Placed by score_view.ts. */
+.score-page { position: relative; }
+.score-cursor {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklab, var(--target), transparent 55%) 20%,
+    color-mix(in oklab, var(--target), transparent 55%) 80%,
+    transparent
+  );
+  transition: left 80ms linear, top 80ms linear;
+}
+
 .score-scroll {
   color: var(--ink);
   background: var(--paper-raised);
