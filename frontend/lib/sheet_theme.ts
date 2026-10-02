@@ -7,6 +7,7 @@
 // stored as "auto", so the sheet keeps following the site after that.
 
 import type { ProgressStore } from "./progress_store.ts";
+import { renderSwitch, siteTheme, THEME_EVENT } from "./site_theme.ts";
 
 export type SheetTheme = "auto" | "light" | "dark";
 
@@ -27,23 +28,20 @@ export function sheetThemeToggle(
   sheets: HTMLElement[],
   store: ProgressStore,
 ) {
-  const dark = matchMedia("(prefers-color-scheme: dark)");
   let choice: SheetTheme = store.settings().sheetTheme ?? "auto";
+  const siteDark = () => siteTheme() === "dark";
   const apply = () => {
     for (const s of sheets) {
       if (choice === "auto") delete s.dataset.sheet;
       else s.dataset.sheet = choice;
     }
-    const shown = effectiveTheme(choice, dark.matches);
-    button.textContent = shown === "dark" ? "Light sheet" : "Dark sheet";
-    button.title = `Show the music ${shown === "dark" ? "black on white" : "white on dark"}`;
-    button.setAttribute("aria-pressed", String(choice !== "auto"));
+    renderSwitch(button, effectiveTheme(choice, siteDark()) === "dark", "the music sheet");
   };
   button.addEventListener("click", () => {
-    choice = toggled(choice, dark.matches);
+    choice = toggled(choice, siteDark());
     store.saveSettings({ sheetTheme: choice });
     apply();
   });
-  dark.addEventListener("change", apply);
+  document.addEventListener(THEME_EVENT, apply);
   apply();
 }

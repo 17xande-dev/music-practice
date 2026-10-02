@@ -61,9 +61,10 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
 - **Look:** the palette is 17xande.dev's (warm near-black and orange in the dark theme, the same
   hues on cream in the light one). The feedback colours are checked with a palette validator for
   colour-blind separation and contrast.
-- **Light or dark sheet:** "Light sheet" / "Dark sheet" next to the music switches just the notation
-  to black on white or white on dark, whatever the site theme; switching back follows the site
-  again. The choice is remembered and applies to both the scales staff and song scores.
+- **Themes:** a sun/moon switch in the header picks light or dark for the whole site. Until it is
+  used the site follows the system; once used, the pick is remembered (and applied before the page
+  paints, so there is no flash). The same switch next to the music sets the sheet light or dark on
+  its own; switching it back to the site's theme makes it follow the site again.
 - **Installable, works offline:** a web app manifest and a service worker. After one visit every
   page, bundle and starter piece is cached, so the site runs without a connection; pages are fetched
   network-first so a deploy shows on the next visit online.

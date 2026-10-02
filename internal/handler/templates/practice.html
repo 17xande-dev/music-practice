@@ -142,7 +142,7 @@
     <div class="actions">
       <button id="start" type="button" class="tempo-only" hidden title="Start or stop (Space)">Start</button>
       <button id="restart" type="button" class="secondary" title="Restart (Space in notes-only mode)">Restart</button>
-      <button id="sheet-theme" type="button" class="secondary" aria-pressed="false">Light sheet</button>
+      <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
       <button id="copy-link" type="button" class="secondary" title="Copy a link to this exact exercise to share it">Copy link</button>
     </div>
   </div>

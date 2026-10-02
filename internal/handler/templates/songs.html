@@ -49,7 +49,7 @@
     <div class="actions">
       <button id="start" type="button" title="Start or stop (Space)">Start</button>
       <button id="restart" type="button" class="secondary" title="Back to the beginning of the selection">Restart</button>
-      <button id="sheet-theme" type="button" class="secondary" aria-pressed="false">Light sheet</button>
+      <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
     </div>
   </div>
 

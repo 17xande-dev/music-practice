@@ -94,6 +94,8 @@ export interface Settings {
   lastSong: string;
   /** Music sheets light or dark regardless of the site theme; "auto" follows it. */
   sheetTheme: "auto" | "light" | "dark";
+  /** The site's theme, once picked with the header switch; absent follows the system. */
+  theme: "light" | "dark";
 }
 
 export interface ExportFile {
@@ -254,6 +256,7 @@ export function validSettings(x: unknown): Partial<Settings> {
     if (typeof x[k] === "boolean") out[k] = x[k] as boolean;
   }
   if (typeof x.lastSong === "string" && x.lastSong.length <= 64) out.lastSong = x.lastSong;
+  if (x.theme === "light" || x.theme === "dark") out.theme = x.theme;
   if (["auto", "light", "dark"].includes(x.sheetTheme as string)) {
     out.sheetTheme = x.sheetTheme as Settings["sheetTheme"];
   }

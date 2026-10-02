@@ -54,8 +54,10 @@
   --page: 1180px;
 }
 
+/* Dark: when the system is dark and no light theme was picked, or when
+   dark was picked with the header switch (theme.ts sets data-theme). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #110d08;
     --paper-sunk: #0a0805;
     --paper-raised: #1d1814;
@@ -76,6 +78,28 @@
     --warn: #e0a030;
   }
 }
+:root[data-theme="dark"] {
+  --paper: #110d08;
+  --paper-sunk: #0a0805;
+  --paper-raised: #1d1814;
+  --ink: #f2ebe3;
+  --ink-soft: #c2b5a6;
+  --ink-faint: #9c8e7e;
+  --rule: #3a2f24;
+  --accent: #ffa500;
+  --accent-ink: #140e05;
+  /* Validated as in the light theme, against #1d1814. */
+  --ok: #2fa36b;
+  --bad: #ff6b5b;
+  --target: #ffa500;
+  --target-ink: #140e05;
+  --hint: #3a250a;
+  --early: #4a9be0;
+  --late: #b9509f;
+  --warn: #e0a030;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -1086,3 +1110,46 @@ label.button { display: inline-flex; align-items: center; }
   --late: #b9509f;
   color-scheme: dark;
 }
+
+/* The sun/moon switch: the site's theme in the header, and the music
+   sheet's own. Both icons show; the knob sits behind the current one. */
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-height: 0;
+  padding: 3px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-sunk);
+  color: var(--ink-soft);
+  cursor: pointer;
+
+  &:hover { background: var(--paper-sunk); border-color: var(--ink-faint); }
+  &::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 50%;
+    background: var(--accent);
+    transition: transform 150ms ease;
+  }
+  &[aria-checked="true"]::before { transform: translateX(calc(1.55rem + 0.15rem)); }
+  svg {
+    position: relative;
+    width: 1.55rem;
+    height: 1.55rem;
+    padding: 0.25rem;
+  }
+  &[aria-checked="false"] .sun, &[aria-checked="true"] .moon { color: var(--accent-ink); }
+}
+.sheet-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+.sheet-switch-label { font-size: var(--small); color: var(--ink-soft); }

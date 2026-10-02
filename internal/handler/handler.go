@@ -59,6 +59,7 @@ var pageFiles = []string{"practice.html", "songs.html", "progress.html", "about.
 // built without `make bundle` refuses to start instead of serving dead pages.
 var Bundles = []string{
 	"dist/practice.js", "dist/songs.js", "dist/progress.js", "dist/pitch_worklet.js", "dist/sw.js",
+	"dist/theme.js",
 }
 
 // New builds the handler, parsing every template up front so a template
@@ -85,7 +86,11 @@ func New(o Options) (*Handler, error) {
 }
 
 func (h *Handler) parsePages() (map[string]*template.Template, error) {
-	funcs := template.FuncMap{"asset": h.assets.URL}
+	funcs := template.FuncMap{
+		"asset": h.assets.URL,
+		// Arguments for the sun/moon switch template.
+		"switch": func(id, label string) map[string]string { return map[string]string{"ID": id, "Label": label} },
+	}
 	pages := map[string]*template.Template{}
 	for _, name := range pageFiles {
 		t, err := template.New(name).Funcs(funcs).ParseFS(h.tmplFS, "layout.html", name)
