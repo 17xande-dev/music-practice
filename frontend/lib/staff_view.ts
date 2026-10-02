@@ -97,8 +97,21 @@ export class StaffView {
   private marks: (StepMark | null)[] = [];
   private lastWidth = 0;
   private systemH = SINGLE_SYSTEM;
+  private fontsReady = false;
 
   constructor(private container: HTMLElement) {
+    // VexFlow places stems, ledger lines and accidentals from the music
+    // font's glyph metrics, and its Bravura entry only starts loading the
+    // embedded fonts: drawn before they arrive, everything is measured
+    // against a fallback font and lands off the noteheads. So the first
+    // draw waits for them (and a failure to load draws anyway).
+    void Promise.all([
+      document.fonts.load("30px Bravura"),
+      document.fonts.load("12px Academico"),
+    ]).catch(() => {}).then(() => {
+      this.fontsReady = true;
+      if (this.steps.length) this.draw();
+    });
     new ResizeObserver(() => {
       const w = this.container.clientWidth;
       if (this.steps.length && Math.abs(w - this.lastWidth) > 24) this.draw();
@@ -139,6 +152,7 @@ export class StaffView {
   }
 
   private draw() {
+    if (!this.fontsReady) return; // drawn once the fonts load
     const width = Math.max(320, this.container.clientWidth - 2);
     this.lastWidth = this.container.clientWidth;
     this.container.replaceChildren();
