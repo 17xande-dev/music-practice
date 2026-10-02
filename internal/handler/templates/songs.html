@@ -75,6 +75,13 @@
       </div>
     </div>
     <div class="field" data-modes="tempo listen">
+      <label for="song-cursor">Cursor</label>
+      <select id="song-cursor" name="cursor" title="Flow: the cursor (and the continuous view) moves smoothly with the music. Jump: it moves note to note, which shows the beat (Alt+J)">
+        <option value="flow">Flows with the music</option>
+        <option value="jump">Jumps note to note</option>
+      </select>
+    </div>
+    <div class="field" data-modes="tempo listen">
       <label for="song-tempo">Tempo (% of marked)</label>
       <input id="song-tempo" name="tempo" type="number" min="10" max="200" step="5" value="100" inputmode="numeric">
     </div>

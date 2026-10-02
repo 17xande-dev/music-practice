@@ -81,6 +81,7 @@ const ui = {
   nextMeasure: el<HTMLButtonElement>("next-measure"),
   position: el("transport-position"),
   viewToggle: el<HTMLButtonElement>("view-toggle"),
+  cursorMode: el<HTMLSelectElement>("song-cursor"),
   zoomIn: el<HTMLButtonElement>("zoom-in"),
   zoomOut: el<HTMLButtonElement>("zoom-out"),
   big: el<HTMLButtonElement>("big-screen"),
@@ -574,15 +575,18 @@ function setCurrent(i: number) {
   const r = engine?.results[i - offset];
   if (!r || r.status === "pending") view.mark(stepRefs[i], "current");
   // While playing, glideCursor() moves the cursor every frame.
-  if (!playingNow()) view.showCursor(stepRefs[i]);
+  // Flowing, glideCursor() moves the cursor every frame; jumping, it moves here.
+  if (!playingNow() || !flowing()) view.showCursor(stepRefs[i]);
   showTargets(i);
   view.reveal(stepRefs[i][0]);
   showTransport();
 }
 
+const flowing = () => ui.cursorMode.value !== "jump";
+
 /** Move the cursor smoothly, by the clock: between this step and the next. */
 function glideCursor(now: number) {
-  if (!segOffsets.length) return;
+  if (!segOffsets.length || !flowing()) return;
   const t = now - startTime;
   let j = 0;
   while (j + 1 < segOffsets.length && segOffsets[j + 1] <= t) j++;
@@ -941,6 +945,7 @@ function restore() {
   if (s.songLoop !== undefined) ui.loop.checked = s.songLoop;
   if (s.fingering !== undefined) ui.fingering.checked = s.fingering;
   if (s.latencyMs !== undefined) ui.latency.value = String(s.latencyMs);
+  if (s.songCursor) ui.cursorMode.value = s.songCursor;
 }
 
 function persist() {
@@ -953,6 +958,7 @@ function persist() {
     songLoop: ui.loop.checked,
     fingering: ui.fingering.checked,
     latencyMs: Math.min(300, Math.max(0, Number(ui.latency.value) || 0)),
+    songCursor: ui.cursorMode.value as "flow" | "jump",
   });
 }
 
@@ -986,7 +992,11 @@ ui.form.addEventListener("change", (e) => {
     showTargets(currentStep());
     return;
   }
-  if (t === ui.loop || t === ui.metronome || t === ui.latency) return; // read at Start
+  // Read at Start, or as it plays: no rebuild needed.
+  if (t === ui.loop || t === ui.metronome || t === ui.latency || t === ui.cursorMode) {
+    if (t === ui.cursorMode && playingNow()) view.showCursor(stepRefs[currentStep()]);
+    return;
+  }
   rebuild();
 });
 ui.form.addEventListener("submit", (e) => e.preventDefault());
@@ -1319,6 +1329,14 @@ commands.push(
     run: () => setZoom(zoom - 0.1),
   },
 );
+commands.push({
+  id: "cursor",
+  label: "Cursor: flow / jump",
+  group: "View",
+  shortcut: "Alt+KeyJ",
+  keywords: ["smooth", "scroll", "beat"],
+  run: () => choose(ui.cursorMode, flowing() ? "jump" : "flow"),
+});
 commands.push({
   id: "view",
   label: "Continuous / page view",

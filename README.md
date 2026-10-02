@@ -85,25 +85,26 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
 notes are used on their own; everything else is an `Alt` (`⌥`) chord. A test keeps this table in
 step with the pages.
 
-| Keys                    | Scales page                                            | Songs page                                   |
-| ----------------------- | ------------------------------------------------------ | -------------------------------------------- |
-| `Space`                 | Start / stop (metronome mode); start over (notes only) | Play / pause                                 |
-| `R`                     | Restart                                                | Restart from the beginning                   |
-| `Esc`                   | Stop                                                   | Stop, and leave the big screen               |
-| `←` `→`                 |                                                        | Previous / next measure (hold to keep going) |
-| `Home`                  |                                                        | Go to the start                              |
-| `Alt+F`                 |                                                        | Big screen                                   |
-| `Alt+V`                 |                                                        | Continuous / page view                       |
-| `Alt+=` `Alt+−`         |                                                        | Bigger / smaller notes                       |
-| `Alt+L`                 |                                                        | Repeat the selection on / off                |
-| `Alt+M`                 |                                                        | Metronome on / off                           |
-| `Alt+N`                 | Show / hide fingers                                    | Show / hide fingers                          |
-| `Alt+B`                 | Music sheet light / dark                               | Music sheet light / dark                     |
-| `Alt+C`                 | Copy link to the exercise                              |                                              |
-| `Alt+T`                 | Light / dark theme                                     | Light / dark theme                           |
-| `Alt+1` `Alt+2` `Alt+3` | Go to Scales / Songs / Progress                        | Go to Scales / Songs / Progress              |
-| `Ctrl+K`                | Command palette                                        | Command palette                              |
-| `?`                     | Keyboard shortcuts                                     | Keyboard shortcuts                           |
+| Keys                    | Scales page                                            | Songs page                                       |
+| ----------------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| `Space`                 | Start / stop (metronome mode); start over (notes only) | Play / pause                                     |
+| `R`                     | Restart                                                | Restart from the beginning                       |
+| `Esc`                   | Stop                                                   | Stop, and leave the big screen                   |
+| `←` `→`                 |                                                        | Previous / next measure (hold to keep going)     |
+| `Home`                  |                                                        | Go to the start                                  |
+| `Alt+F`                 |                                                        | Big screen                                       |
+| `Alt+V`                 |                                                        | Continuous / page view                           |
+| `Alt+J`                 |                                                        | Cursor flows with the music / jumps note to note |
+| `Alt+=` `Alt+−`         |                                                        | Bigger / smaller notes                           |
+| `Alt+L`                 |                                                        | Repeat the selection on / off                    |
+| `Alt+M`                 |                                                        | Metronome on / off                               |
+| `Alt+N`                 | Show / hide fingers                                    | Show / hide fingers                              |
+| `Alt+B`                 | Music sheet light / dark                               | Music sheet light / dark                         |
+| `Alt+C`                 | Copy link to the exercise                              |                                                  |
+| `Alt+T`                 | Light / dark theme                                     | Light / dark theme                               |
+| `Alt+1` `Alt+2` `Alt+3` | Go to Scales / Songs / Progress                        | Go to Scales / Songs / Progress                  |
+| `Ctrl+K`                | Command palette                                        | Command palette                                  |
+| `?`                     | Keyboard shortcuts                                     | Keyboard shortcuts                               |
 
 On the Songs page, clicking a note on the score moves the play position there, and Play continues
 from it. The About page has no script, so the palette and shortcuts other than the theme switch
