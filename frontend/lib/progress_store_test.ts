@@ -316,3 +316,12 @@ Deno.test("songs page settings are validated like the rest", () => {
   storage.setItem(SETTINGS_KEY, JSON.stringify({ songMode: "karaoke", songTempo: 5, songLoop: 1 }));
   assertEquals(store.settings(), {});
 });
+
+Deno.test("song view and zoom settings stay in range", () => {
+  const storage = new FakeStorage();
+  const store = new ProgressStore(storage);
+  store.saveSettings({ songView: "line", songZoom: 1.4 });
+  assertEquals(store.settings(), { songView: "line", songZoom: 1.4 });
+  storage.setItem(SETTINGS_KEY, JSON.stringify({ songView: "scroll", songZoom: 9 }));
+  assertEquals(store.settings(), {});
+});

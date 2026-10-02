@@ -86,6 +86,7 @@ export class ScoreView {
   private page: HTMLElement;
   private cursor: HTMLDivElement;
   private cursorRefs: readonly number[] | null = null;
+  private line = false;
   private marks = new Map<number, StepMark>();
   private loaded = false;
   private lastWidth = 0;
@@ -357,8 +358,35 @@ export class ScoreView {
     if (!g) return;
     const box = g.getBoundingClientRect();
     const view = this.container.getBoundingClientRect();
+    if (this.line) {
+      // One long line: keep the current note a third of the way in, so
+      // what's coming next is in view.
+      const want = view.left + view.width / 3;
+      if (Math.abs(box.left - want) > view.width / 6) {
+        this.container.scrollBy({ left: box.left - want, behavior: "smooth" });
+      }
+      return;
+    }
     if (box.top < view.top + 40 || box.bottom > view.bottom - 40) {
       this.container.scrollBy({ top: box.top - view.top - view.height / 3, behavior: "smooth" });
     }
+  }
+
+  /**
+   * Page view (systems wrapped to the width) or one continuous line that
+   * scrolls to the right, with no line breaks.
+   */
+  setLineView(line: boolean) {
+    if (line === this.line) return;
+    this.line = line;
+    this.container.classList.toggle("line-view", line);
+    this.osmd.setOptions({ renderSingleHorizontalStaffline: line });
+    if (this.loaded) this.render();
+  }
+
+  /** Notation size, 1 = OSMD's default. */
+  setZoom(zoom: number) {
+    this.osmd.Zoom = zoom;
+    if (this.loaded) this.render();
   }
 }

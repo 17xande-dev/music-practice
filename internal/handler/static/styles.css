@@ -1246,3 +1246,9 @@ button:has(> .icon) { display: inline-flex; align-items: center; gap: 0.4em; }
 }
 .transport .play-button { margin-inline: var(--gap-xs); }
 .icon-button:disabled { opacity: 0.4; }
+
+/* Continuous view: one line, scrolling sideways with the cursor. */
+.score-scroll.line-view { overflow-x: auto; overflow-y: hidden; max-height: none; }
+.score-scroll.line-view svg { max-width: none; }
+.view-toggle[aria-pressed="false"] .icon-view-page,
+.view-toggle[aria-pressed="true"] .icon-view-line { display: none; }

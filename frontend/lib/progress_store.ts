@@ -96,6 +96,9 @@ export interface Settings {
   sheetTheme: "auto" | "light" | "dark";
   /** The site's theme, once picked with the header switch; absent follows the system. */
   theme: "light" | "dark";
+  /** Songs: wrapped into systems, or one line scrolling right; and the notation size. */
+  songView: "page" | "line";
+  songZoom: number;
 }
 
 export interface ExportFile {
@@ -257,6 +260,8 @@ export function validSettings(x: unknown): Partial<Settings> {
   }
   if (typeof x.lastSong === "string" && x.lastSong.length <= 64) out.lastSong = x.lastSong;
   if (x.theme === "light" || x.theme === "dark") out.theme = x.theme;
+  if (x.songView === "page" || x.songView === "line") out.songView = x.songView;
+  if (isNum(x.songZoom) && x.songZoom >= 0.6 && x.songZoom <= 2) out.songZoom = x.songZoom;
   if (["auto", "light", "dark"].includes(x.sheetTheme as string)) {
     out.sheetTheme = x.sheetTheme as Settings["sheetTheme"];
   }

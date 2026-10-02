@@ -80,6 +80,7 @@ const ui = {
   prevMeasure: el<HTMLButtonElement>("prev-measure"),
   nextMeasure: el<HTMLButtonElement>("next-measure"),
   position: el("transport-position"),
+  viewToggle: el<HTMLButtonElement>("view-toggle"),
   form: el<HTMLFormElement>("song-form"),
   mode: el<HTMLSelectElement>("song-mode"),
   hands: el<HTMLSelectElement>("song-hands"),
@@ -1202,6 +1203,29 @@ const commands: Command[] = [
     run: () => b.click(),
   })),
 ];
+/** Continuous (one line, scrolling) or page view, remembered. */
+function setLineView(line: boolean) {
+  view.setLineView(line);
+  ui.viewToggle.setAttribute("aria-pressed", String(line));
+  ui.viewToggle.title = line
+    ? "Page view: wrap into lines (Alt+V)"
+    : "Continuous view: one line, scrolling (Alt+V)";
+  ui.viewToggle.setAttribute("aria-label", line ? "Page view" : "Continuous view");
+  store.saveSettings({ songView: line ? "line" : "page" });
+}
+ui.viewToggle.addEventListener("click", () => {
+  setLineView(ui.viewToggle.getAttribute("aria-pressed") !== "true");
+  ui.viewToggle.blur();
+});
+setLineView(store.settings().songView === "line");
+commands.push({
+  id: "view",
+  label: "Continuous / page view",
+  group: "View",
+  shortcut: "Alt+KeyV",
+  keywords: ["scroll", "line", "no line breaks"],
+  run: () => ui.viewToggle.click(),
+});
 installCommands([...siteCommands(), ...commands]);
 ui.storageWarning.hidden = store.available;
 sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.score], store);
