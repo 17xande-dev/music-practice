@@ -81,6 +81,9 @@ const ui = {
   nextMeasure: el<HTMLButtonElement>("next-measure"),
   position: el("transport-position"),
   viewToggle: el<HTMLButtonElement>("view-toggle"),
+  zoomIn: el<HTMLButtonElement>("zoom-in"),
+  zoomOut: el<HTMLButtonElement>("zoom-out"),
+  big: el<HTMLButtonElement>("big-screen"),
   form: el<HTMLFormElement>("song-form"),
   mode: el<HTMLSelectElement>("song-mode"),
   hands: el<HTMLSelectElement>("song-hands"),
@@ -1218,6 +1221,85 @@ ui.viewToggle.addEventListener("click", () => {
   ui.viewToggle.blur();
 });
 setLineView(store.settings().songView === "line");
+// ---- Big screen and zoom ------------------------------------------------------
+
+/**
+ * Big screen: the song section fills the window (and the screen, where the
+ * browser allows fullscreen), the music taking most of it, the transport in
+ * a bar along the bottom. Leaving fullscreen (the browser's Esc) leaves it too.
+ */
+function setBig(on: boolean) {
+  if (on === ui.song.classList.contains("big")) return;
+  ui.song.classList.toggle("big", on);
+  document.body.classList.toggle("song-big", on);
+  ui.big.setAttribute("aria-pressed", String(on));
+  ui.big.setAttribute("aria-label", on ? "Leave big screen" : "Big screen");
+  ui.big.title = on ? "Leave big screen (Esc or Alt+F)" : "Big screen (Alt+F)";
+  if (on) {
+    ui.song.requestFullscreen?.().catch(() => {});
+  } else if (document.fullscreenElement) {
+    void document.exitFullscreen().catch(() => {});
+  }
+  const i = currentStep();
+  if (i >= 0) view.reveal(stepRefs[i][0]);
+}
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) setBig(false);
+});
+ui.big.addEventListener("click", () => {
+  setBig(!ui.song.classList.contains("big"));
+  ui.big.blur();
+});
+
+let zoom = store.settings().songZoom ?? 1;
+function setZoom(z: number) {
+  zoom = Math.round(Math.min(2, Math.max(0.6, z)) * 10) / 10;
+  view.setZoom(zoom);
+  ui.zoomOut.disabled = zoom <= 0.6;
+  ui.zoomIn.disabled = zoom >= 2;
+  store.saveSettings({ songZoom: zoom });
+}
+ui.zoomIn.addEventListener("click", () => setZoom(zoom + 0.1));
+ui.zoomOut.addEventListener("click", () => setZoom(zoom - 0.1));
+setZoom(zoom);
+
+// Esc also leaves the big screen.
+const stopCommand = commands.find((c) => c.id === "stop")!;
+stopCommand.run = () => {
+  reset();
+  setBig(false);
+};
+stopCommand.label = "Stop (and leave the big screen)";
+stopCommand.enabled = () => hasSong() || ui.song.classList.contains("big");
+commands.push(
+  {
+    id: "big",
+    label: "Big screen on / off",
+    group: "View",
+    shortcut: "Alt+KeyF",
+    keywords: ["fullscreen", "focus", "large"],
+    enabled: hasSong,
+    run: () => ui.big.click(),
+  },
+  {
+    id: "zoom-in",
+    label: "Bigger notes",
+    group: "View",
+    shortcut: "Alt+Equal",
+    repeatable: true,
+    keywords: ["zoom"],
+    run: () => setZoom(zoom + 0.1),
+  },
+  {
+    id: "zoom-out",
+    label: "Smaller notes",
+    group: "View",
+    shortcut: "Alt+Minus",
+    repeatable: true,
+    keywords: ["zoom"],
+    run: () => setZoom(zoom - 0.1),
+  },
+);
 commands.push({
   id: "view",
   label: "Continuous / page view",

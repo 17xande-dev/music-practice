@@ -1252,3 +1252,31 @@ button:has(> .icon) { display: inline-flex; align-items: center; gap: 0.4em; }
 .score-scroll.line-view svg { max-width: none; }
 .view-toggle[aria-pressed="false"] .icon-view-page,
 .view-toggle[aria-pressed="true"] .icon-view-line { display: none; }
+
+/* Big screen: the song section over the whole window, the music filling
+   it, the transport as a bar along the bottom. */
+body.song-big { overflow: hidden; }
+.big-toggle[aria-pressed="false"] .icon-minimize,
+.big-toggle[aria-pressed="true"] .icon-maximize { display: none; }
+.song.big {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  margin: 0;
+  padding: var(--gap-sm);
+  gap: var(--gap-sm);
+  background: var(--paper);
+  overflow: hidden;
+
+  .song-controls { display: none; }
+  .exercise-head {
+    align-items: center;
+    .song-title { font-size: var(--title); }
+    .song-composer { display: none; }
+  }
+  .score-scroll { flex: 1; min-height: 0; max-height: none; }
+  .keyboard-scroll { flex: none; padding: var(--gap-xs); }
+  .keyboard-scroll .piano { max-height: 5.5rem; }
+  .transport { order: 10; }
+}
+.song.big:fullscreen { background: var(--paper); }

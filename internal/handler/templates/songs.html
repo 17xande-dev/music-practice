@@ -107,6 +107,9 @@
     </div>
     <span id="transport-position" class="transport-position" aria-live="off"></span>
     <div class="transport-group transport-view">
+      <button id="zoom-out" type="button" class="icon-button" aria-label="Smaller notes" title="Smaller notes (Alt+−)">{{icon "zoom-out"}}</button>
+      <button id="zoom-in" type="button" class="icon-button" aria-label="Bigger notes" title="Bigger notes (Alt+=)">{{icon "zoom-in"}}</button>
+      <button id="big-screen" type="button" class="icon-button big-toggle" aria-pressed="false" aria-label="Big screen" title="Big screen (Alt+F)">{{icon "maximize"}}{{icon "minimize"}}</button>
       <button id="view-toggle" type="button" class="icon-button view-toggle" aria-pressed="false" aria-label="Continuous view" title="Continuous view: one line, scrolling (Alt+V)">{{icon "view-line"}}{{icon "view-page"}}</button>
       <span class="sheet-switch"><span class="sheet-switch-label" aria-hidden="true">Sheet</span>{{template "themeswitch" (switch "sheet-theme" "Dark music sheet")}}</span>
     </div>
