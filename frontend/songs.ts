@@ -137,6 +137,8 @@ let segment: Practice | null = null;
 let attempted = new Map<number, StepResult>();
 /** Where play starts or resumes (a step of the selection), when not playing. */
 let position = 0;
+/** When each step of the playing segment sounds, in ms after startTime. */
+let segOffsets: number[] = [];
 let phase: Phase = "idle";
 let startTime = 0;
 let countIn: number[] = [];
@@ -476,6 +478,7 @@ async function start(k = position) {
     countIn: mode === "tempo",
   });
   engine = null;
+  segOffsets = stepOffsets(song.score, segment, pct);
   phase = mode === "tempo" ? "countin" : "playing";
   if (shownCurrent >= 0 && !attempted.has(shownCurrent)) view.mark(stepRefs[shownCurrent], null);
   shownCurrent = -1;
@@ -570,10 +573,24 @@ function setCurrent(i: number) {
   shownCurrent = i;
   const r = engine?.results[i - offset];
   if (!r || r.status === "pending") view.mark(stepRefs[i], "current");
-  view.showCursor(stepRefs[i]);
+  // While playing, glideCursor() moves the cursor every frame.
+  if (!playingNow()) view.showCursor(stepRefs[i]);
   showTargets(i);
   view.reveal(stepRefs[i][0]);
   showTransport();
+}
+
+/** Move the cursor smoothly, by the clock: between this step and the next. */
+function glideCursor(now: number) {
+  if (!segOffsets.length) return;
+  const t = now - startTime;
+  let j = 0;
+  while (j + 1 < segOffsets.length && segOffsets[j + 1] <= t) j++;
+  const next = segOffsets[j + 1] ?? endTime - startTime;
+  const span = next - segOffsets[j];
+  const frac = t <= segOffsets[j] || span <= 0 ? 0 : (t - segOffsets[j]) / span;
+  const to = stepRefs[offset + j + 1] ?? stepRefs[offset + j];
+  view.glide(stepRefs[offset + j], to, frac);
 }
 
 function tick() {
@@ -584,10 +601,10 @@ function tick() {
       finishListen();
       return;
     }
-    const offsets = stepOffsets(song!.score, seg, tempoPct());
     let j = 0;
-    while (j + 1 < offsets.length && startTime + offsets[j + 1] <= now) j++;
+    while (j + 1 < segOffsets.length && startTime + segOffsets[j + 1] <= now) j++;
     if (now >= startTime) setCurrent(offset + j);
+    glideCursor(now);
     ui.status.textContent = now < startTime
       ? "Listening…"
       : `Listening · measure ${measureOf(offset + j)}`;
@@ -601,6 +618,7 @@ function tick() {
     else {
       ui.status.textContent = left > 0 ? `Count-in: ${left}…` : "Go!";
       setCurrent(offset);
+      glideCursor(now);
     }
   }
   if (phase === "playing") {
@@ -611,6 +629,7 @@ function tick() {
     }
     const j = Math.max(0, Math.min(seg.steps.length - 1, e.stepAt(now - (e.opts.latencyMs ?? 0))));
     setCurrent(offset + j);
+    glideCursor(now);
     ui.status.textContent = `Measure ${measureOf(offset + j)} · ${Math.round(e.opts.bpm)} BPM`;
   }
   frame = requestAnimationFrame(tick);

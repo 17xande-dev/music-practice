@@ -87,6 +87,7 @@ export class ScoreView {
   private cursor: HTMLDivElement;
   private cursorRefs: readonly number[] | null = null;
   private line = false;
+  private gliding = false;
   private marks = new Map<number, StepMark>();
   private loaded = false;
   private lastWidth = 0;
@@ -289,6 +290,8 @@ export class ScoreView {
    * 3 units wide, starting 1.5 before the leftmost note, the system's height.
    */
   showCursor(refs: readonly number[]) {
+    this.gliding = false;
+    this.cursor.classList.remove("gliding");
     this.cursorRefs = refs;
     const spots = refs.map((r) => this.spots[r]).filter((x): x is Spot => !!x);
     if (!spots.length) {
@@ -327,7 +330,41 @@ export class ScoreView {
     return best ?? last;
   }
 
+  /**
+   * While playing: put the cursor `frac` of the way from the notes `from`
+   * to the notes `to`, as the time between them passes. In the continuous
+   * view the score scrolls so that point stays put on screen: the music
+   * flows past a still cursor, at whatever speed the tempo, zoom and layout
+   * give. In page view the cursor glides along a line, and jumps to the next.
+   */
+  glide(from: readonly number[], to: readonly number[], frac: number) {
+    const leftmost = (refs: readonly number[]) =>
+      refs.map((r) => this.spots[r]).filter((x): x is Spot => !!x)
+        .reduce<Spot | null>((a, b) => (!a || b.x < a.x ? b : a), null);
+    const a = leftmost(from);
+    if (!a) return;
+    const b = leftmost(to) ?? a;
+    const sameLine = Math.abs(a.top - b.top) < 1;
+    const x = sameLine ? a.x + (b.x - a.x) * Math.min(1, Math.max(0, frac)) : a.x;
+    const zoom = UNIT * this.osmd.Zoom;
+    this.cursorRefs = from;
+    this.gliding = true;
+    this.cursor.classList.add("gliding");
+    this.cursor.style.left = `${x - 1.5 * zoom}px`;
+    this.cursor.style.top = `${a.top}px`;
+    this.cursor.style.width = `${3 * zoom}px`;
+    this.cursor.style.height = `${a.height}px`;
+    this.cursor.hidden = false;
+    if (this.line) {
+      // The page sits inside the scroll box; keep x a third of the way in.
+      const left = x + this.page.offsetLeft - this.container.clientWidth / 3;
+      this.container.scrollTo({ left: Math.max(0, left), behavior: "instant" });
+    }
+  }
+
   hideCursor() {
+    this.gliding = false;
+    this.cursor.classList.remove("gliding");
     this.cursorRefs = null;
     this.cursor.hidden = true;
   }
@@ -359,6 +396,7 @@ export class ScoreView {
     const box = g.getBoundingClientRect();
     const view = this.container.getBoundingClientRect();
     if (this.line) {
+      if (this.gliding) return; // glide() scrolls, continuously
       // One long line: keep the current note a third of the way in, so
       // what's coming next is in view.
       const want = view.left + view.width / 3;

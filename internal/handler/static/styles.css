@@ -1280,3 +1280,6 @@ body.song-big { overflow: hidden; }
   .transport { order: 10; }
 }
 .song.big:fullscreen { background: var(--paper); }
+
+/* Gliding with the music: moved every frame, so no transition. */
+.score-cursor.gliding { transition: none; }
