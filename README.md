@@ -55,6 +55,9 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
   0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo), `bpm` (40–200), `beat` (notes
   per beat: 1, 2, 4), `fingers` (1 or 0).
+- **Light or dark sheet:** "Light sheet" / "Dark sheet" next to the music switches just the notation
+  to black on white or white on dark, whatever the site theme; switching back follows the site
+  again. The choice is remembered and applies to both the scales staff and song scores.
 - **Installable, works offline:** a web app manifest and a service worker. After one visit every
   page, bundle and starter piece is cached, so the site runs without a connection; pages are fetched
   network-first so a deploy shows on the next visit online.

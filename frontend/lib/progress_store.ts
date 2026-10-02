@@ -92,6 +92,8 @@ export interface Settings {
   songAccompany: boolean;
   songLoop: boolean;
   lastSong: string;
+  /** Music sheets light or dark regardless of the site theme; "auto" follows it. */
+  sheetTheme: "auto" | "light" | "dark";
 }
 
 export interface ExportFile {
@@ -252,6 +254,9 @@ export function validSettings(x: unknown): Partial<Settings> {
     if (typeof x[k] === "boolean") out[k] = x[k] as boolean;
   }
   if (typeof x.lastSong === "string" && x.lastSong.length <= 64) out.lastSong = x.lastSong;
+  if (["auto", "light", "dark"].includes(x.sheetTheme as string)) {
+    out.sheetTheme = x.sheetTheme as Settings["sheetTheme"];
+  }
   if (typeof x.audioDevice === "string" && x.audioDevice.length <= 200) {
     out.audioDevice = x.audioDevice;
   }

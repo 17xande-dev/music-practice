@@ -1031,3 +1031,29 @@ label.button { display: inline-flex; align-items: center; }
 }
 .field-note { margin: 0; font-size: var(--small); color: var(--ink-soft); max-width: 22rem; }
 .field-note:empty { display: none; }
+
+/* A sheet's own light/dark choice (lib/sheet_theme.ts). The sheets draw in
+   currentColor and their background is --paper-raised, so redefining the
+   tokens on the sheet restyles it, marks included, without a redraw. */
+.sheet[data-sheet="light"] {
+  --paper-raised: #fff;
+  --ink: #16181a;
+  --rule: #deded8;
+  --ok: #1d7a46;
+  --bad: #c0392b;
+  --target: #2f6fd6;
+  --early: #b7791f;
+  --late: #7b4fc4;
+  color-scheme: light;
+}
+.sheet[data-sheet="dark"] {
+  --paper-raised: #202428;
+  --ink: #e8eaec;
+  --rule: #33383d;
+  --ok: #2fa36b;
+  --bad: #ff6b5b;
+  --target: #6ea3ff;
+  --early: #c28630;
+  --late: #9a7ede;
+  color-scheme: dark;
+}

@@ -48,6 +48,7 @@ import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
 
 import { registerServiceWorker } from "./lib/pwa.ts";
+import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -893,6 +894,7 @@ ui.dropZone.addEventListener("drop", (e) => {
 });
 
 ui.storageWarning.hidden = store.available;
+sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.score], store);
 restore();
 showOptions();
 

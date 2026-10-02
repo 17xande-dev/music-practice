@@ -63,6 +63,7 @@ import {
 } from "./lib/theory.ts";
 
 import { registerServiceWorker } from "./lib/pwa.ts";
+import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1068,6 +1069,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 ui.storageWarning.hidden = store.available;
+sheetThemeToggle(el<HTMLButtonElement>("sheet-theme"), [ui.staff], store);
 
 restoreSettings();
 renderPicker();
