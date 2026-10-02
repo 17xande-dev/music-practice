@@ -4,12 +4,16 @@ import {
   bpmAt,
   buildScore,
   chooseParts,
+  measureStarts,
   measureStats,
   msAt,
   practiceSteps,
   type RawEntry,
   type RawNote,
+  sliceFrom,
+  stepFromMeasure,
   stepOffsets,
+  stepOfRef,
   weakestRange,
 } from "./score.ts";
 import { type Letter, spell } from "./theory.ts";
@@ -200,4 +204,36 @@ Deno.test("parts: otherwise the first part", () => {
     [{ part: 0, staffOffset: 0 }],
   );
   assertEquals(chooseParts([]), []);
+});
+
+Deno.test("navigation: measure starts, back and forward, repeats counted twice", () => {
+  // |: m1 (two notes) :| m2 (two notes), played out: m1 m1 m2.
+  const s = buildScore([
+    at(1, 0, [n(60)], 120, 1),
+    at(1, 2, [n(62)], 120, 1),
+    at(1, 4, [n(60)], 120, 2),
+    at(1, 6, [n(62)], 120, 2),
+    at(2, 8, [n(64)], 120, 3),
+    at(2, 10, [n(65)], 120, 3),
+  ]);
+  const p = practiceSteps(s, { hands: "both" });
+  assertEquals(measureStarts(p), [0, 2, 4]);
+  assertEquals(stepFromMeasure(p, 0, 1), 2); // into the repeat
+  assertEquals(stepFromMeasure(p, 4, 1), 4); // last measure: stays
+  assertEquals(stepFromMeasure(p, 3, -1), 2); // mid-measure: to its start
+  assertEquals(stepFromMeasure(p, 2, -1), 0); // at a start: the measure before
+  assertEquals(stepFromMeasure(p, 0, -1), 0);
+});
+
+Deno.test("seeking: a clicked note maps to its step, slices time from there", () => {
+  const s = buildScore(twoHandPiece());
+  const p = practiceSteps(s, { hands: "rh" });
+  const lhRef = s.events[4].notes.find((x) => x.hand === "lh")!.ref; // under the G at beat 4
+  assertEquals(stepOfRef(p, p.events[2].notes[0].ref), 2);
+  assertEquals(stepOfRef(p, lhRef), 4); // not graded for RH: the step at its beat
+  const tail = sliceFrom(p, 4);
+  assertEquals(tail.steps.map((x) => x.index), [0, 1]);
+  assertEquals(tail.startBeat, 4);
+  assertEquals(stepOffsets(s, tail), [0, 1000]);
+  assertEquals(tail.accompaniment.map((a) => a.midi), [43]);
 });

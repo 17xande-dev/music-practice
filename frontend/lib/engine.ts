@@ -156,6 +156,36 @@ function baseSummary(mode: Summary["mode"], results: readonly StepResult[]) {
 }
 
 /**
+ * The summary of any set of step results: one engine's, or a run played in
+ * pieces (the songs page grades a run that was paused or skipped through
+ * segment by segment and scores the steps actually attempted together).
+ * Tempo timing needs the on-the-beat tolerance.
+ */
+export function summarize(
+  mode: Summary["mode"],
+  results: readonly StepResult[],
+  toleranceMs = 0,
+): Summary {
+  const base = baseSummary(mode, results);
+  if (mode === "notes") return { ...base, timing: null };
+  const graded = results.filter((r) => r.status === "ok");
+  const devs = graded.map((r) => r.deviationMs!);
+  return {
+    ...base,
+    timing: {
+      onTime: graded.filter((r) => r.grade === "on").length,
+      early: graded.filter((r) => r.grade === "early").length,
+      late: graded.filter((r) => r.grade === "late").length,
+      missed: results.filter((r) => r.status !== "ok").length,
+      meanAbsMs: mean(devs.map(Math.abs)),
+      meanSignedMs: mean(devs),
+      toleranceMs,
+      deviations: results.map((r) => r.deviationMs),
+    },
+  };
+}
+
+/**
  * Notes-only: the cursor waits on the current step until every note of it
  * has been played, in any order. A wrong note is counted against the step
  * and the cursor stays put, so the run always ends on the last note.
@@ -199,7 +229,7 @@ export class NotesEngine implements Engine {
   }
 
   summary(): Summary {
-    return { ...baseSummary("notes", this.results), timing: null };
+    return summarize("notes", this.results);
   }
 }
 
@@ -380,23 +410,9 @@ export class TempoEngine implements Engine {
   }
 
   summary(): Summary {
-    const base = baseSummary("tempo", this.results);
-    const graded = this.results.filter((r) => r.status === "ok");
-    const devs = graded.map((r) => r.deviationMs!);
-    const absMean = mean(devs.map(Math.abs));
     return {
-      ...base,
+      ...summarize("tempo", this.results, this.tolerance),
       durationMs: this.results.length ? this.endTime - this.opts.startTime : 0,
-      timing: {
-        onTime: graded.filter((r) => r.grade === "on").length,
-        early: graded.filter((r) => r.grade === "early").length,
-        late: graded.filter((r) => r.grade === "late").length,
-        missed: this.results.filter((r) => r.status !== "ok").length,
-        meanAbsMs: absMean,
-        meanSignedMs: mean(devs),
-        toleranceMs: this.tolerance,
-        deviations: this.results.map((r) => r.deviationMs),
-      },
     };
   }
 }

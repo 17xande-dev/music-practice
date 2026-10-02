@@ -49,6 +49,8 @@ export interface ScoreNote extends RawNote {
 export interface ScoreEvent {
   index: number;
   measure: number;
+  /** Which played measure this is (a repeated measure has two). */
+  occurrence: number;
   beat: number;
   notes: ScoreNote[];
 }
@@ -134,6 +136,7 @@ export function buildScore(entries: readonly RawEntry[]): Score {
     .map((e, index) => ({
       index,
       measure: e.measure,
+      occurrence: e.occurrence,
       beat: e.beat,
       notes: e.notes.map((n) => ({ ...n, hand: n.staff > 0 ? "lh" : "rh" })),
     }));
@@ -308,4 +311,62 @@ export function weakestRange(
     }
   }
   return best && { from: best.from, to: best.to };
+}
+
+// ---- Moving through a selection ------------------------------------------
+//
+// The play position is a step index within the selection. Measures are
+// counted as played, so with repeats the same written measure is two stops.
+
+/** Step indices where each played measure of the selection begins. */
+export function measureStarts(p: Practice): number[] {
+  const out: number[] = [];
+  p.events.forEach((e, i) => {
+    if (i === 0 || e.occurrence !== p.events[i - 1].occurrence) out.push(i);
+  });
+  return out;
+}
+
+/**
+ * The step to move to from step i, one measure back (-1) or forward (+1).
+ * Back from inside a measure goes to its start first, as a media player's
+ * "previous" goes to the start of the track; at either end it stays.
+ */
+export function stepFromMeasure(p: Practice, i: number, dir: -1 | 1): number {
+  const starts = measureStarts(p);
+  if (!starts.length) return 0;
+  let cur = 0;
+  while (cur + 1 < starts.length && starts[cur + 1] <= i) cur++;
+  if (dir < 0) return i > starts[cur] ? starts[cur] : starts[Math.max(0, cur - 1)];
+  return starts[Math.min(starts.length - 1, cur + 1)];
+}
+
+/** The step holding the note `ref` (the renderer's handle), or the next one after it. */
+export function stepOfRef(p: Practice, ref: number): number {
+  const at = p.events.findIndex((e) => e.notes.some((n) => n.ref === ref));
+  if (at >= 0) return at;
+  // A ref not graded here (the other hand, a tied note): the step at its beat.
+  const all = p.events.flatMap((e) => e.notes.map((n) => ({ ref: n.ref, beat: e.beat })));
+  const beat = all.find((x) => x.ref === ref)?.beat;
+  if (beat === undefined) return 0;
+  const next = p.beats.findIndex((b) => b >= beat - 1e-9);
+  return next >= 0 ? next : p.steps.length - 1;
+}
+
+/**
+ * The selection from step k on, as its own Practice: steps renumbered from
+ * 0, timed from step k, with the accompaniment and listen notes from there.
+ * A run that starts mid-selection (a seek, a resume) plays one of these.
+ */
+export function sliceFrom(p: Practice, k: number): Practice {
+  const start = Math.min(Math.max(0, k), Math.max(0, p.steps.length - 1));
+  const startBeat = p.beats[start] ?? p.startBeat;
+  return {
+    steps: p.steps.slice(start).map((s, i) => ({ ...s, index: i })),
+    beats: p.beats.slice(start),
+    events: p.events.slice(start),
+    accompaniment: p.accompaniment.filter((n) => n.beat >= startBeat - 1e-9),
+    all: p.all.filter((n) => n.beat >= startBeat - 1e-9),
+    startBeat,
+  };
 }

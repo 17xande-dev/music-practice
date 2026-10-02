@@ -1,5 +1,5 @@
 import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
-import { NOT_TOGETHER_MS, NotesEngine, TempoEngine } from "./engine.ts";
+import { NOT_TOGETHER_MS, NotesEngine, summarize, TempoEngine } from "./engine.ts";
 import { buildSteps, type Step } from "./theory.ts";
 
 // C major, one octave up, right hand: 60 62 64 65 67 69 71 72.
@@ -267,4 +267,23 @@ Deno.test("tempo with offsets: rejects a bad offset list", () => {
     }
   }
   assertEquals(threw, 2);
+});
+
+Deno.test("a run graded in two segments scores the same as one run", () => {
+  const steps = cMajor();
+  const whole = new NotesEngine(steps);
+  steps.forEach((st, i) => whole.input(on(st.notes[0].midi, i * 400)));
+  // The same playing, paused after four notes and resumed.
+  const a = new NotesEngine(steps.slice(0, 4));
+  const b = new NotesEngine(steps.slice(4).map((st, i) => ({ ...st, index: i })));
+  steps.slice(0, 4).forEach((st, i) => a.input(on(st.notes[0].midi, i * 400)));
+  steps.slice(4).forEach((st, i) => b.input(on(st.notes[0].midi, (i + 4) * 400)));
+  const joined = summarize("notes", [...a.results, ...b.results]);
+  const one = whole.summary();
+  assertEquals([joined.accuracy, joined.correct, joined.total, joined.durationMs], [
+    one.accuracy,
+    one.correct,
+    one.total,
+    one.durationMs,
+  ]);
 });
