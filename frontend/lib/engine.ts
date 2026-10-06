@@ -233,6 +233,93 @@ export class NotesEngine implements Engine {
   }
 }
 
+export interface RubatoOptions {
+  /** When each step falls at the marked tempo, in ms (stepOffsets): the rhythm. */
+  offsets: readonly number[];
+  /**
+   * How far off a note may be and still count as on time, as a share of
+   * the time since the previous note (at the player's own tempo): 0.25
+   * allows a quarter of the note's length either way. Being a share, the
+   * window in ms shrinks as the tempo rises.
+   */
+  tolerance: number;
+}
+
+/** Notes of recent history the player's tempo is judged from. */
+const RUBATO_WINDOW = 4;
+/** A gap counts towards the tempo at no less than half, no more than twice its value. */
+const RUBATO_CLAMP = 2;
+
+/**
+ * Rubato: the player leads. The cursor waits for each step as in
+ * notes-only mode, so nothing is missed by the clock, and timing is judged
+ * against the player's own tempo rather than a metronome: each step is
+ * expected one rhythmic gap after the previous one, scaled by how fast the
+ * last few notes went. Slowing down or pushing on gradually stays on time;
+ * a note too early or late for its length doesn't. A long hesitation is
+ * late, but is clamped in the tempo estimate so the next note isn't judged
+ * by it. The first two steps set the tempo and aren't graded.
+ */
+export class RubatoEngine extends NotesEngine {
+  /** Onset of each completed step (its first note). */
+  private onsets: (number | null)[];
+  private tolerances: number[] = [];
+
+  constructor(steps: readonly Step[], readonly opts: RubatoOptions) {
+    if (opts.offsets.length !== steps.length) throw new RangeError("one offset per step");
+    super(steps);
+    this.onsets = steps.map(() => null);
+  }
+
+  /** The player's tempo relative to the rhythm's, judged before step i (1 = as written). */
+  ratioBefore(i: number): number | null {
+    let actual = 0;
+    let nominal = 0;
+    for (let k = i - 1; k >= 1 && k > i - 1 - RUBATO_WINDOW; k--) {
+      const a = this.onsets[k];
+      const b = this.onsets[k - 1];
+      if (a === null || b === null) break;
+      const n = this.opts.offsets[k] - this.opts.offsets[k - 1];
+      actual += Math.min(n * RUBATO_CLAMP, Math.max(n / RUBATO_CLAMP, a - b));
+      nominal += n;
+    }
+    return nominal > 0 ? actual / nominal : null;
+  }
+
+  override input(ev: NoteEvent): Feedback {
+    const fb = super.input(ev);
+    if (fb.kind === "correct" && fb.stepDone) this.time(fb.step);
+    return fb;
+  }
+
+  private time(i: number) {
+    const r = this.results[i];
+    const onset = Math.min(...r.onsets.filter((t): t is number => t !== null));
+    this.onsets[i] = onset;
+    const ratio = this.ratioBefore(i);
+    const prev = this.onsets[i - 1];
+    if (ratio === null || prev === null || prev === undefined) {
+      r.grade = "on"; // sets the tempo: nothing to judge it by yet
+      r.deviationMs = 0;
+      return;
+    }
+    const gap = (this.opts.offsets[i] - this.opts.offsets[i - 1]) * ratio;
+    const tolerance = gap * this.opts.tolerance;
+    this.tolerances.push(tolerance);
+    r.deviationMs = onset - (prev + gap);
+    r.grade = Math.abs(r.deviationMs) <= tolerance ? "on" : r.deviationMs < 0 ? "early" : "late";
+  }
+
+  /** The typical on-time window of the run, in ms. */
+  get typicalToleranceMs(): number {
+    return median(this.tolerances) ?? 0;
+  }
+
+  override summary(): Summary {
+    return summarize("tempo", this.results, this.typicalToleranceMs);
+  }
+}
+
 export interface TempoOptions {
   bpm: number;
   notesPerBeat: number;

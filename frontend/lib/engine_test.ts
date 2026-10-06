@@ -1,5 +1,5 @@
 import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
-import { NOT_TOGETHER_MS, NotesEngine, summarize, TempoEngine } from "./engine.ts";
+import { NOT_TOGETHER_MS, NotesEngine, RubatoEngine, summarize, TempoEngine } from "./engine.ts";
 import { buildSteps, type Step } from "./theory.ts";
 
 // C major, one octave up, right hand: 60 62 64 65 67 69 71 72.
@@ -286,4 +286,60 @@ Deno.test("a run graded in two segments scores the same as one run", () => {
     one.total,
     one.durationMs,
   ]);
+});
+
+// Rubato: eight quarter notes, written 500 ms apart.
+const QUARTERS = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500];
+function rubato(times: number[], tolerance = 0.25) {
+  const steps = cMajor();
+  const e = new RubatoEngine(steps, { offsets: QUARTERS, tolerance });
+  steps.forEach((s, i) => e.input(on(s.notes[0].midi, times[i])));
+  return e;
+}
+
+Deno.test("rubato: steady at any tempo is on time, the first two set it", () => {
+  const slow = rubato([0, 800, 1600, 2400, 3200, 4000, 4800, 5600]); // much slower than written
+  assert(slow.done);
+  assertEquals(slow.results.map((r) => r.grade), Array(8).fill("on"));
+  assertEquals(slow.summary().timing!.onTime, 8);
+});
+
+Deno.test("rubato: a gradual slowing down (ritardando) stays on time", () => {
+  const times = [0];
+  let gap = 500;
+  for (let i = 1; i < 8; i++) {
+    gap *= 1.08;
+    times.push(times[i - 1] + gap);
+  }
+  assertEquals(rubato(times).results.map((r) => r.grade), Array(8).fill("on"));
+});
+
+Deno.test("rubato: a note far off for its length is late or early, by a share of it", () => {
+  // Steady 500 ms, then a note 200 ms late (40% of its gap), then carrying on from it.
+  const e = rubato([0, 500, 1000, 1500, 2200, 2700, 3200, 3700]);
+  assertEquals(e.results[4].grade, "late");
+  assertEquals(Math.round(e.results[4].deviationMs!), 200);
+  assertEquals(e.results.slice(5).map((r) => r.grade), ["on", "on", "on"]);
+  // A relaxed threshold (45%) lets the same note pass.
+  assertEquals(rubato([0, 500, 1000, 1500, 2200, 2700, 3200, 3700], 0.45).results[4].grade, "on");
+  // Rushed: 150 ms early at 25% (125 ms allowed).
+  assertEquals(rubato([0, 500, 1000, 1500, 1850, 2350, 2850, 3350]).results[4].grade, "early");
+});
+
+Deno.test("rubato: the window scales with tempo", () => {
+  // The same 100 ms late note: fine at a slow tempo (gaps of 1000 ms),
+  // late at a fast one (gaps of 250 ms).
+  const slow = rubato([0, 1000, 2000, 3000, 4100, 5100, 6100, 7100]);
+  const fast = rubato([0, 250, 500, 750, 1100, 1350, 1600, 1850]);
+  assertEquals(slow.results[4].grade, "on");
+  assertEquals(fast.results[4].grade, "late");
+});
+
+Deno.test("rubato: a long hesitation is late, but doesn't skew the next notes", () => {
+  // A 3 s pause before step 4, then back to 500 ms gaps.
+  const e = rubato([0, 500, 1000, 1500, 4500, 5000, 5500, 6000]);
+  assertEquals(e.results[4].grade, "late");
+  // Clamped to 2x in the estimate, the next gap is expected at ~1.3x: 500 ms is early...
+  // ...but it settles back within the window.
+  assertEquals(e.results[7].grade, "on");
 });
