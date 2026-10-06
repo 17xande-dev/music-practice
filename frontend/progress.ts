@@ -161,7 +161,11 @@ function render() {
 const HAND_LABEL = { both: "Both hands", rh: "RH", lh: "LH" } as const;
 
 function songPractice(s: SongSession): string {
-  const mode = s.mode === "tempo" ? `In time, ${s.tempoPct}%` : "Wait mode";
+  const mode = s.mode === "tempo"
+    ? `In time, ${s.tempoPct}%`
+    : s.mode === "rubato"
+    ? `Rubato, ±${s.rubatoPct ?? 25}%`
+    : "Wait mode";
   return `${HAND_LABEL[s.hands]} · m. ${s.from}${s.to > s.from ? `–${s.to}` : ""} · ${mode}`;
 }
 

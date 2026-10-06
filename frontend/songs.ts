@@ -11,6 +11,7 @@
 import {
   type NoteEvent,
   NotesEngine,
+  RubatoEngine,
   type StepResult,
   summarize,
   type Summary,
@@ -92,6 +93,8 @@ const ui = {
   to: el<HTMLInputElement>("song-to"),
   whole: el<HTMLButtonElement>("song-whole"),
   tempo: el<HTMLInputElement>("song-tempo"),
+  rubato: el<HTMLInputElement>("song-rubato"),
+  rubatoValue: el<HTMLOutputElement>("song-rubato-value"),
   loop: el<HTMLInputElement>("song-loop"),
   metronome: el<HTMLInputElement>("song-metronome"),
   accompany: el<HTMLInputElement>("song-accompany"),
@@ -109,7 +112,9 @@ const ui = {
   resultsNote: el("results-note"),
 };
 
-type Mode = "notes" | "tempo" | "listen";
+type Mode = "notes" | "tempo" | "rubato" | "listen";
+/** Modes where the player leads and the cursor waits for each step. */
+const waiting = () => mode === "notes" || mode === "rubato";
 type Phase = "idle" | "countin" | "playing" | "paused" | "done";
 
 const store = ProgressStore.fromWindow();
@@ -330,6 +335,7 @@ function rebuild() {
 
 function stop() {
   player.stop();
+  guideOn = false;
   cancelAnimationFrame(frame);
   clearTimeout(loopTimer);
 }
@@ -361,17 +367,61 @@ function beginWaiting(k: number) {
   engine = null;
   segment = null;
   offset = k;
-  if (mode !== "notes" || !practice?.steps.length) return;
+  if (!waiting() || !practice?.steps.length || !song) return;
   segment = sliceFrom(practice, k);
-  engine = new NotesEngine(segment.steps);
+  engine = mode === "rubato"
+    ? new RubatoEngine(segment.steps, {
+      // The written rhythm; the player's own tempo scales it.
+      offsets: stepOffsets(song.score, segment, 100),
+      tolerance: rubatoShare(),
+    })
+    : new NotesEngine(segment.steps);
+}
+
+/** Rubato's on-time window, as a share of each note's length. */
+const rubatoShare = () => Math.min(50, Math.max(10, Number(ui.rubato.value) || 25)) / 100;
+
+function showRubato() {
+  const pct = Math.round(rubatoShare() * 100);
+  const feel = pct <= 15 ? "strict" : pct < 35 ? "normal" : "relaxed";
+  ui.rubatoValue.textContent = `±${pct}% · ${feel}`;
+}
+
+/**
+ * Rubato's guide click: a count-in and a metronome at the marked tempo
+ * (× the tempo %), to start by and to lean on. It isn't graded against.
+ */
+let guideOn = false;
+async function toggleGuide() {
+  if (guideOn) {
+    player.stop();
+    guideOn = false;
+    showTransport();
+    return;
+  }
+  if (!song || !practice?.steps.length) return;
+  const seg = sliceFrom(practice, Math.max(0, currentStep()));
+  const plan = playPlan(song.score, seg, {
+    pct: tempoPct(),
+    metronome: true,
+    notes: "none",
+    countIn: true,
+  });
+  guideOn = true;
+  showTransport();
+  await player.start(plan);
 }
 
 const playingNow = () => phase === "countin" || phase === "playing";
 
 /** The play button, stop and the position readout, for the current state. */
 function showTransport() {
-  setPlaying(ui.start, playingNow(), mode === "listen" ? ["Listen", "Pause"] : ["Play", "Pause"]);
-  ui.start.hidden = mode === "notes";
+  if (mode === "rubato") {
+    setPlaying(ui.start, guideOn, ["Guide click", "Stop click"]);
+  } else {
+    setPlaying(ui.start, playingNow(), mode === "listen" ? ["Listen", "Pause"] : ["Play", "Pause"]);
+  }
+  ui.start.hidden = mode === "notes" || (mode === "rubato" && !ui.metronome.checked);
   ui.stop.disabled = !playingNow() && phase !== "paused";
   const n = practice?.steps.length ?? 0;
   const i = currentStep();
@@ -436,7 +486,7 @@ function showProgress() {
   view.reveal(stepRefs[i][0]);
   const n = practice.steps.length;
   const where = `measure ${measureOf(i)}`;
-  ui.status.textContent = mode === "notes"
+  ui.status.textContent = waiting()
     ? (i === 0 && !attempted.size
       ? `Play the first note to begin · ${where}`
       : `Note ${i + 1} of ${n} · ${where}`)
@@ -453,7 +503,7 @@ function showProgress() {
 
 /** Play (tempo or listen) from step k of the selection. */
 async function start(k = position) {
-  if (!song || !practice?.steps.length || mode === "notes") return;
+  if (!song || !practice?.steps.length || waiting()) return;
   stop();
   if (phase === "done") {
     // A finished run starts over.
@@ -514,6 +564,7 @@ function pause() {
 }
 
 function togglePlay() {
+  if (mode === "rubato") return void toggleGuide();
   if (mode === "notes") return;
   if (playingNow()) pause();
   else void start();
@@ -536,7 +587,7 @@ function seek(k: number) {
     view.clearMarks();
     phase = "idle";
   }
-  if (mode === "notes") {
+  if (waiting()) {
     if (engine instanceof NotesEngine) keepSegment(engine.cursor);
     beginWaiting(k);
   }
@@ -669,8 +720,8 @@ function again() {
   ui.status.textContent += " Repeating…";
   loopTimer = setTimeout(() => {
     reset();
-    if (mode !== "notes") void start(0);
-  }, mode === "notes" ? 1200 : 2000);
+    if (!waiting()) void start(0);
+  }, waiting() ? 1200 : 2000);
 }
 
 // ---- Input -----------------------------------------------------------------------
@@ -686,8 +737,8 @@ function handleNote(ev: NoteEvent) {
     keyboard.release(ev.midi);
     return;
   }
-  const grading = engine && !engine.done && (mode === "notes" || phase === "countin" ||
-    phase === "playing");
+  const grading = engine && !engine.done &&
+    (engine instanceof NotesEngine || phase === "countin" || phase === "playing");
   if (!grading) {
     keyboard.press(ev.midi, "neutral");
     return;
@@ -698,7 +749,11 @@ function handleNote(ev: NoteEvent) {
     const r = engine!.results[fb.step];
     view.mark(
       stepRefs[offset + fb.step],
-      engine instanceof TempoEngine ? markFor(r) : r.clean ? "ok" : "bad",
+      engine instanceof TempoEngine || engine instanceof RubatoEngine
+        ? markFor(r)
+        : r.clean
+        ? "ok"
+        : "bad",
     );
     if (engine instanceof NotesEngine) accompanyStep(offset + fb.step);
   }
@@ -721,7 +776,9 @@ function accompanyStep(i: number) {
   if (!song || !practice || !ui.accompany.checked || ui.hands.value === "both") return;
   const from = practice.beats[i];
   const to = practice.beats[i + 1] ?? Infinity;
-  const bpm = bpmAt(song.score.tempo, from);
+  // Rubato: at the player's own tempo, as far as it's known.
+  const ratio = engine instanceof RubatoEngine ? engine.ratioBefore(i - offset + 1) ?? 1 : 1;
+  const bpm = bpmAt(song.score.tempo, from) / ratio;
   const notes = practice.accompaniment
     .filter((n) => n.beat >= from && n.beat < to && n.beat - from < 0.01)
     .map((n) => ({ midi: n.midi, dur: (n.quarters * 60000) / bpm }));
@@ -810,8 +867,12 @@ function finishRun() {
   const steps = [...attempted.keys()].sort((a, b) => a - b);
   const results = steps.map((k) => attempted.get(k)!);
   const bpm = (bpmAt(song.score.tempo, practice.beats[steps[0]]) * tempoPct()) / 100;
-  const tolerance = mode === "tempo" ? Math.min(60, 60000 / bpm / 4) : 0;
-  const s = summarize(mode === "tempo" ? "tempo" : "notes", results, tolerance);
+  const tolerance = mode === "tempo"
+    ? Math.min(60, 60000 / bpm / 4)
+    : engine instanceof RubatoEngine
+    ? engine.typicalToleranceMs
+    : 0;
+  const s = summarize(mode === "notes" ? "notes" : "tempo", results, tolerance);
   const stats = measureStats(
     { ...practice, events: steps.map((k) => practice!.events[k]) },
     results,
@@ -829,7 +890,8 @@ function finishRun() {
     // A run started part way in counts from the measure it started in.
     from: Math.max(sel.from!, measureOf(steps[0])),
     to: sel.to!,
-    mode: mode === "tempo" ? "tempo" : "notes",
+    mode: mode === "tempo" ? "tempo" : mode === "rubato" ? "rubato" : "notes",
+    ...(mode === "rubato" ? { rubatoPct: Math.round(rubatoShare() * 100) } : {}),
     tempoPct: mode === "tempo" ? tempoPct() : 100,
     total: s.total,
     correct: s.correct,
@@ -871,7 +933,7 @@ function showResults(s: Summary, stats: MeasureStat[]) {
   const t = s.timing;
   if (t) {
     rows.push(
-      stat("On the beat", `${t.onTime} of ${s.total}`),
+      stat(mode === "rubato" ? "On time" : "On the beat", `${t.onTime} of ${s.total}`),
       stat("Early / late", `${t.early} / ${t.late}`),
       stat("Missed", String(t.missed)),
     );
@@ -889,8 +951,12 @@ function showResults(s: Summary, stats: MeasureStat[]) {
       : `Practise measures ${weak.from}–${weak.to}`;
     ui.loopWeakest.onclick = () => setRange(weak.from, weak.to);
   }
-  ui.resultsNote.textContent = t && t.meanSignedMs !== null &&
-      Math.abs(t.meanSignedMs) > t.toleranceMs / 2
+  ui.resultsNote.textContent = mode === "rubato" && t
+    ? `On time means within ±${
+      Math.round(rubatoShare() * 100)
+    }% of each note's length at your own tempo (about ±${Math.round(t.toleranceMs)} ms here).`
+    : t && t.meanSignedMs !== null &&
+        Math.abs(t.meanSignedMs) > t.toleranceMs / 2
     ? (t.meanSignedMs < 0
       ? `You tended to rush, about ${Math.round(-t.meanSignedMs)} ms ahead of the beat.`
       : `You tended to drag, about ${
@@ -940,6 +1006,8 @@ function restore() {
   if (s.songMode) ui.mode.value = s.songMode;
   if (s.songHands) ui.hands.value = s.songHands;
   if (s.songTempo) ui.tempo.value = String(s.songTempo);
+  if (s.songRubato) ui.rubato.value = String(s.songRubato);
+  showRubato();
   if (s.songMetronome !== undefined) ui.metronome.checked = s.songMetronome;
   if (s.songAccompany !== undefined) ui.accompany.checked = s.songAccompany;
   if (s.songLoop !== undefined) ui.loop.checked = s.songLoop;
@@ -953,6 +1021,7 @@ function persist() {
     songMode: ui.mode.value as Mode,
     songHands: ui.hands.value as Selection["hands"],
     songTempo: tempoPct(),
+    songRubato: Math.round(rubatoShare() * 100),
     songMetronome: ui.metronome.checked,
     songAccompany: ui.accompany.checked,
     songLoop: ui.loop.checked,
@@ -994,12 +1063,14 @@ ui.form.addEventListener("change", (e) => {
   }
   // Read at Start, or as it plays: no rebuild needed.
   if (t === ui.loop || t === ui.metronome || t === ui.latency || t === ui.cursorMode) {
+    showTransport(); // the rubato guide button follows the metronome box
     if (t === ui.cursorMode && playingNow()) view.showCursor(stepRefs[currentStep()]);
     return;
   }
   rebuild();
 });
 ui.form.addEventListener("submit", (e) => e.preventDefault());
+ui.rubato.addEventListener("input", showRubato);
 ui.calibrate.addEventListener("click", () => void calibrate());
 ui.whole.addEventListener("click", () => {
   if (song) setRange(1, song.score.measureCount);
@@ -1164,6 +1235,7 @@ const commands: Command[] = [
   ...([
     ["notes", "Mode: wait for each note", ["wait"]],
     ["tempo", "Mode: play in time", ["tempo", "metronome"]],
+    ["rubato", "Mode: play freely (rubato)", ["free time", "expressive", "rubato"]],
     ["listen", "Mode: listen", ["hear", "playback"]],
   ] as const).map(([value, label, keywords]): Command => ({
     id: `mode.${value}`,

@@ -22,7 +22,10 @@ export interface SongSession {
   /** Written measure range practised, inclusive. */
   from: number;
   to: number;
-  mode: "notes" | "tempo";
+  /** Wait mode, in time with the metronome, or rubato (timing by the player's own tempo). */
+  mode: "notes" | "tempo" | "rubato";
+  /** Rubato: the on-time window, as % of each note's length. */
+  rubatoPct?: number;
   /** Tempo as % of the marked tempo (tempo mode; 100 otherwise). */
   tempoPct: number;
   total: number;
@@ -64,12 +67,13 @@ export function validSongSession(x: unknown): x is SongSession {
     isStr(x.songId, 64) && isStr(x.title, 300) &&
     ["both", "rh", "lh"].includes(x.hands as string) &&
     isCount(x.from) && isCount(x.to) && x.from >= 1 && x.to >= x.from &&
-    ["notes", "tempo"].includes(x.mode as string) &&
+    ["notes", "tempo", "rubato"].includes(x.mode as string) &&
+    (x.rubatoPct === undefined || (isNum(x.rubatoPct) && x.rubatoPct >= 10 && x.rubatoPct <= 50)) &&
     isNum(x.tempoPct) && x.tempoPct >= 10 && x.tempoPct <= 200 &&
     isCount(x.total) && x.total > 0 && isCount(x.correct) && x.correct <= x.total &&
     isNum(x.accuracy) && x.accuracy >= 0 && x.accuracy <= 1 &&
     isCount(x.wrongNotes) && isNum(x.durationMs) && x.durationMs >= 0 &&
-    timingOk && (x.mode === "tempo") === (t !== null) &&
+    timingOk && (x.mode !== "notes") === (t !== null) &&
     Array.isArray(x.measures) && x.measures.length <= MAX_MEASURES &&
     x.measures.every(validMeasure);
 }
@@ -86,6 +90,7 @@ export function cleanSongSession(s: SongSession): SongSession {
     from: s.from,
     to: s.to,
     mode: s.mode,
+    ...(s.rubatoPct !== undefined ? { rubatoPct: s.rubatoPct } : {}),
     tempoPct: s.tempoPct,
     total: s.total,
     correct: s.correct,

@@ -325,3 +325,14 @@ Deno.test("song view and zoom settings stay in range", () => {
   storage.setItem(SETTINGS_KEY, JSON.stringify({ songView: "scroll", songZoom: 9 }));
   assertEquals(store.settings(), {});
 });
+
+Deno.test("rubato song sessions and settings validate", () => {
+  const store = new ProgressStore(new FakeStorage());
+  const r = store.addSong(songRun({ mode: "rubato", rubatoPct: 25 }));
+  assert(r.saved);
+  assertEquals(store.songSessions()[0].rubatoPct, 25);
+  assertEquals(validSongSession({ ...songRun({ mode: "rubato", rubatoPct: 80 }), id: "x" }), false);
+  assertEquals(validSongSession({ ...songRun({ mode: "rubato", timing: null }), id: "x" }), false);
+  store.saveSettings({ songMode: "rubato", songRubato: 40 });
+  assertEquals(store.settings().songRubato, 40);
+});

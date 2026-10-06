@@ -85,7 +85,9 @@ export interface Settings {
   /** Show finger numbers on the staff, keyboard and fretboard. */
   fingering: boolean;
   /** Songs page: how the last song was practised, and which song it was. */
-  songMode: "notes" | "tempo" | "listen";
+  songMode: "notes" | "tempo" | "rubato" | "listen";
+  /** Rubato's on-time window, as % of each note's length. */
+  songRubato: number;
   songHands: "both" | "rh" | "lh";
   songTempo: number;
   songMetronome: boolean;
@@ -250,7 +252,10 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
   if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.fingering === "boolean") out.fingering = x.fingering;
-  if (["notes", "tempo", "listen"].includes(x.songMode as string)) {
+  if (isNum(x.songRubato) && x.songRubato >= 10 && x.songRubato <= 50) {
+    out.songRubato = x.songRubato;
+  }
+  if (["notes", "tempo", "rubato", "listen"].includes(x.songMode as string)) {
     out.songMode = x.songMode as Settings["songMode"];
   }
   if (["both", "rh", "lh"].includes(x.songHands as string)) {

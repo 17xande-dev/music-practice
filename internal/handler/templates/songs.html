@@ -54,6 +54,7 @@
       <select id="song-mode" name="mode">
         <option value="notes">Wait for each note</option>
         <option value="tempo">Play in time</option>
+        <option value="rubato">Play freely (rubato)</option>
         <option value="listen">Listen</option>
       </select>
     </div>
@@ -81,14 +82,21 @@
         <option value="jump">Jumps note to note</option>
       </select>
     </div>
-    <div class="field" data-modes="tempo listen">
+    <div class="field" data-modes="rubato">
+      <label for="song-rubato">Timing leeway <output id="song-rubato-value" for="song-rubato">±25% · normal</output></label>
+      <input id="song-rubato" name="rubato" type="range" min="10" max="50" step="5" value="25" list="rubato-marks"
+        title="How far a note may be from where your own tempo puts it, as a share of the note's length. The window narrows as you play faster.">
+      <datalist id="rubato-marks"><option value="15" label="strict"></option><option value="25" label="normal"></option><option value="40" label="relaxed"></option></datalist>
+      <p class="field-note">Play at your own pace: you're judged against your own tempo, not the click. Gradually slowing down or speeding up is fine.</p>
+    </div>
+    <div class="field" data-modes="tempo rubato listen">
       <label for="song-tempo">Tempo (% of marked)</label>
       <input id="song-tempo" name="tempo" type="number" min="10" max="200" step="5" value="100" inputmode="numeric">
     </div>
     <div class="field">
       <span class="field-label" aria-hidden="true">Options</span>
       <label class="check"><input id="song-loop" name="loop" type="checkbox"> Repeat the selection</label>
-      <label class="check" data-modes="tempo"><input id="song-metronome" name="metronome" type="checkbox" checked> Metronome</label>
+      <label class="check" data-modes="tempo rubato"><input id="song-metronome" name="metronome" type="checkbox" checked> Metronome</label>
       <label class="check"><input id="song-accompany" name="accompany" type="checkbox" checked> Play the other hand</label>
       <label class="check"><input id="fingering" name="fingering" type="checkbox"> Show fingers</label>
     </div>
