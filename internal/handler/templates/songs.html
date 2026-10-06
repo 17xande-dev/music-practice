@@ -87,6 +87,11 @@
       <input id="song-rubato" name="rubato" type="range" min="10" max="50" step="5" value="25" list="rubato-marks"
         title="How far a note may be from where your own tempo puts it, as a share of the note's length. The window narrows as you play faster.">
       <datalist id="rubato-marks"><option value="15" label="strict"></option><option value="25" label="normal"></option><option value="40" label="relaxed"></option></datalist>
+      <label for="song-guide">Guide click</label>
+      <select id="song-guide" name="guide" title="Follows you: the click keeps to your tempo and waits when you pause. Steady: it keeps the marked tempo, to show you any drift.">
+        <option value="follow">Follows you</option>
+        <option value="steady">Steady</option>
+      </select>
       <p class="field-note">Play at your own pace: you're judged against your own tempo, not the click. Gradually slowing down or speeding up is fine.</p>
     </div>
     <div class="field" data-modes="tempo rubato listen">

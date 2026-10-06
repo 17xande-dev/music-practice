@@ -74,9 +74,10 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   for you, and timing is judged against your own tempo rather than a click: each note is expected
   where the last few notes' pace puts it, so a gradual ritardando or accelerando stays on time. The
   leeway is a slider (±10–50% of each note's length; strict 15, normal 25, relaxed 40), so the
-  window in milliseconds narrows as you play faster. An optional guide click at the marked tempo
-  helps you start, and isn't graded against. A long hesitation counts once, without throwing off the
-  notes after it.
+  window in milliseconds narrows as you play faster. An optional guide click (a count-in at the
+  marked tempo) isn't graded against; by default it then follows you, keeping to your tempo
+  (smoothed, so one late note doesn't lurch it) and waiting when you pause, or it can stay steady to
+  show you any drift. A long hesitation counts once, without throwing off the notes after it.
 - **Song transport and views:** a transport bar (start, previous/next measure, play/pause, stop,
   restart) with keyboard shortcuts; pausing keeps the place and Play resumes from it. A continuous
   view lays the piece out as one line that scrolls with the cursor; the big screen fills the window

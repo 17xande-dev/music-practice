@@ -88,6 +88,8 @@ export interface Settings {
   songMode: "notes" | "tempo" | "rubato" | "listen";
   /** Rubato's on-time window, as % of each note's length. */
   songRubato: number;
+  /** Rubato's guide click: follows the player, or keeps the marked tempo. */
+  songGuide: "follow" | "steady";
   songHands: "both" | "rh" | "lh";
   songTempo: number;
   songMetronome: boolean;
@@ -252,6 +254,7 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
   if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.fingering === "boolean") out.fingering = x.fingering;
+  if (x.songGuide === "follow" || x.songGuide === "steady") out.songGuide = x.songGuide;
   if (isNum(x.songRubato) && x.songRubato >= 10 && x.songRubato <= 50) {
     out.songRubato = x.songRubato;
   }

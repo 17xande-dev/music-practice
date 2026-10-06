@@ -124,6 +124,22 @@ export class SongPlayer {
     for (const n of notes) this.tone(at, n.midi, n.dur / 1000, out);
   }
 
+  /**
+   * One click at `perfTime` (performance.now() ms), on the output of the
+   * plan started last: the following guide click schedules its beats one
+   * at a time, just ahead. A time already past is skipped. Returns whether
+   * it was scheduled.
+   */
+  clickAt(perfTime: number): boolean {
+    const ctx = this.ctx;
+    if (!ctx || !this.out) return false;
+    const now = ctx.currentTime;
+    const at = now + (perfTime - audioToPerf(ctx, now)) / 1000;
+    if (at < now) return false;
+    this.click(at, 880, 0.3);
+    return true;
+  }
+
   stop() {
     clearInterval(this.timer);
     // Disconnecting the output silences everything already scheduled.

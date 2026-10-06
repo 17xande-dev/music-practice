@@ -19,6 +19,7 @@ import {
 } from "./lib/engine.ts";
 import type { Command } from "./lib/commands.ts";
 import { setPlaying } from "./lib/transport.ts";
+import { FollowingClick } from "./lib/guide_click.ts";
 import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
@@ -95,6 +96,7 @@ const ui = {
   tempo: el<HTMLInputElement>("song-tempo"),
   rubato: el<HTMLInputElement>("song-rubato"),
   rubatoValue: el<HTMLOutputElement>("song-rubato-value"),
+  guide: el<HTMLSelectElement>("song-guide"),
   loop: el<HTMLInputElement>("song-loop"),
   metronome: el<HTMLInputElement>("song-metronome"),
   accompany: el<HTMLInputElement>("song-accompany"),
@@ -336,6 +338,8 @@ function rebuild() {
 function stop() {
   player.stop();
   guideOn = false;
+  follower = null;
+  clearInterval(guideTimer);
   cancelAnimationFrame(frame);
   clearTimeout(loopTimer);
 }
@@ -392,24 +396,61 @@ function showRubato() {
  * (× the tempo %), to start by and to lean on. It isn't graded against.
  */
 let guideOn = false;
+/** The following guide click, while it runs; it tells the scheduler when to click. */
+let follower: FollowingClick | null = null;
+let guideTimer = 0;
+const followsPlayer = () => ui.guide.value !== "steady";
+
 async function toggleGuide() {
   if (guideOn) {
     player.stop();
     guideOn = false;
+    follower = null;
+    clearInterval(guideTimer);
     showTransport();
     return;
   }
   if (!song || !practice?.steps.length) return;
   const seg = sliceFrom(practice, Math.max(0, currentStep()));
+  const pct = tempoPct();
   const plan = playPlan(song.score, seg, {
-    pct: tempoPct(),
-    metronome: true,
+    pct,
+    // Steady: the clicks are all scheduled with the plan. Following: only
+    // the count-in is; after it the clicks are scheduled one by one.
+    metronome: !followsPlayer(),
     notes: "none",
     countIn: true,
   });
   guideOn = true;
   showTransport();
-  await player.start(plan);
+  const sched = await player.start(plan);
+  if (!followsPlayer() || !guideOn) return;
+  const beatMs = 60000 / ((bpmAt(song.score.tempo, seg.startBeat) * pct) / 100);
+  follower = new FollowingClick(beatMs, { beat: seg.startBeat, t: sched.startTime });
+  clearInterval(guideTimer);
+  guideTimer = setInterval(pumpGuide, 40);
+}
+
+/** Schedule the following click's next beat once it's close (a short lookahead keeps it responsive). */
+function pumpGuide() {
+  if (!follower) return;
+  const now = performance.now();
+  for (let c = follower.next(); c && c.t - now < 150; c = follower.next()) {
+    if (c.t >= now - 20) player.clickAt(c.t);
+    follower.take(c.beat);
+  }
+}
+
+/** Tell the following click where the player is, after each step they finish. */
+function followStep(j: number) {
+  if (!follower || !song || !practice || !(engine instanceof RubatoEngine)) return;
+  const i = offset + j;
+  const onsets = engine.results[j].onsets.filter((t): t is number => t !== null);
+  const beat = practice.beats[i];
+  const ratio = engine.ratioBefore(j + 1);
+  // The ratio is to the written rhythm at the marked tempo (100%).
+  const target = ratio === null ? null : (60000 / bpmAt(song.score.tempo, beat)) * ratio;
+  follower.onNote(beat, Math.min(...onsets), target, practice.beats[i + 1] ?? beat + 1);
 }
 
 const playingNow = () => phase === "countin" || phase === "playing";
@@ -756,6 +797,7 @@ function handleNote(ev: NoteEvent) {
         : "bad",
     );
     if (engine instanceof NotesEngine) accompanyStep(offset + fb.step);
+    followStep(fb.step);
   }
   if (engine instanceof NotesEngine) {
     const done = engine.done;
@@ -1007,6 +1049,7 @@ function restore() {
   if (s.songHands) ui.hands.value = s.songHands;
   if (s.songTempo) ui.tempo.value = String(s.songTempo);
   if (s.songRubato) ui.rubato.value = String(s.songRubato);
+  if (s.songGuide) ui.guide.value = s.songGuide;
   showRubato();
   if (s.songMetronome !== undefined) ui.metronome.checked = s.songMetronome;
   if (s.songAccompany !== undefined) ui.accompany.checked = s.songAccompany;
@@ -1022,6 +1065,7 @@ function persist() {
     songHands: ui.hands.value as Selection["hands"],
     songTempo: tempoPct(),
     songRubato: Math.round(rubatoShare() * 100),
+    songGuide: ui.guide.value as "follow" | "steady",
     songMetronome: ui.metronome.checked,
     songAccompany: ui.accompany.checked,
     songLoop: ui.loop.checked,
@@ -1062,7 +1106,11 @@ ui.form.addEventListener("change", (e) => {
     return;
   }
   // Read at Start, or as it plays: no rebuild needed.
-  if (t === ui.loop || t === ui.metronome || t === ui.latency || t === ui.cursorMode) {
+  if (t === ui.guide && guideOn) void toggleGuide(); // stops; Play starts the new kind
+  if (
+    t === ui.loop || t === ui.metronome || t === ui.latency || t === ui.cursorMode ||
+    t === ui.guide
+  ) {
     showTransport(); // the rubato guide button follows the metronome box
     if (t === ui.cursorMode && playingNow()) view.showCursor(stepRefs[currentStep()]);
     return;
@@ -1466,6 +1514,7 @@ void SongLibrary.open().then(async (lib) => {
       : {};
   },
   position: () => currentStep(),
+  follower: () => follower,
   phase: () => phase,
   seek,
   add: (text: string, name = "test.musicxml") =>
