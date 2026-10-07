@@ -19,6 +19,7 @@ import {
   type SongSession,
   validSongSession,
 } from "./song_session.ts";
+import { cleanLearnSession, LEARN_KEY, type LearnSession, validLearnSession } from "./learn_log.ts";
 
 export const SESSIONS_KEY = "mp.v1.sessions";
 export const SETTINGS_KEY = "mp.v1.settings";
@@ -69,7 +70,8 @@ export interface Settings {
   hands: ExerciseOptions["hands"];
   octaves: number;
   direction: ExerciseOptions["direction"];
-  mode: "notes" | "tempo";
+  /** Learn: wait for each note, with hints, kept out of the graded history. */
+  mode: "notes" | "tempo" | "learn";
   bpm: number;
   notesPerBeat: number;
   latencyMs: number;
@@ -85,7 +87,7 @@ export interface Settings {
   /** Show finger numbers on the staff, keyboard and fretboard. */
   fingering: boolean;
   /** Songs page: how the last song was practised, and which song it was. */
-  songMode: "notes" | "tempo" | "rubato" | "listen";
+  songMode: "learn" | "notes" | "tempo" | "rubato" | "listen";
   /** Rubato's on-time window, as % of each note's length. */
   songRubato: number;
   /** Rubato's guide click: follows the player, or keeps the marked tempo. */
@@ -114,6 +116,8 @@ export interface ExportFile {
   sessions: Session[];
   /** Song runs; absent in exports made before songs existed. */
   songSessions?: SongSession[];
+  /** Learn-mode log; absent in exports made before Learn mode existed. */
+  learnSessions?: LearnSession[];
 }
 
 /** Sessions of the same exercise: comparable for personal bests and trends. */
@@ -245,7 +249,7 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (["up", "updown"].includes(x.direction as string)) {
     out.direction = x.direction as Settings["direction"];
   }
-  if (["notes", "tempo"].includes(x.mode as string)) out.mode = x.mode as Settings["mode"];
+  if (["notes", "tempo", "learn"].includes(x.mode as string)) out.mode = x.mode as Settings["mode"];
   if (isNum(x.bpm) && x.bpm >= 40 && x.bpm <= 200) out.bpm = x.bpm;
   if ([1, 2, 4].includes(x.notesPerBeat as number)) out.notesPerBeat = x.notesPerBeat as number;
   if (isNum(x.latencyMs) && x.latencyMs >= 0 && x.latencyMs <= 300) out.latencyMs = x.latencyMs;
@@ -258,7 +262,7 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isNum(x.songRubato) && x.songRubato >= 10 && x.songRubato <= 50) {
     out.songRubato = x.songRubato;
   }
-  if (["notes", "tempo", "rubato", "listen"].includes(x.songMode as string)) {
+  if (["learn", "notes", "tempo", "rubato", "listen"].includes(x.songMode as string)) {
     out.songMode = x.songMode as Settings["songMode"];
   }
   if (["both", "rh", "lh"].includes(x.songHands as string)) {
@@ -389,15 +393,40 @@ export class ProgressStore {
     return { session, saved, previousBest };
   }
 
+  /** Every valid stored learn session, oldest first. */
+  learnSessions(): LearnSession[] {
+    const raw = this.read(LEARN_KEY);
+    return Array.isArray(raw)
+      ? raw.filter(validLearnSession).map(cleanLearnSession).sort((a, b) => a.ts - b.ts)
+      : [];
+  }
+
+  /** Log time spent in Learn mode. Never touches the graded history. */
+  addLearn(run: Omit<LearnSession, "id">): { session: LearnSession; saved: boolean } {
+    const session: LearnSession = { ...run, id: newId() };
+    const all = this.learnSessions();
+    all.push(session);
+    return { session, saved: this.write(LEARN_KEY, all.slice(-MAX_SESSIONS)) };
+  }
+
   /** Forget a song's history (when the song itself is deleted). */
   removeSong(songId: string): boolean {
-    return this.write(SONG_SESSIONS_KEY, this.songSessions().filter((s) => s.songId !== songId));
+    const a = this.write(
+      SONG_SESSIONS_KEY,
+      this.songSessions().filter((s) => s.songId !== songId),
+    );
+    const b = this.write(
+      LEARN_KEY,
+      this.learnSessions().filter((s) => !(s.kind === "song" && s.subject === songId)),
+    );
+    return a && b;
   }
 
   clear(): boolean {
     const a = this.write(SESSIONS_KEY, []);
     const b = this.write(SONG_SESSIONS_KEY, []);
-    return a && b;
+    const c = this.write(LEARN_KEY, []);
+    return a && b && c;
   }
 
   settings(): Partial<Settings> {
@@ -415,6 +444,7 @@ export class ProgressStore {
       exportedAt: now.toISOString(),
       sessions: this.sessions(),
       songSessions: this.songSessions(),
+      learnSessions: this.learnSessions(),
     };
     return JSON.stringify(file, null, 2);
   }
@@ -469,6 +499,25 @@ export class ProgressStore {
       songs.sort((a, b) => a.ts - b.ts);
       if (songsAdded) saved = this.write(SONG_SESSIONS_KEY, songs.slice(-MAX_SESSIONS)) && saved;
       added += songsAdded;
+    }
+
+    // Learn-mode time, in exports that have it.
+    if (Array.isArray(parsed.learnSessions)) {
+      const learn = this.learnSessions();
+      const learnIds = new Set(learn.map((s) => s.id));
+      let learnAdded = 0;
+      for (const s of parsed.learnSessions) {
+        if (!validLearnSession(s)) invalid++;
+        else if (learnIds.has(s.id)) duplicate++;
+        else {
+          learn.push(cleanLearnSession(s));
+          learnIds.add(s.id);
+          learnAdded++;
+        }
+      }
+      learn.sort((a, b) => a.ts - b.ts);
+      if (learnAdded) saved = this.write(LEARN_KEY, learn.slice(-MAX_SESSIONS)) && saved;
+      added += learnAdded;
     }
     return { added, duplicate, invalid, saved };
   }

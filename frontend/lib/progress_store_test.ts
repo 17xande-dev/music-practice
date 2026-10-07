@@ -14,6 +14,7 @@ import {
   type SongSession,
   validSongSession,
 } from "./song_session.ts";
+import { LEARN_KEY, type LearnSession } from "./learn_log.ts";
 
 /** An in-memory Storage, optionally refusing writes (a full quota). */
 class FakeStorage implements Storage {
@@ -335,4 +336,65 @@ Deno.test("rubato song sessions and settings validate", () => {
   assertEquals(validSongSession({ ...songRun({ mode: "rubato", timing: null }), id: "x" }), false);
   store.saveSettings({ songMode: "rubato", songRubato: 40 });
   assertEquals(store.settings().songRubato, 40);
+});
+
+function learnRun(over: Partial<LearnSession> = {}): Omit<LearnSession, "id"> {
+  return {
+    ts: 1_790_000_000_000,
+    kind: "song",
+    subject: "song-1",
+    title: "Minuet in G",
+    hands: "rh",
+    durationMs: 190_000,
+    steps: 40,
+    total: 40,
+    wrongNotes: 12,
+    complete: true,
+    measures: [{ measure: 1, steps: 5, clean: 2 }],
+    ...over,
+  };
+}
+
+Deno.test("learn sessions: kept apart from the graded history", () => {
+  const store = new ProgressStore(new FakeStorage());
+  assert(store.addLearn(learnRun()).saved);
+  assertEquals(store.learnSessions().length, 1);
+  assertEquals(store.sessions(), []);
+  assertEquals(store.songSessions(), []);
+  assert(store.clear());
+  assertEquals(store.learnSessions(), []);
+});
+
+Deno.test("learn sessions: export, import, removal with the song, hostile records", () => {
+  const a = new ProgressStore(new FakeStorage());
+  a.addSong(songRun());
+  a.addLearn(learnRun());
+  a.addLearn(
+    learnRun({ kind: "scale", subject: "C0|major", title: "C major", measures: undefined }),
+  );
+  const b = new ProgressStore(new FakeStorage());
+  assertEquals(b.importJSON(a.exportJSON()), { added: 3, duplicate: 0, invalid: 0, saved: true });
+  assertEquals(b.importJSON(a.exportJSON()).duplicate, 3);
+  assert(b.removeSong("song-1"));
+  assertEquals(b.learnSessions().map((s) => s.subject), ["C0|major"]);
+
+  const storage = new FakeStorage();
+  storage.setItem(
+    LEARN_KEY,
+    JSON.stringify([
+      { ...learnRun(), id: "ok", extra: "x".repeat(1000) },
+      { ...learnRun(), id: "too-many-steps", steps: 41 },
+      { ...learnRun(), id: "bad-kind", kind: "chord" },
+    ]),
+  );
+  const c = new ProgressStore(storage);
+  assertEquals(c.learnSessions().map((s) => s.id), ["ok"]);
+  assertFalse("extra" in c.learnSessions()[0]);
+});
+
+Deno.test("learn is a valid mode on both pages", () => {
+  const store = new ProgressStore(new FakeStorage());
+  store.saveSettings({ mode: "learn", songMode: "learn" });
+  assertEquals(store.settings().mode, "learn");
+  assertEquals(store.settings().songMode, "learn");
 });
