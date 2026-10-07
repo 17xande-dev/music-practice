@@ -7,3 +7,6 @@
 # tracked so a fresh checkout has a directory for go:embed to find.
 internal/handler/static/dist/*
 !internal/handler/static/dist/.gitkeep
+
+# Local agent config (may hold tokens).
+.codex/

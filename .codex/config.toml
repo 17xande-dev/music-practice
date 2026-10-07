@@ -1,5 +1,0 @@
-[mcp_servers.coolify]
-url = "https://coolify.17xande.dev/mcp"
-
-[mcp_servers.coolify.http_headers]
-Authorization = "Bearer 2|4RXwXb67PKFWHGpCN5SkBfr46Vk1DKy52ohH6mN87f40d5d2"
