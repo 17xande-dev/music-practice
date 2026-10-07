@@ -5,6 +5,7 @@
 import { renderAccuracyChart } from "./lib/accuracy_chart.ts";
 import { better, ProgressStore, scaleKey, type Session } from "./lib/progress_store.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
+import { formatDuration, type LearnSession, summarizeLearning } from "./lib/learn_log.ts";
 import { compareByCircle, scaleTitle } from "./lib/theory.ts";
 
 import { installCommands } from "./lib/palette.ts";
@@ -31,6 +32,8 @@ const ui = {
   songHistory: el("song-history"),
   songsBody: el("songs-body"),
   songRecentBody: el("song-recent-body"),
+  learning: el("learning"),
+  learningBody: el("learning-body"),
 };
 
 const store = ProgressStore.fromWindow();
@@ -90,13 +93,15 @@ function byScale(sessions: Session[]): Session[][] {
 function render() {
   const sessions = store.sessions();
   const songSessions = store.songSessions();
-  const any = sessions.length + songSessions.length > 0;
+  const learnSessions = store.learnSessions();
+  const any = sessions.length + songSessions.length + learnSessions.length > 0;
   ui.warning.hidden = store.available;
   ui.empty.hidden = any || !store.available;
   ui.history.hidden = sessions.length === 0;
   ui.exportBtn.disabled = !any;
   ui.clear.disabled = !any;
   renderSongs(songSessions);
+  renderLearning(learnSessions);
   if (!sessions.length) return;
 
   const groups = byScale(sessions);
@@ -226,6 +231,28 @@ function renderSongs(all: SongSession[]) {
   );
 }
 
+/**
+ * Time spent in Learn mode, per scale and song. Kept out of everything
+ * above: learning runs are never graded, so they never touch accuracy.
+ */
+function renderLearning(all: LearnSession[]) {
+  ui.learning.hidden = all.length === 0;
+  ui.learningBody.replaceChildren(
+    ...summarizeLearning(all).map((l) => {
+      const tr = document.createElement("tr");
+      tr.append(
+        cell(l.kind === "scale" && l.instrument === "guitar" ? `${l.title} · Guitar` : l.title),
+        cell(l.kind === "scale" ? "Scale" : "Song"),
+        cell(formatDuration(l.totalMs), "num"),
+        cell(String(l.passes), "num"),
+        cell(l.stumbles.length ? `m. ${l.stumbles.join(", ")}` : "—"),
+        cell(day.format(l.lastTs)),
+      );
+      return tr;
+    }),
+  );
+}
+
 function drawTrend(groups = byScale(store.sessions())) {
   const g = groups.find((x) => scaleKey(x[0]) === ui.trendScale.value) ?? groups[0];
   if (g) renderAccuracyChart(ui.trendChart, g);
@@ -241,7 +268,7 @@ ui.exportBtn.addEventListener("click", () => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   ui.status.textContent = `Exported ${
-    store.sessions().length + store.songSessions().length
+    store.sessions().length + store.songSessions().length + store.learnSessions().length
   } sessions.`;
 });
 
