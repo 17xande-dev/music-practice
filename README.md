@@ -19,9 +19,14 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
 - **Grading with a metronome:** a one-bar count-in, then each note is graded on the beat, early or
   late against the click. A per-note timing chart and a rushing/dragging hint follow each run. A
   latency offset compensates for the delay in your setup.
+- **Learn mode:** for something new, on both pages. The cursor waits for each note, the next keys
+  are highlighted with their fingers, and a pass ends with the time it took rather than a grade.
+  Learn passes never go into the graded history, so early stumbles don't pull down trends or
+  bests. They go into a separate learning log instead: time spent, passes, and the measures you
+  stumbled in.
 - **Progress:** stage 1 has no accounts. Every run is saved in your browser's localStorage, and the
-  Progress page shows trends, per-scale bests and recent sessions. History can be exported and
-  imported as JSON.
+  Progress page shows trends, per-scale bests and recent sessions, and, in its own section, time
+  spent in Learn mode. History can be exported and imported as JSON.
 - **Guitar:** plug an electric guitar into the computer through a USB audio interface (a Rocksmith
   Real Tone cable, for example) and choose Guitar. The page detects the played note from the sound
   itself, using the McLeod Pitch Method in an AudioWorklet. You pick a fretboard position, and the
@@ -37,7 +42,7 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   the hand has to shift.
 - **Songs:** add a MusicXML score (`.musicxml` or zipped `.mxl`, as MuseScore, Sibelius, Finale and
   Dorico export it) and practise it on the Songs page. The score is rendered in the page and kept in
-  your browser (IndexedDB), never uploaded. Three modes: _wait for each note_ (the cursor holds
+  your browser (IndexedDB), never uploaded. Modes: _learn_ (see above), _wait for each note_ (the cursor holds
   until you play the right notes), _play in time_ (a count-in and a metronome that follows the
   score's tempo marks; wrong, missed, early and late notes are graded), and _listen_ (the app plays
   it). Each mode covers both hands or one, with the other hand optionally played for you, a range of
@@ -53,7 +58,7 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   shared. Parameters: `instrument` (piano, guitar), `key` (C, F#, Bb…), `scale` (major,
   natural-minor, harmonic-minor, melodic-minor, dorian, phrygian, lydian, mixolydian, locrian,
   major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
-  0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo), `bpm` (40–200), `beat` (notes
+  0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo, learn), `bpm` (40–200), `beat` (notes
   per beat: 1, 2, 4), `fingers` (1 or 0).
 - **Song cursor:** a soft vertical band follows the current step across the whole system, in every
   mode, like OpenSheetMusicDisplay's own cursor (which is an image the CSP won't load, so the page
