@@ -56,3 +56,11 @@ Deno.test("invalid or hand-edited values are dropped, valid ones kept", () => {
   assertEquals(fromQuery(""), {});
   assertEquals(fromQuery("fingers=0"), { fingering: false });
 });
+
+Deno.test("a learn link opens the exercise in Learn mode, without tempo", () => {
+  assertEquals(
+    toQuery({ ...piano, mode: "learn", fingering: false }),
+    "instrument=piano&key=F%23&scale=harmonic-minor&hands=both&octaves=2&dir=updown&mode=learn",
+  );
+  assertEquals(fromQuery("mode=learn"), { mode: "learn" });
+});

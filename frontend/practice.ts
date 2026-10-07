@@ -38,7 +38,14 @@ import {
 import { Metronome } from "./lib/metronome.ts";
 import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
-import { better, type Instrument, ProgressStore, type Session } from "./lib/progress_store.ts";
+import { formatDuration, LearnClock } from "./lib/learn_log.ts";
+import {
+  better,
+  type Instrument,
+  ProgressStore,
+  scaleKey,
+  type Session,
+} from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import { fromQuery, toQuery } from "./lib/share_url.ts";
 import { type NoteDuration, StaffView, type StepMark } from "./lib/staff_view.ts";
@@ -114,6 +121,7 @@ const ui = {
   keyboard: el("keyboard"),
   staff: el("staff"),
   results: el("results"),
+  resultsTitle: el("results-title"),
   stats: el("results-stats"),
   timingChart: el("timing-chart"),
   resultsNote: el("results-note"),
@@ -134,7 +142,8 @@ const metronome = new Metronome();
 const calibration = new Calibration(metronome);
 const store = ProgressStore.fromWindow();
 
-type Mode = "notes" | "tempo";
+/** Learn waits like notes-only, with hints, and keeps out of the graded history. */
+type Mode = "notes" | "tempo" | "learn";
 type TempoPhase = "idle" | "countin" | "playing" | "done";
 
 let options: ExerciseOptions;
@@ -151,6 +160,8 @@ let countIn: number[] = [];
 let frame = 0;
 /** The step the tempo view last highlighted as current. */
 let shownCurrent = -1;
+/** Learn mode: active time on the pass in progress. */
+let clock = new LearnClock();
 
 // ---- Scale picker -------------------------------------------------------
 
@@ -340,6 +351,7 @@ async function copyLink() {
 }
 
 function rebuild() {
+  logLearn(false); // before the options change under it
   options = readOptions();
   mode = ui.mode.value as Mode;
   for (const x of document.querySelectorAll<HTMLElement>(".tempo-only")) {
@@ -372,8 +384,9 @@ function rebuild() {
   reset();
 }
 
+/** Learn mode shows fingers whatever the switch says: they're part of learning it. */
 function showingFingers(): boolean {
-  return ui.fingering.checked;
+  return ui.fingering.checked || mode === "learn";
 }
 
 /**
@@ -401,9 +414,10 @@ function showTargets(step: Step | undefined) {
 }
 
 function reset() {
+  logLearn(false);
   metronome.stop();
   cancelAnimationFrame(frame);
-  engine = mode === "notes" ? new NotesEngine(steps) : null;
+  engine = mode === "tempo" ? null : new NotesEngine(steps);
   phase = "idle";
   shownCurrent = -1;
   view.releaseAll();
@@ -540,11 +554,12 @@ function handleNote(ev: NoteEvent) {
     return;
   }
   const grading = engine && !engine.done &&
-    (mode === "notes" || phase === "countin" || phase === "playing");
+    (mode !== "tempo" || phase === "countin" || phase === "playing");
   if (!grading) {
     view.press(ev.midi, "neutral");
     return;
   }
+  if (mode === "learn") clock.note(ev.t);
   const fb = engine!.input(ev);
   view.press(ev.midi, fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral");
   if (fb.kind === "correct" && fb.stepDone) {
@@ -648,8 +663,54 @@ function stat(label: string, value: string): HTMLDivElement {
   return div;
 }
 
+/**
+ * Log time spent in Learn mode: a whole pass when it ends, or the part
+ * played when it is restarted, changed or left. Nothing if no note was played.
+ */
+function logLearn(complete: boolean): number {
+  if (!clock.started || !(engine instanceof NotesEngine)) return 0;
+  const ms = clock.ms;
+  clock = new LearnClock();
+  store.addLearn({
+    ts: Date.now(),
+    kind: "scale",
+    subject: scaleKey(options),
+    title: scaleTitle(options.tonic, options.type),
+    ...(instrument === "guitar" ? { instrument } : {}),
+    hands: options.hands,
+    durationMs: ms,
+    steps: engine.cursor,
+    total: steps.length,
+    wrongNotes: engine.summary().wrongNotes,
+    complete,
+  });
+  return ms;
+}
+
+/** Learn mode: no grades, just how long the pass took and the time put in so far. */
+function finishLearn() {
+  const ms = logLearn(true);
+  const key = scaleKey(options);
+  const total = store.learnSessions()
+    .filter((l) =>
+      l.kind === "scale" && l.subject === key && (l.instrument ?? "piano") === instrument
+    )
+    .reduce((sum, l) => sum + l.durationMs, 0);
+  ui.resultsTitle.textContent = "Pass complete";
+  ui.best.hidden = true;
+  ui.stats.replaceChildren(
+    stat("This pass", formatDuration(ms)),
+    ...(store.available ? [stat("Learning this scale", formatDuration(total))] : []),
+  );
+  ui.resultsNote.textContent =
+    "Learn mode isn't graded and stays out of your practice history. When it feels secure, switch Grading to notes only or with metronome.";
+  ui.timingChart.hidden = true;
+  ui.results.hidden = false;
+}
+
 /** Record a finished run (if anything was played) and show its results. */
 function finishRun(s: Summary) {
+  if (mode === "learn") return finishLearn();
   showResults(s);
   ui.best.hidden = true;
   if (s.correct === 0 && s.wrongNotes === 0) return; // nothing was played
@@ -698,6 +759,7 @@ function showBest(session: Session, previous: Session | null) {
 }
 
 function showResults(s: Summary) {
+  ui.resultsTitle.textContent = "Results";
   ui.best.classList.remove("new");
   const rows = [
     stat("Accuracy", pct(s.accuracy)),
@@ -1018,6 +1080,8 @@ for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision, ui
 // but it does end a run in progress, whose timing no longer matches.
 for (const s of [ui.bpm, ui.latency]) s.addEventListener("change", reset);
 ui.fingering.addEventListener("change", applyFingering);
+// Leaving part way through still counts the time spent learning.
+addEventListener("pagehide", () => logLearn(false));
 ui.form.addEventListener("change", persistSettings);
 // Remembered by name: a port's id changes when the instrument reconnects.
 ui.device.addEventListener("change", () => {
@@ -1095,6 +1159,13 @@ const commands: Command[] = [
     group: "Practice",
     keywords: ["tempo", "time"],
     run: () => choose(ui.mode, "tempo"),
+  },
+  {
+    id: "mode.learn",
+    label: "Grading: learn (not graded)",
+    group: "Practice",
+    keywords: ["learn", "new", "hints", "ungraded"],
+    run: () => choose(ui.mode, "learn"),
   },
   {
     id: "instrument.piano",
