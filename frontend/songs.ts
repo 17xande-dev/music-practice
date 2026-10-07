@@ -24,6 +24,7 @@ import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
+import { formatDuration, LearnClock } from "./lib/learn_log.ts";
 import { ProgressStore } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import {
@@ -107,6 +108,7 @@ const ui = {
   score: el("score"),
   keyboard: el("keyboard"),
   results: el("results"),
+  resultsTitle: el("results-title"),
   best: el("results-best"),
   stats: el("results-stats"),
   heat: el("heat"),
@@ -114,9 +116,12 @@ const ui = {
   resultsNote: el("results-note"),
 };
 
-type Mode = "notes" | "tempo" | "rubato" | "listen";
+/** Learn waits like notes, with fingers shown, and keeps out of the graded history. */
+type Mode = "learn" | "notes" | "tempo" | "rubato" | "listen";
 /** Modes where the player leads and the cursor waits for each step. */
-const waiting = () => mode === "notes" || mode === "rubato";
+const waiting = () => mode === "learn" || mode === "notes" || mode === "rubato";
+/** Modes with nothing to start: the first note begins. */
+const noPlay = () => mode === "learn" || mode === "notes";
 type Phase = "idle" | "countin" | "playing" | "paused" | "done";
 
 const store = ProgressStore.fromWindow();
@@ -143,6 +148,11 @@ let engine: NotesEngine | TempoEngine | null = null;
 let offset = 0;
 let segment: Practice | null = null;
 let attempted = new Map<number, StepResult>();
+/** Learn mode: active time on the pass in progress, and the hands it's in. */
+let clock = new LearnClock();
+let learnHands: Selection["hands"] = "both";
+/** Whether the score is drawn with fingers (redrawing it is slow, so only on change). */
+let fingersShown = false;
 /** Where play starts or resumes (a step of the selection), when not playing. */
 let position = 0;
 /** When each step of the playing segment sounds, in ms after startTime. */
@@ -266,6 +276,7 @@ async function openSong(id: string) {
 
 /** Render a score and set the page up to practise it. */
 async function show(data: ArrayBuffer, format: SongFormat, meta: SongMeta | null) {
+  logLearn(false); // the song it was for is about to go
   stop();
   ui.song.hidden = false; // OSMD lays out to the container's width
   const info = await view.load(data, format);
@@ -282,12 +293,14 @@ async function show(data: ArrayBuffer, format: SongFormat, meta: SongMeta | null
   ui.to.value = String(score.measureCount);
   ui.hands.disabled = !score.twoHands;
   if (!score.twoHands) ui.hands.value = "both";
-  view.setFingering(ui.fingering.checked);
+  fingersShown = showingFingers();
+  view.setFingering(fingersShown);
   rebuild();
   return info;
 }
 
 function closeSong() {
+  logLearn(false);
   stop();
   song = null;
   practice = null;
@@ -322,8 +335,10 @@ function showOptions() {
 
 function rebuild() {
   if (!song) return;
+  logLearn(false); // before the selection changes under it
   mode = ui.mode.value as Mode;
   showOptions();
+  applyFingering();
   const sel = selection();
   practice = practiceSteps(song.score, sel);
   const plays = (hand: string) => sel.hands === "both" || hand === sel.hands;
@@ -354,6 +369,7 @@ function keepSegment(upto = Infinity) {
 
 /** Back to the start of the selection, nothing played. */
 function reset() {
+  logLearn(false);
   stop();
   attempted = new Map();
   position = 0;
@@ -462,7 +478,7 @@ function showTransport() {
   } else {
     setPlaying(ui.start, playingNow(), mode === "listen" ? ["Listen", "Pause"] : ["Play", "Pause"]);
   }
-  ui.start.hidden = mode === "notes" || (mode === "rubato" && !ui.metronome.checked);
+  ui.start.hidden = noPlay() || (mode === "rubato" && !ui.metronome.checked);
   ui.stop.disabled = !playingNow() && phase !== "paused";
   const n = practice?.steps.length ?? 0;
   const i = currentStep();
@@ -478,8 +494,22 @@ function currentStep(): number {
   return position;
 }
 
+/** Learn mode shows fingers whatever the switch says: they're part of learning it. */
+function showingFingers(): boolean {
+  return ui.fingering.checked || mode === "learn";
+}
+
+/** Draw the score with or without fingers, to match the switch and mode. */
+function applyFingering() {
+  if (showingFingers() !== fingersShown) {
+    fingersShown = showingFingers();
+    view.setFingering(fingersShown);
+  }
+  showTargets(currentStep());
+}
+
 function fingersFor(i: number): (number | null)[] | undefined {
-  if (!ui.fingering.checked || !practice) return undefined;
+  if (!showingFingers() || !practice) return undefined;
   const e = practice.events[i];
   return practice.steps[i].notes.map((n) => {
     const f = e.notes.find((x) => x.midi === n.midi && x.hand === n.hand)?.finger;
@@ -606,7 +636,7 @@ function pause() {
 
 function togglePlay() {
   if (mode === "rubato") return void toggleGuide();
-  if (mode === "notes") return;
+  if (noPlay()) return;
   if (playingNow()) pause();
   else void start();
 }
@@ -784,6 +814,10 @@ function handleNote(ev: NoteEvent) {
     keyboard.press(ev.midi, "neutral");
     return;
   }
+  if (mode === "learn") {
+    if (!clock.started) learnHands = ui.hands.value as Selection["hands"];
+    clock.note(ev.t);
+  }
   const fb = engine!.input(ev);
   keyboard.press(ev.midi, fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral");
   if (fb.kind === "correct" && fb.stepDone) {
@@ -914,11 +948,12 @@ function finishRun() {
     : engine instanceof RubatoEngine
     ? engine.typicalToleranceMs
     : 0;
-  const s = summarize(mode === "notes" ? "notes" : "tempo", results, tolerance);
+  const s = summarize(noPlay() ? "notes" : "tempo", results, tolerance);
   const stats = measureStats(
     { ...practice, events: steps.map((k) => practice!.events[k]) },
     results,
   );
+  if (mode === "learn") return showLearned(logLearn(true), stats);
   showResults(s, stats);
   ui.best.hidden = true;
   if (s.correct === 0 && s.wrongNotes === 0) return; // nothing was played
@@ -965,7 +1000,60 @@ function finishRun() {
   ui.best.hidden = false;
 }
 
+/**
+ * Log time spent in Learn mode: a whole pass when it ends, or the part
+ * played when it is restarted, changed or left. Returns the time. Songs
+ * not in the library have nothing to attach it to, so aren't logged.
+ */
+function logLearn(complete: boolean): number {
+  const ms = clock.ms;
+  const started = clock.started;
+  clock = new LearnClock();
+  if (!started || !song?.meta || !practice?.steps.length) return ms;
+  // Every step played since the reset, with the segment in progress.
+  const played = new Map(attempted);
+  engine?.results.forEach((r, j) => {
+    if (r.status !== "pending") played.set(offset + j, r);
+  });
+  const ks = [...played.keys()].sort((a, b) => a - b);
+  const results = ks.map((k) => played.get(k)!);
+  const stats = measureStats({ ...practice, events: ks.map((k) => practice!.events[k]) }, results);
+  store.addLearn({
+    ts: Date.now(),
+    kind: "song",
+    subject: song.meta.id,
+    title: ui.title.value || "Untitled",
+    hands: learnHands,
+    durationMs: ms,
+    steps: ks.length,
+    total: practice.steps.length,
+    wrongNotes: results.reduce((n, r) => n + r.wrong.length, 0),
+    complete,
+    measures: stats.map((m) => ({ measure: m.measure, steps: m.steps, clean: m.clean })),
+  });
+  return ms;
+}
+
+/** Learn mode: no grades, just the time and where it was hard. */
+function showLearned(ms: number, stats: MeasureStat[]) {
+  ui.resultsTitle.textContent = "Pass complete";
+  ui.best.hidden = true;
+  const id = song?.meta?.id;
+  const total = store.learnSessions()
+    .filter((l) => l.kind === "song" && l.subject === id)
+    .reduce((sum, l) => sum + l.durationMs, 0);
+  ui.stats.replaceChildren(
+    stat("This pass", formatDuration(ms)),
+    ...(id && store.available ? [stat("Learning this song", formatDuration(total))] : []),
+  );
+  showHeat(stats);
+  ui.resultsNote.textContent =
+    "Learn mode isn't graded and stays out of your practice history. When a passage feels secure, switch to Wait for each note or Play in time.";
+  ui.results.hidden = false;
+}
+
 function showResults(s: Summary, stats: MeasureStat[]) {
+  ui.resultsTitle.textContent = "Results";
   ui.best.classList.remove("new");
   const rows = [
     stat("Accuracy", pct(s.accuracy)),
@@ -984,15 +1072,7 @@ function showResults(s: Summary, stats: MeasureStat[]) {
     rows.push(stat("Time", `${(s.durationMs / 1000).toFixed(1)} s`));
   }
   ui.stats.replaceChildren(...rows);
-  renderHeat(stats);
-  const weak = weakestRange(stats, 2);
-  ui.loopWeakest.hidden = !weak;
-  if (weak) {
-    ui.loopWeakest.textContent = weak.from === weak.to
-      ? `Practise measure ${weak.from}`
-      : `Practise measures ${weak.from}–${weak.to}`;
-    ui.loopWeakest.onclick = () => setRange(weak.from, weak.to);
-  }
+  showHeat(stats);
   ui.resultsNote.textContent = mode === "rubato" && t
     ? `On time means within ±${
       Math.round(rubatoShare() * 100)
@@ -1008,6 +1088,19 @@ function showResults(s: Summary, stats: MeasureStat[]) {
     ? "A clean run."
     : "";
   ui.results.hidden = false;
+}
+
+/** The heat map, and a button to practise the weakest measures. */
+function showHeat(stats: MeasureStat[]) {
+  renderHeat(stats);
+  const weak = weakestRange(stats, 2);
+  ui.loopWeakest.hidden = !weak;
+  if (weak) {
+    ui.loopWeakest.textContent = weak.from === weak.to
+      ? `Practise measure ${weak.from}`
+      : `Practise measures ${weak.from}–${weak.to}`;
+    ui.loopWeakest.onclick = () => setRange(weak.from, weak.to);
+  }
 }
 
 /** One square per measure, shaded by how much of it was clean. */
@@ -1097,14 +1190,13 @@ async function calibrate() {
 
 // ---- Wiring --------------------------------------------------------------------------
 
+// Leaving part way through still counts the time spent learning.
+addEventListener("pagehide", () => logLearn(false));
+
 ui.form.addEventListener("change", (e) => {
   persist();
   const t = e.target as HTMLElement;
-  if (t === ui.fingering) {
-    view.setFingering(ui.fingering.checked);
-    showTargets(currentStep());
-    return;
-  }
+  if (t === ui.fingering) return applyFingering();
   // Read at Start, or as it plays: no rebuild needed.
   if (t === ui.guide && guideOn) void toggleGuide(); // stops; Play starts the new kind
   if (
@@ -1218,7 +1310,7 @@ const commands: Command[] = [
     group: "Playback",
     shortcut: "Space",
     keywords: ["start", "resume", "listen"],
-    enabled: () => hasSong() && mode !== "notes",
+    enabled: () => hasSong() && !noPlay(),
     run: togglePlay,
   },
   {
@@ -1281,6 +1373,7 @@ const commands: Command[] = [
     run: () => ui.loopWeakest.click(),
   },
   ...([
+    ["learn", "Mode: learn (not graded)", ["learn", "new", "hints", "ungraded"]],
     ["notes", "Mode: wait for each note", ["wait"]],
     ["tempo", "Mode: play in time", ["tempo", "metronome"]],
     ["rubato", "Mode: play freely (rubato)", ["free time", "expressive", "rubato"]],
