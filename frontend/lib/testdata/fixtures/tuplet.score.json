@@ -1,0 +1,1692 @@
+{
+ "score": {
+  "events": [
+   {
+    "index": 0,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 0,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.3333333333333333,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 0.333333,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.3333333333333333,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 0.666667,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.3333333333333333,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 1,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 4,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 2,
+    "notes": [
+     {
+      "midi": 67,
+      "spelled": {
+       "letter": "G",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 5,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 3,
+    "notes": [
+     {
+      "midi": 69,
+      "spelled": {
+       "letter": "A",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 6,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 4,
+    "notes": [
+     {
+      "midi": 72,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 5
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 4,
+      "hand": "rh"
+     }
+    ]
+   }
+  ],
+  "tempo": [
+   {
+    "beat": 0,
+    "bpm": 100
+   }
+  ],
+  "measures": [
+   1,
+   2
+  ],
+  "measureCount": 2,
+  "twoHands": false
+ },
+ "practice": {
+  "both/all": {
+   "selection": {
+    "hands": "both"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    0.333333,
+    0.666667,
+    1,
+    2,
+    3,
+    4
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.333333,
+     "midi": 62,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.666667,
+     "midi": 64,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 1,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 67,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 69,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    6
+   ],
+   "offsets": {
+    "75": [
+     0,
+     266.6664,
+     533.3336,
+     800,
+     1600,
+     2400,
+     3200
+    ],
+    "100": [
+     0,
+     199.9998,
+     400.00020000000006,
+     600,
+     1200,
+     1800,
+     2400
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800,
+       2400,
+       3000,
+       3600,
+       4200
+      ],
+      "notes": [],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400,
+       3200,
+       4000,
+       4800,
+       5600
+      ],
+      "notes": [],
+      "end": 6400
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 200
+       },
+       {
+        "at": 199.9998,
+        "midi": 62,
+        "dur": 200.00000000000006
+       },
+       {
+        "at": 400.00020000000006,
+        "midi": 64,
+        "dur": 200
+       },
+       {
+        "at": 600,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 67,
+        "dur": 600
+       },
+       {
+        "at": 1800,
+        "midi": 69,
+        "dur": 600
+       },
+       {
+        "at": 2400,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 266.6664,
+        "midi": 62,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 533.3336,
+        "midi": 64,
+        "dur": 266.66666666666663
+       },
+       {
+        "at": 800,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 1600,
+        "midi": 67,
+        "dur": 800
+       },
+       {
+        "at": 2400,
+        "midi": 69,
+        "dur": 800
+       },
+       {
+        "at": 3200,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 6400
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 6,
+     "clean": 4,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 1
+    },
+    {
+     "measure": 2,
+     "steps": 1,
+     "clean": 0,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 2
+    },
+    "span3": {
+     "from": 2,
+     "to": 2
+    }
+   }
+  },
+  "both/m2-3": {
+   "selection": {
+    "hands": "both",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4
+   ],
+   "eventIndices": [
+    6
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0
+   ],
+   "offsets": {
+    "75": [
+     0
+    ],
+    "100": [
+     0
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800
+      ],
+      "notes": [],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400
+      ],
+      "notes": [],
+      "end": 3200
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 3200
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 1,
+     "clean": 1,
+     "wrong": 0,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "rh/all": {
+   "selection": {
+    "hands": "rh"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    0.333333,
+    0.666667,
+    1,
+    2,
+    3,
+    4
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.333333,
+     "midi": 62,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.666667,
+     "midi": 64,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 1,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 67,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 69,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    6
+   ],
+   "offsets": {
+    "75": [
+     0,
+     266.6664,
+     533.3336,
+     800,
+     1600,
+     2400,
+     3200
+    ],
+    "100": [
+     0,
+     199.9998,
+     400.00020000000006,
+     600,
+     1200,
+     1800,
+     2400
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800,
+       2400,
+       3000,
+       3600,
+       4200
+      ],
+      "notes": [],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400,
+       3200,
+       4000,
+       4800,
+       5600
+      ],
+      "notes": [],
+      "end": 6400
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 200
+       },
+       {
+        "at": 199.9998,
+        "midi": 62,
+        "dur": 200.00000000000006
+       },
+       {
+        "at": 400.00020000000006,
+        "midi": 64,
+        "dur": 200
+       },
+       {
+        "at": 600,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 67,
+        "dur": 600
+       },
+       {
+        "at": 1800,
+        "midi": 69,
+        "dur": 600
+       },
+       {
+        "at": 2400,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 266.6664,
+        "midi": 62,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 533.3336,
+        "midi": 64,
+        "dur": 266.66666666666663
+       },
+       {
+        "at": 800,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 1600,
+        "midi": 67,
+        "dur": 800
+       },
+       {
+        "at": 2400,
+        "midi": 69,
+        "dur": 800
+       },
+       {
+        "at": 3200,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 6400
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 6,
+     "clean": 4,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 1
+    },
+    {
+     "measure": 2,
+     "steps": 1,
+     "clean": 0,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 2
+    },
+    "span3": {
+     "from": 2,
+     "to": 2
+    }
+   }
+  },
+  "rh/m2-3": {
+   "selection": {
+    "hands": "rh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4
+   ],
+   "eventIndices": [
+    6
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0
+   ],
+   "offsets": {
+    "75": [
+     0
+    ],
+    "100": [
+     0
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800
+      ],
+      "notes": [],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400
+      ],
+      "notes": [],
+      "end": 3200
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 3200
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 1,
+     "clean": 1,
+     "wrong": 0,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/all": {
+   "selection": {
+    "hands": "lh"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.333333,
+     "midi": 62,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.666667,
+     "midi": 64,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 1,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 67,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 69,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.333333,
+     "midi": 62,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 0.666667,
+     "midi": 64,
+     "quarters": 0.3333333333333333
+    },
+    {
+     "beat": 1,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 67,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 69,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800,
+       2400,
+       3000,
+       3600,
+       4200
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 200
+       },
+       {
+        "at": 199.9998,
+        "midi": 62,
+        "dur": 200.00000000000006
+       },
+       {
+        "at": 400.00020000000006,
+        "midi": 64,
+        "dur": 200
+       },
+       {
+        "at": 600,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 67,
+        "dur": 600
+       },
+       {
+        "at": 1800,
+        "midi": 69,
+        "dur": 600
+       },
+       {
+        "at": 2400,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400,
+       3200,
+       4000,
+       4800,
+       5600
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 266.6664,
+        "midi": 62,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 533.3336,
+        "midi": 64,
+        "dur": 266.66666666666663
+       },
+       {
+        "at": 800,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 1600,
+        "midi": 67,
+        "dur": 800
+       },
+       {
+        "at": 2400,
+        "midi": 69,
+        "dur": 800
+       },
+       {
+        "at": 3200,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 6400
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 200
+       },
+       {
+        "at": 199.9998,
+        "midi": 62,
+        "dur": 200.00000000000006
+       },
+       {
+        "at": 400.00020000000006,
+        "midi": 64,
+        "dur": 200
+       },
+       {
+        "at": 600,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 67,
+        "dur": 600
+       },
+       {
+        "at": 1800,
+        "midi": 69,
+        "dur": 600
+       },
+       {
+        "at": 2400,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 4800
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 266.6664,
+        "midi": 62,
+        "dur": 266.6666666666667
+       },
+       {
+        "at": 533.3336,
+        "midi": 64,
+        "dur": 266.66666666666663
+       },
+       {
+        "at": 800,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 1600,
+        "midi": 67,
+        "dur": 800
+       },
+       {
+        "at": 2400,
+        "midi": 69,
+        "dur": 800
+       },
+       {
+        "at": 3200,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 6400
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/m2-3": {
+   "selection": {
+    "hands": "lh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 72,
+     "quarters": 4
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1800
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [
+       0,
+       800,
+       1600,
+       2400
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 3200
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 2400
+       }
+      ],
+      "end": 2400
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 72,
+        "dur": 3200
+       }
+      ],
+      "end": 3200
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  }
+ }
+}

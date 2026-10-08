@@ -12,9 +12,9 @@
 // current step also get the "current" class.
 
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { chooseParts, type RawEntry, type RawNote } from "./score.ts";
+import type { RawEntry } from "./score.ts";
+import { walkCursor } from "./score_walk.ts";
 import type { StepMark } from "./staff_view.ts";
-import { type Letter, spell } from "./theory.ts";
 
 /** Where the cursor band goes for a note, in px within the score. */
 interface Spot {
@@ -50,33 +50,6 @@ const LINE_ANCHOR = 0.2;
 const UNIT = 10;
 
 const MARKS: StepMark[] = ["current", "ok", "bad", "early", "late"];
-/** OSMD's NoteEnum: semitones above C of each natural letter. */
-const LETTER_OF: Record<number, Letter> = {
-  0: "C",
-  2: "D",
-  4: "E",
-  5: "F",
-  7: "G",
-  9: "A",
-  11: "B",
-};
-
-/** The parts of OSMD's object model this file reads (its typings are loose). */
-interface OsmdNote {
-  halfTone: number;
-  IsGraceNote: boolean;
-  PrintObject: boolean;
-  isRest(): boolean;
-  Pitch: { FundamentalNote: number } | null;
-  Length: { RealValue: number };
-  NoteTie?: { StartNote: OsmdNote; Duration: { RealValue: number } } | null;
-  Fingering?: { value?: string } | null;
-  ParentStaff: { ParentInstrument: OsmdInstrument };
-}
-interface OsmdInstrument {
-  Staves: unknown[];
-  Name?: string;
-}
 
 export interface SongInfo {
   title: string;
@@ -191,85 +164,28 @@ export class ScoreView {
     this.onRender();
   }
 
-  /** The parts to grade (see chooseParts), each with its first staff's number. */
-  private played(): Map<OsmdInstrument, number> {
-    const all = this.osmd.Sheet.Instruments as unknown as OsmdInstrument[];
-    const choice = chooseParts(all.map((i) => ({ name: i.Name ?? "", staves: i.Staves.length })));
-    return new Map(choice.map((c) => [all[c.part], c.staffOffset]));
-  }
-
   /**
-   * Walk the cursor through the piece, repeats played out. Also refreshes
-   * the ref → SVG element table, so it runs after every render.
+   * Walk the cursor through the piece, repeats played out (see walkCursor).
+   * Also refreshes the ref → SVG element table, so it runs after every render.
    */
   walk(): RawEntry[] {
-    const cursor = this.osmd.cursor;
     const rules = this.osmd.EngravingRules;
-    const played = this.played();
-    const out: RawEntry[] = [];
     this.elements = [];
     this.spots = [];
-    if (!cursor || !played.size) return out;
-    cursor.reset();
-    const it = cursor.iterator;
-    let occurrence = 0;
-    let prevMeasure = -1;
-    let prevRel = Infinity;
-    // A bound on positions, in case a malformed repeat structure loops.
-    for (let guard = 0; !it.EndReached && guard < 200000; guard++) {
-      const mi = it.CurrentMeasureIndex;
-      const rel = it.CurrentRelativeInMeasureTimestamp.RealValue;
-      if (mi !== prevMeasure || rel <= prevRel) occurrence++;
-      prevMeasure = mi;
-      prevRel = rel;
-      const notes: RawNote[] = [];
-      for (const raw of cursor.NotesUnderCursor()) {
-        const n = raw as unknown as OsmdNote;
-        if (n.isRest() || n.IsGraceNote || !n.PrintObject || !n.Pitch) continue;
-        const inst = n.ParentStaff.ParentInstrument;
-        const offset = played.get(inst);
-        if (offset === undefined) continue;
-        const midi = n.halfTone + 12;
-        const tie = n.NoteTie ? (n.NoteTie.StartNote === n ? "start" : "continue") : "none";
-        const quarters = 4 *
-          (tie === "start" && n.NoteTie ? n.NoteTie.Duration.RealValue : n.Length.RealValue);
-        const ref = this.elements.length;
-        let el: SVGGElement | null = null;
-        let spot: Spot | null = null;
-        try {
-          const g = rules.GNote(raw) as unknown as OsmdGNote | undefined;
-          el = g?.getSVGGElement?.() ?? null;
-          spot = this.spotOf(g);
-        } catch {
-          el = null;
-        }
-        this.elements.push(el);
-        this.spots.push(spot);
-        notes.push({
-          midi,
-          spelled: spell(midi, LETTER_OF[n.Pitch.FundamentalNote] ?? "C"),
-          staff: offset +
-            Math.max(
-              0,
-              inst.Staves.indexOf((raw as unknown as { ParentStaff: unknown }).ParentStaff),
-            ),
-          tie,
-          quarters,
-          finger: n.Fingering?.value || undefined,
-          ref,
-        });
+    return walkCursor(this.osmd, (raw) => {
+      let el: SVGGElement | null = null;
+      let spot: Spot | null = null;
+      try {
+        const g = rules.GNote(raw as never) as unknown as OsmdGNote | undefined;
+        el = g?.getSVGGElement?.() ?? null;
+        spot = this.spotOf(g);
+      } catch {
+        el = null;
       }
-      out.push({
-        measure: mi + 1,
-        occurrence,
-        beat: it.CurrentEnrolledTimestamp.RealValue * 4,
-        bpm: it.CurrentBpm,
-        notes,
-      });
-      cursor.next();
-    }
-    cursor.reset();
-    return out;
+      this.elements.push(el);
+      this.spots.push(spot);
+      return this.elements.length - 1;
+    });
   }
 
   /** OSMD's cursor geometry for a note: its staff entry's x, its system's height. */

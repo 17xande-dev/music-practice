@@ -1,0 +1,127 @@
+{
+ "source": "repeat-one-measure.musicxml",
+ "title": "Single-measure repeat starting on a rest",
+ "parts": [
+  {
+   "name": "Piano",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 62,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 2,
+   "beat": 5,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 2,
+   "beat": 6,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 62,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 3,
+   "beat": 8,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 4
+    }
+   ]
+  }
+ ]
+}

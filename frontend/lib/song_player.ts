@@ -68,7 +68,7 @@ const TICK_MS = 100;
 export class SongPlayer {
   private ctx: AudioContext | null = null;
   private out: GainNode | null = null;
-  private timer = 0;
+  private timer: ReturnType<typeof setInterval> | undefined;
 
   /**
    * Start a plan. Returns when offset 0 falls on the performance.now()
