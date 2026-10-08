@@ -86,3 +86,57 @@ practice's steps) only:
 - **Parts**: `Piano RH` + `Piano LH` as two one-staff parts are graded together (staff 0 and 1); in
   `voice-piano` only the piano part is chosen. Part names come from `<part-name>`.
 - The `.mxl` yields the same walk as its `.musicxml`.
+
+## OSMD probes (claims from reading the minified source, checked against the walks)
+
+Each is one edge file; "confirmed" and "refuted" refer to the claim as it was put to us.
+
+1. **`tempo-offset`: a tempo `<offset>` shifts it later by offset/(4*divisions) whole notes
+   (offset/divisions quarters): confirmed, but only at a measure start.** With divisions 2, a
+   direction at the start of m2 with `<offset>2</offset>` takes effect one quarter later (beat 5,
+   not 4); `<offset>1</offset>` half a quarter later (`m3`: 8.5). **Surprising:** a direction in
+   the middle of a measure with an offset never takes effect at all, neither at the shifted
+   position nor later: bpm stays at the old value to the end of the piece (`tempo-offset` m1, with
+   the direction at beat 2 and offset 2; `tempo-offset-mid-measure`, offsets 1 and 2 after 4
+   eighths). The Swift port must reproduce the loss, not just the delay.
+2. **`metronome-half-note`: `CurrentBpm` is the raw `per-minute`, ignoring the beat unit and dots:
+   confirmed.** half=60 gives 60, dotted quarter=40 gives 40, eighth=120 gives 120. No conversion
+   to quarter-note bpm happens (so `msAt` would be wrong for these files in the web app too).
+3. **`sound-and-metronome-differ`: the metronome wins: confirmed.** quarter=80 with
+   `<sound tempo="120">` in one direction gives 80.
+4. **`sound-decimal-tempo`: rounds: confirmed (to nearest).** `92.5` gives 93, `92.4` gives 92.
+   **Invalid values** (`"fast"`) give 100, the default, not the tempo in force before (93).
+   **Surprising:** `tempo="0"` gives 60.
+5. **`sound-only-mid-measure`: a `<sound tempo>` alone in a direction applies at its own position,
+   not the measure start: answered.** 120 at beats 0-1, 60 from beat 2, like a metronome mark.
+6. **`standalone-sound-later`: a `<sound>` directly in the measure (outside a `<direction>`) is
+   used only in the first measure: confirmed.** The m1 one gives 120 (not the default 100); the
+   one in m3 (60) is ignored and bpm stays 120.
+7. **`tie-without-tied`: only `<notations><tied>` counts, `<tie>` is ignored: confirmed.** Notes
+   with only `<tie start/stop>` are both `none`; with only `<tied start/stop>` they are
+   `start` (quarters 2) and `continue`.
+8. **Endings.** From the source (barline reader) and the walks:
+   - **`ending-multi-number`: only the first digit is kept: confirmed.** `number="1, 2"` then
+     `"3"` plays measures 1 2 1 3 4: two passes, ending "1, 2" counted as ending 1, so a musical
+     three-pass repeat is not reproduced (it also ignores that the repeat would play m2 twice).
+   - **The ending's text, when present, overrides its `number` attribute** (the reader takes the
+     element's text if it has any, otherwise the attribute). Text without a digit
+     (`ending-text-differs`: "Second time"/"First time") breaks the reader: measures 2 and 3 are
+     never played at all (1 4 1 4). Text with swapped digits
+     (`ending-text-digits-swapped`: number 1 with text "2.", number 2 with text "1.") gives the
+     piece twice over (1 2 1 2 3 4, then again). I did not fully explain the latter; the Swift port
+     only needs to match the walk.
+   - **`ending-print-object-no`: the ending is skipped entirely, not just hidden.** Both endings
+     with `print-object="no"` are ignored, leaving the plain repeat: 1 2 1 2 3 4.
+9. **`duration-zero`: a non-grace note with `<duration>0</duration>` is dropped: confirmed.** The
+   note produces nothing, and takes no time.
+10. **Decimals use `parseInt`: confirmed.** `decimal-duration`: durations `2.9`, `2.1`, `2`, `2` at
+    divisions 2 are four quarters of 1 beat each (parseFloat would drift); `8.0` is a whole note.
+    `decimal-divisions`: divisions `1.5` is read as 1, so a `<duration>6</duration>` whole note is
+    6 quarters (`m2` walk: `quarters: 6`), while `1.5`-length notes are 1 quarter each.
+11. **`multi-part-measure-length`: the measure's length is the longest part's: confirmed.** m2 has a
+    whole in one part and a half in the other, m3 the reverse: the next measures start at beats
+    8 and 12 either way, and the shorter part's notes sit at the measure start.
+12. **`dc-al-fine`: refuted.** The cursor does not ignore `<sound dacapo>` and `<sound fine>`: the
+    walk plays measures 1 2 3, jumps back to 1, and stops after measure 2 (the Fine), with the
+    beat still rising (20 entries). The Swift timeline needs D.C./Fine support.

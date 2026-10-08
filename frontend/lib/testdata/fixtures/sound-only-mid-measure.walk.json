@@ -1,0 +1,113 @@
+{
+ "source": "sound-only-mid-measure.musicxml",
+ "title": "Sound-only tempo mid-measure",
+ "parts": [
+  {
+   "name": "Piano",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 120,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1,
+   "bpm": 120,
+   "notes": [
+    {
+     "midi": 62,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 2,
+   "bpm": 60,
+   "notes": [
+    {
+     "midi": 64,
+     "spelled": {
+      "letter": "E",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 3,
+   "bpm": 60,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 60,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 4
+    }
+   ]
+  }
+ ]
+}

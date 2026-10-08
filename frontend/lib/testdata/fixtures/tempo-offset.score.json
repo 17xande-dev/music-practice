@@ -1,0 +1,4813 @@
+{
+ "score": {
+  "events": [
+   {
+    "index": 0,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 0,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 1,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 2,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 3,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 4,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 4,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 5,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 4.5,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 6,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 5,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 7,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 5.5,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 8,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 6,
+    "notes": [
+     {
+      "midi": 67,
+      "spelled": {
+       "letter": "G",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 9,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 6.5,
+    "notes": [
+     {
+      "midi": 69,
+      "spelled": {
+       "letter": "A",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 10,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 7,
+    "notes": [
+     {
+      "midi": 71,
+      "spelled": {
+       "letter": "B",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 11,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 7.5,
+    "notes": [
+     {
+      "midi": 72,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 5
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 12,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 8,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 13,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 8.5,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 14,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 9,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 15,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 9.5,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 16,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 10,
+    "notes": [
+     {
+      "midi": 67,
+      "spelled": {
+       "letter": "G",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 17,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 10.5,
+    "notes": [
+     {
+      "midi": 69,
+      "spelled": {
+       "letter": "A",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 18,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 11,
+    "notes": [
+     {
+      "midi": 71,
+      "spelled": {
+       "letter": "B",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 19,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 11.5,
+    "notes": [
+     {
+      "midi": 72,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 5
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 0.5,
+      "hand": "rh"
+     }
+    ]
+   }
+  ],
+  "tempo": [
+   {
+    "beat": 0,
+    "bpm": 120
+   },
+   {
+    "beat": 5,
+    "bpm": 60
+   },
+   {
+    "beat": 8.5,
+    "bpm": 90
+   }
+  ],
+  "measures": [
+   1,
+   2,
+   3
+  ],
+  "measureCount": 3,
+  "twoHands": false
+ },
+ "practice": {
+  "both/all": {
+   "selection": {
+    "hands": "both"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 16,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 17,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 18,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 19,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    4,
+    12
+   ],
+   "offsets": {
+    "75": [
+     0,
+     666.6666666666666,
+     1333.3333333333333,
+     2000,
+     2666.6666666666665,
+     3000,
+     3333.3333333333335,
+     4000,
+     4666.666666666667,
+     5333.333333333333,
+     6000,
+     6666.666666666667,
+     7333.333333333333,
+     8000,
+     8444.444444444443,
+     8888.88888888889,
+     9333.333333333334,
+     9777.777777777777,
+     10222.222222222223,
+     10666.666666666666
+    ],
+    "100": [
+     0,
+     500,
+     1000,
+     1500,
+     2000,
+     2250,
+     2500,
+     3000,
+     3500,
+     4000,
+     4500,
+     5000,
+     5500,
+     6000,
+     6333.333333333332,
+     6666.666666666668,
+     7000,
+     7333.333333333332,
+     7666.666666666668,
+     8000
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1000,
+       1500,
+       2000,
+       2500,
+       3500,
+       4500,
+       5500,
+       6333.333333333332,
+       7000,
+       7666.666666666668,
+       8333.333333333334
+      ],
+      "notes": [],
+      "end": 8666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.6666666666665,
+       -2000,
+       -1333.3333333333333,
+       -666.6666666666666
+      ],
+      "clicks": [
+       0,
+       666.6666666666666,
+       1333.3333333333333,
+       2000,
+       2666.6666666666665,
+       3333.3333333333335,
+       4666.666666666667,
+       6000,
+       7333.333333333333,
+       8444.444444444443,
+       9333.333333333334,
+       10222.222222222223,
+       11111.111111111111
+      ],
+      "notes": [],
+      "end": 11555.555555555555
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 500,
+        "midi": 62,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 2250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 2500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 4500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 5000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 5500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 6000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 7666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 8666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 666.6666666666666,
+        "midi": 62,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 1333.3333333333333,
+        "midi": 64,
+        "dur": 666.6666666666667
+       },
+       {
+        "at": 2000,
+        "midi": 65,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3000,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 4000,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4666.666666666667,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 5333.333333333333,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6000,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6666.666666666667,
+        "midi": 72,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 7333.333333333333,
+        "midi": 60,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 8000,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8444.444444444443,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 8888.88888888889,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9333.333333333334,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9777.777777777777,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 10222.222222222223,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 10666.666666666666,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 11555.555555555555
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 2,
+     "steps": 8,
+     "clean": 5,
+     "wrong": 2,
+     "missed": 1,
+     "early": 1,
+     "late": 2
+    },
+    {
+     "measure": 3,
+     "steps": 8,
+     "clean": 6,
+     "wrong": 2,
+     "missed": 1,
+     "early": 2,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 1,
+     "to": 2
+    },
+    "span3": {
+     "from": 1,
+     "to": 3
+    }
+   }
+  },
+  "both/m2-3": {
+   "selection": {
+    "hands": "both",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5
+   ],
+   "eventIndices": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0,
+    8
+   ],
+   "offsets": {
+    "75": [
+     0,
+     333.3333333333335,
+     666.666666666667,
+     1333.3333333333335,
+     2000.0000000000005,
+     2666.6666666666665,
+     3333.3333333333335,
+     4000.0000000000005,
+     4666.666666666666,
+     5333.333333333334,
+     5777.777777777777,
+     6222.222222222224,
+     6666.666666666668,
+     7111.111111111111,
+     7555.555555555557,
+     8000
+    ],
+    "100": [
+     0,
+     250,
+     500,
+     1000,
+     1500,
+     2000,
+     2500,
+     3000,
+     3500,
+     4000,
+     4333.333333333332,
+     4666.666666666668,
+     5000,
+     5333.333333333332,
+     5666.666666666668,
+     6000
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1500,
+       2500,
+       3500,
+       4333.333333333332,
+       5000,
+       5666.666666666668,
+       6333.333333333334
+      ],
+      "notes": [],
+      "end": 6666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.666666666668,
+       -2000.000000000001,
+       -1333.333333333334,
+       -666.666666666667
+      ],
+      "clicks": [
+       0,
+       666.666666666667,
+       2000.0000000000005,
+       3333.3333333333335,
+       4666.666666666666,
+       5777.777777777777,
+       6666.666666666668,
+       7555.555555555557,
+       8444.444444444445
+      ],
+      "notes": [],
+      "end": 8888.888888888889
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 2500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 4333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 4666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 5666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 6666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 333.3333333333335,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 666.666666666667,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 1333.3333333333335,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 2000.0000000000005,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4000.0000000000005,
+        "midi": 72,
+        "dur": 666.6666666666656
+       },
+       {
+        "at": 4666.666666666666,
+        "midi": 60,
+        "dur": 666.6666666666679
+       },
+       {
+        "at": 5333.333333333334,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 5777.777777777777,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 6222.222222222224,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 7111.111111111111,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 7555.555555555557,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 8888.888888888889
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 8,
+     "clean": 5,
+     "wrong": 2,
+     "missed": 1,
+     "early": 2,
+     "late": 1
+    },
+    {
+     "measure": 3,
+     "steps": 8,
+     "clean": 6,
+     "wrong": 2,
+     "missed": 1,
+     "early": 1,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 3
+    },
+    "span3": {
+     "from": 2,
+     "to": 3
+    }
+   }
+  },
+  "rh/all": {
+   "selection": {
+    "hands": "rh"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 16,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 17,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 18,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 19,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    4,
+    12
+   ],
+   "offsets": {
+    "75": [
+     0,
+     666.6666666666666,
+     1333.3333333333333,
+     2000,
+     2666.6666666666665,
+     3000,
+     3333.3333333333335,
+     4000,
+     4666.666666666667,
+     5333.333333333333,
+     6000,
+     6666.666666666667,
+     7333.333333333333,
+     8000,
+     8444.444444444443,
+     8888.88888888889,
+     9333.333333333334,
+     9777.777777777777,
+     10222.222222222223,
+     10666.666666666666
+    ],
+    "100": [
+     0,
+     500,
+     1000,
+     1500,
+     2000,
+     2250,
+     2500,
+     3000,
+     3500,
+     4000,
+     4500,
+     5000,
+     5500,
+     6000,
+     6333.333333333332,
+     6666.666666666668,
+     7000,
+     7333.333333333332,
+     7666.666666666668,
+     8000
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1000,
+       1500,
+       2000,
+       2500,
+       3500,
+       4500,
+       5500,
+       6333.333333333332,
+       7000,
+       7666.666666666668,
+       8333.333333333334
+      ],
+      "notes": [],
+      "end": 8666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.6666666666665,
+       -2000,
+       -1333.3333333333333,
+       -666.6666666666666
+      ],
+      "clicks": [
+       0,
+       666.6666666666666,
+       1333.3333333333333,
+       2000,
+       2666.6666666666665,
+       3333.3333333333335,
+       4666.666666666667,
+       6000,
+       7333.333333333333,
+       8444.444444444443,
+       9333.333333333334,
+       10222.222222222223,
+       11111.111111111111
+      ],
+      "notes": [],
+      "end": 11555.555555555555
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 500,
+        "midi": 62,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 2250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 2500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 4500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 5000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 5500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 6000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 7666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 8666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 666.6666666666666,
+        "midi": 62,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 1333.3333333333333,
+        "midi": 64,
+        "dur": 666.6666666666667
+       },
+       {
+        "at": 2000,
+        "midi": 65,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3000,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 4000,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4666.666666666667,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 5333.333333333333,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6000,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6666.666666666667,
+        "midi": 72,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 7333.333333333333,
+        "midi": 60,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 8000,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8444.444444444443,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 8888.88888888889,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9333.333333333334,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9777.777777777777,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 10222.222222222223,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 10666.666666666666,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 11555.555555555555
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 2,
+     "steps": 8,
+     "clean": 5,
+     "wrong": 2,
+     "missed": 1,
+     "early": 1,
+     "late": 2
+    },
+    {
+     "measure": 3,
+     "steps": 8,
+     "clean": 6,
+     "wrong": 2,
+     "missed": 1,
+     "early": 2,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 1,
+     "to": 2
+    },
+    "span3": {
+     "from": 1,
+     "to": 3
+    }
+   }
+  },
+  "rh/m2-3": {
+   "selection": {
+    "hands": "rh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 67,
+       "spelled": {
+        "letter": "G",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 69,
+       "spelled": {
+        "letter": "A",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 71,
+       "spelled": {
+        "letter": "B",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 72,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 5
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4,
+    4.5,
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    11.5
+   ],
+   "eventIndices": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0,
+    8
+   ],
+   "offsets": {
+    "75": [
+     0,
+     333.3333333333335,
+     666.666666666667,
+     1333.3333333333335,
+     2000.0000000000005,
+     2666.6666666666665,
+     3333.3333333333335,
+     4000.0000000000005,
+     4666.666666666666,
+     5333.333333333334,
+     5777.777777777777,
+     6222.222222222224,
+     6666.666666666668,
+     7111.111111111111,
+     7555.555555555557,
+     8000
+    ],
+    "100": [
+     0,
+     250,
+     500,
+     1000,
+     1500,
+     2000,
+     2500,
+     3000,
+     3500,
+     4000,
+     4333.333333333332,
+     4666.666666666668,
+     5000,
+     5333.333333333332,
+     5666.666666666668,
+     6000
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1500,
+       2500,
+       3500,
+       4333.333333333332,
+       5000,
+       5666.666666666668,
+       6333.333333333334
+      ],
+      "notes": [],
+      "end": 6666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.666666666668,
+       -2000.000000000001,
+       -1333.333333333334,
+       -666.666666666667
+      ],
+      "clicks": [
+       0,
+       666.666666666667,
+       2000.0000000000005,
+       3333.3333333333335,
+       4666.666666666666,
+       5777.777777777777,
+       6666.666666666668,
+       7555.555555555557,
+       8444.444444444445
+      ],
+      "notes": [],
+      "end": 8888.888888888889
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 2500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 4333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 4666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 5666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 6666.666666666666
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 333.3333333333335,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 666.666666666667,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 1333.3333333333335,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 2000.0000000000005,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4000.0000000000005,
+        "midi": 72,
+        "dur": 666.6666666666656
+       },
+       {
+        "at": 4666.666666666666,
+        "midi": 60,
+        "dur": 666.6666666666679
+       },
+       {
+        "at": 5333.333333333334,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 5777.777777777777,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 6222.222222222224,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 7111.111111111111,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 7555.555555555557,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 8888.888888888889
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 8,
+     "clean": 5,
+     "wrong": 2,
+     "missed": 1,
+     "early": 2,
+     "late": 1
+    },
+    {
+     "measure": 3,
+     "steps": 8,
+     "clean": 6,
+     "wrong": 2,
+     "missed": 1,
+     "early": 1,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 3
+    },
+    "span3": {
+     "from": 2,
+     "to": 3
+    }
+   }
+  },
+  "lh/all": {
+   "selection": {
+    "hands": "lh"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1000,
+       1500,
+       2000,
+       2500,
+       3500,
+       4500,
+       5500,
+       6333.333333333332,
+       7000,
+       7666.666666666668
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 500,
+        "midi": 62,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 2250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 2500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 4500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 5000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 5500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 6000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 7666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 8333.333333333334
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.6666666666665,
+       -2000,
+       -1333.3333333333333,
+       -666.6666666666666
+      ],
+      "clicks": [
+       0,
+       666.6666666666666,
+       1333.3333333333333,
+       2000,
+       2666.6666666666665,
+       3333.3333333333335,
+       4666.666666666667,
+       6000,
+       7333.333333333333,
+       8444.444444444443,
+       9333.333333333334,
+       10222.222222222223
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 666.6666666666666,
+        "midi": 62,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 1333.3333333333333,
+        "midi": 64,
+        "dur": 666.6666666666667
+       },
+       {
+        "at": 2000,
+        "midi": 65,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3000,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 4000,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4666.666666666667,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 5333.333333333333,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6000,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6666.666666666667,
+        "midi": 72,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 7333.333333333333,
+        "midi": 60,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 8000,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8444.444444444443,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 8888.88888888889,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9333.333333333334,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9777.777777777777,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 10222.222222222223,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 10666.666666666666,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 11111.111111111111
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 500,
+        "midi": 62,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 2250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 2500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 4500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 5000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 5500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 6000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 7333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 7666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 8333.333333333334
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 666.6666666666666,
+        "midi": 62,
+        "dur": 666.6666666666666
+       },
+       {
+        "at": 1333.3333333333333,
+        "midi": 64,
+        "dur": 666.6666666666667
+       },
+       {
+        "at": 2000,
+        "midi": 65,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3000,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 4000,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4666.666666666667,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 5333.333333333333,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6000,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 6666.666666666667,
+        "midi": 72,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 7333.333333333333,
+        "midi": 60,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 8000,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8444.444444444443,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 8888.88888888889,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9333.333333333334,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 9777.777777777777,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 10222.222222222223,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 10666.666666666666,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 11111.111111111111
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/m2-3": {
+   "selection": {
+    "hands": "lh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 4.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 5.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 6.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 7.5,
+     "midi": 72,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 0.5
+    },
+    {
+     "beat": 8.5,
+     "midi": 62,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9,
+     "midi": 64,
+     "quarters": 0.5
+    },
+    {
+     "beat": 9.5,
+     "midi": 65,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10,
+     "midi": 67,
+     "quarters": 0.5
+    },
+    {
+     "beat": 10.5,
+     "midi": 69,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11,
+     "midi": 71,
+     "quarters": 0.5
+    },
+    {
+     "beat": 11.5,
+     "midi": 72,
+     "quarters": 0.5
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2000,
+       -1500,
+       -1000,
+       -500
+      ],
+      "clicks": [
+       0,
+       500,
+       1500,
+       2500,
+       3500,
+       4333.333333333332,
+       5000,
+       5666.666666666668
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 2500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 4333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 4666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 5666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 6333.333333333334
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2666.666666666668,
+       -2000.000000000001,
+       -1333.333333333334,
+       -666.666666666667
+      ],
+      "clicks": [
+       0,
+       666.666666666667,
+       2000.0000000000005,
+       3333.3333333333335,
+       4666.666666666666,
+       5777.777777777777,
+       6666.666666666668,
+       7555.555555555557
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 333.3333333333335,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 666.666666666667,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 1333.3333333333335,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 2000.0000000000005,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4000.0000000000005,
+        "midi": 72,
+        "dur": 666.6666666666656
+       },
+       {
+        "at": 4666.666666666666,
+        "midi": 60,
+        "dur": 666.6666666666679
+       },
+       {
+        "at": 5333.333333333334,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 5777.777777777777,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 6222.222222222224,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 7111.111111111111,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 7555.555555555557,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 8444.444444444445
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 250
+       },
+       {
+        "at": 250,
+        "midi": 62,
+        "dur": 250
+       },
+       {
+        "at": 500,
+        "midi": 64,
+        "dur": 500
+       },
+       {
+        "at": 1000,
+        "midi": 65,
+        "dur": 500
+       },
+       {
+        "at": 1500,
+        "midi": 67,
+        "dur": 500
+       },
+       {
+        "at": 2000,
+        "midi": 69,
+        "dur": 500
+       },
+       {
+        "at": 2500,
+        "midi": 71,
+        "dur": 500
+       },
+       {
+        "at": 3000,
+        "midi": 72,
+        "dur": 500
+       },
+       {
+        "at": 3500,
+        "midi": 60,
+        "dur": 500
+       },
+       {
+        "at": 4000,
+        "midi": 62,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 4333.333333333332,
+        "midi": 64,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 4666.666666666668,
+        "midi": 65,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5000,
+        "midi": 67,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 5333.333333333332,
+        "midi": 69,
+        "dur": 333.33333333333576
+       },
+       {
+        "at": 5666.666666666668,
+        "midi": 71,
+        "dur": 333.3333333333321
+       },
+       {
+        "at": 6000,
+        "midi": 72,
+        "dur": 333.33333333333394
+       }
+      ],
+      "end": 6333.333333333334
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 333.3333333333335,
+        "midi": 62,
+        "dur": 333.3333333333335
+       },
+       {
+        "at": 666.666666666667,
+        "midi": 64,
+        "dur": 666.6666666666665
+       },
+       {
+        "at": 1333.3333333333335,
+        "midi": 65,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 2000.0000000000005,
+        "midi": 67,
+        "dur": 666.6666666666661
+       },
+       {
+        "at": 2666.6666666666665,
+        "midi": 69,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 3333.3333333333335,
+        "midi": 71,
+        "dur": 666.666666666667
+       },
+       {
+        "at": 4000.0000000000005,
+        "midi": 72,
+        "dur": 666.6666666666656
+       },
+       {
+        "at": 4666.666666666666,
+        "midi": 60,
+        "dur": 666.6666666666679
+       },
+       {
+        "at": 5333.333333333334,
+        "midi": 62,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 5777.777777777777,
+        "midi": 64,
+        "dur": 444.4444444444471
+       },
+       {
+        "at": 6222.222222222224,
+        "midi": 65,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 6666.666666666668,
+        "midi": 67,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 7111.111111111111,
+        "midi": 69,
+        "dur": 444.44444444444525
+       },
+       {
+        "at": 7555.555555555557,
+        "midi": 71,
+        "dur": 444.44444444444343
+       },
+       {
+        "at": 8000,
+        "midi": 72,
+        "dur": 444.44444444444525
+       }
+      ],
+      "end": 8444.444444444445
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  }
+ }
+}

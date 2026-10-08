@@ -1,0 +1,3598 @@
+{
+ "score": {
+  "events": [
+   {
+    "index": 0,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 0,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 1,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 2,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "measure": 1,
+    "occurrence": 1,
+    "beat": 3,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 4,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 4,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 5,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 5,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 6,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 6,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 7,
+    "measure": 2,
+    "occurrence": 2,
+    "beat": 7,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 8,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 8,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 9,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 9,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 10,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 10,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 11,
+    "measure": 3,
+    "occurrence": 3,
+    "beat": 11,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 12,
+    "measure": 4,
+    "occurrence": 4,
+    "beat": 12,
+    "notes": [
+     {
+      "midi": 60,
+      "spelled": {
+       "letter": "C",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 13,
+    "measure": 4,
+    "occurrence": 4,
+    "beat": 13,
+    "notes": [
+     {
+      "midi": 62,
+      "spelled": {
+       "letter": "D",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 14,
+    "measure": 4,
+    "occurrence": 4,
+    "beat": 14,
+    "notes": [
+     {
+      "midi": 64,
+      "spelled": {
+       "letter": "E",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   },
+   {
+    "index": 15,
+    "measure": 4,
+    "occurrence": 4,
+    "beat": 15,
+    "notes": [
+     {
+      "midi": 65,
+      "spelled": {
+       "letter": "F",
+       "acc": 0,
+       "octave": 4
+      },
+      "staff": 0,
+      "tie": "none",
+      "quarters": 1,
+      "hand": "rh"
+     }
+    ]
+   }
+  ],
+  "tempo": [
+   {
+    "beat": 0,
+    "bpm": 93
+   },
+   {
+    "beat": 4,
+    "bpm": 100
+   },
+   {
+    "beat": 8,
+    "bpm": 92
+   },
+   {
+    "beat": 12,
+    "bpm": 60
+   }
+  ],
+  "measures": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "measureCount": 4,
+  "twoHands": false
+ },
+ "practice": {
+  "both/all": {
+   "selection": {
+    "hands": "both"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 12,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 13,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 14,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 15,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    4,
+    8,
+    12
+   ],
+   "offsets": {
+    "75": [
+     0,
+     860.2150537634408,
+     1720.4301075268816,
+     2580.6451612903224,
+     3440.860215053763,
+     4240.860215053764,
+     5040.860215053764,
+     5840.860215053763,
+     6640.860215053763,
+     7510.425432445067,
+     8379.99064983637,
+     9249.555867227677,
+     10119.12108461898,
+     11452.45441795231,
+     12785.787751285645,
+     14119.121084618979
+    ],
+    "100": [
+     0,
+     645.1612903225806,
+     1290.3225806451612,
+     1935.4838709677417,
+     2580.6451612903224,
+     3180.6451612903224,
+     3780.6451612903224,
+     4380.645161290322,
+     4980.645161290322,
+     5632.8190743338,
+     6284.992987377278,
+     6937.166900420757,
+     7589.340813464235,
+     8589.340813464234,
+     9589.340813464234,
+     10589.340813464234
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2580.6451612903224,
+       -1935.483870967742,
+       -1290.3225806451612,
+       -645.1612903225806
+      ],
+      "clicks": [
+       0,
+       645.1612903225806,
+       1290.3225806451612,
+       1935.4838709677417,
+       2580.6451612903224,
+       3180.6451612903224,
+       3780.6451612903224,
+       4380.645161290322,
+       4980.645161290322,
+       5632.8190743338,
+       6284.992987377278,
+       6937.166900420757,
+       7589.340813464235,
+       8589.340813464234,
+       9589.340813464234,
+       10589.340813464234
+      ],
+      "notes": [],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3440.860215053763,
+       -2580.6451612903224,
+       -1720.4301075268816,
+       -860.2150537634408
+      ],
+      "clicks": [
+       0,
+       860.2150537634408,
+       1720.4301075268816,
+       2580.6451612903224,
+       3440.860215053763,
+       4240.860215053764,
+       5040.860215053764,
+       5840.860215053763,
+       6640.860215053763,
+       7510.425432445067,
+       8379.99064983637,
+       9249.555867227677,
+       10119.12108461898,
+       11452.45441795231,
+       12785.787751285645,
+       14119.121084618979
+      ],
+      "notes": [],
+      "end": 15452.45441795231
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 645.1612903225806,
+        "midi": 62,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 1290.3225806451612,
+        "midi": 64,
+        "dur": 645.1612903225805
+       },
+       {
+        "at": 1935.4838709677417,
+        "midi": 65,
+        "dur": 645.1612903225807
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 3180.6451612903224,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 3780.6451612903224,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 4380.645161290322,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 4980.645161290322,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 5632.8190743338,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 6284.992987377278,
+        "midi": 64,
+        "dur": 652.1739130434789
+       },
+       {
+        "at": 6937.166900420757,
+        "midi": 65,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 7589.340813464235,
+        "midi": 60,
+        "dur": 999.9999999999991
+       },
+       {
+        "at": 8589.340813464234,
+        "midi": 62,
+        "dur": 1000
+       },
+       {
+        "at": 9589.340813464234,
+        "midi": 64,
+        "dur": 1000
+       },
+       {
+        "at": 10589.340813464234,
+        "midi": 65,
+        "dur": 1000
+       }
+      ],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 860.2150537634408,
+        "midi": 62,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 1720.4301075268816,
+        "midi": 64,
+        "dur": 860.2150537634409
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 65,
+        "dur": 860.2150537634407
+       },
+       {
+        "at": 3440.860215053763,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 4240.860215053764,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 5040.860215053764,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 5840.860215053763,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 6640.860215053763,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 7510.425432445067,
+        "midi": 62,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 8379.99064983637,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 9249.555867227677,
+        "midi": 65,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 10119.12108461898,
+        "midi": 60,
+        "dur": 1333.3333333333303
+       },
+       {
+        "at": 11452.45441795231,
+        "midi": 62,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 12785.787751285645,
+        "midi": 64,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 14119.121084618979,
+        "midi": 65,
+        "dur": 1333.3333333333321
+       }
+      ],
+      "end": 15452.45441795231
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 2,
+     "steps": 4,
+     "clean": 3,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 1
+    },
+    {
+     "measure": 3,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 0,
+     "late": 1
+    },
+    {
+     "measure": 4,
+     "steps": 4,
+     "clean": 4,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 1,
+     "to": 2
+    },
+    "span3": {
+     "from": 1,
+     "to": 3
+    }
+   }
+  },
+  "both/m2-3": {
+   "selection": {
+    "hands": "both",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "eventIndices": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0,
+    4
+   ],
+   "offsets": {
+    "75": [
+     0,
+     800.0000000000005,
+     1600.0000000000005,
+     2399.9999999999995,
+     3199.9999999999995,
+     4069.5652173913036,
+     4939.130434782608,
+     5808.695652173914
+    ],
+    "100": [
+     0,
+     600,
+     1200,
+     1799.9999999999995,
+     2399.9999999999995,
+     3052.1739130434776,
+     3704.3478260869556,
+     4356.521739130434
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1799.9999999999995,
+       2399.9999999999995,
+       3052.1739130434776,
+       3704.3478260869556,
+       4356.521739130434
+      ],
+      "notes": [],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200.000000000002,
+       -2400.0000000000014,
+       -1600.000000000001,
+       -800.0000000000005
+      ],
+      "clicks": [
+       0,
+       800.0000000000005,
+       1600.0000000000005,
+       2399.9999999999995,
+       3199.9999999999995,
+       4069.5652173913036,
+       4939.130434782608,
+       5808.695652173914
+      ],
+      "notes": [],
+      "end": 6678.260869565218
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 600,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 1799.9999999999995,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3052.1739130434776,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3704.3478260869556,
+        "midi": 64,
+        "dur": 652.1739130434785
+       },
+       {
+        "at": 4356.521739130434,
+        "midi": 65,
+        "dur": 652.173913043478
+       }
+      ],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 800.0000000000005,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 1600.0000000000005,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 3199.9999999999995,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 4069.5652173913036,
+        "midi": 62,
+        "dur": 869.5652173913045
+       },
+       {
+        "at": 4939.130434782608,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 5808.695652173914,
+        "midi": 65,
+        "dur": 869.565217391304
+       }
+      ],
+      "end": 6678.260869565218
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 3,
+     "steps": 4,
+     "clean": 3,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 3
+    },
+    "span3": {
+     "from": 2,
+     "to": 3
+    }
+   }
+  },
+  "rh/all": {
+   "selection": {
+    "hands": "rh"
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 8,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 9,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 10,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 11,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 12,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 13,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 14,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 15,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "eventIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 12,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 13,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 14,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 15,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [
+    0,
+    4,
+    8,
+    12
+   ],
+   "offsets": {
+    "75": [
+     0,
+     860.2150537634408,
+     1720.4301075268816,
+     2580.6451612903224,
+     3440.860215053763,
+     4240.860215053764,
+     5040.860215053764,
+     5840.860215053763,
+     6640.860215053763,
+     7510.425432445067,
+     8379.99064983637,
+     9249.555867227677,
+     10119.12108461898,
+     11452.45441795231,
+     12785.787751285645,
+     14119.121084618979
+    ],
+    "100": [
+     0,
+     645.1612903225806,
+     1290.3225806451612,
+     1935.4838709677417,
+     2580.6451612903224,
+     3180.6451612903224,
+     3780.6451612903224,
+     4380.645161290322,
+     4980.645161290322,
+     5632.8190743338,
+     6284.992987377278,
+     6937.166900420757,
+     7589.340813464235,
+     8589.340813464234,
+     9589.340813464234,
+     10589.340813464234
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2580.6451612903224,
+       -1935.483870967742,
+       -1290.3225806451612,
+       -645.1612903225806
+      ],
+      "clicks": [
+       0,
+       645.1612903225806,
+       1290.3225806451612,
+       1935.4838709677417,
+       2580.6451612903224,
+       3180.6451612903224,
+       3780.6451612903224,
+       4380.645161290322,
+       4980.645161290322,
+       5632.8190743338,
+       6284.992987377278,
+       6937.166900420757,
+       7589.340813464235,
+       8589.340813464234,
+       9589.340813464234,
+       10589.340813464234
+      ],
+      "notes": [],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3440.860215053763,
+       -2580.6451612903224,
+       -1720.4301075268816,
+       -860.2150537634408
+      ],
+      "clicks": [
+       0,
+       860.2150537634408,
+       1720.4301075268816,
+       2580.6451612903224,
+       3440.860215053763,
+       4240.860215053764,
+       5040.860215053764,
+       5840.860215053763,
+       6640.860215053763,
+       7510.425432445067,
+       8379.99064983637,
+       9249.555867227677,
+       10119.12108461898,
+       11452.45441795231,
+       12785.787751285645,
+       14119.121084618979
+      ],
+      "notes": [],
+      "end": 15452.45441795231
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 645.1612903225806,
+        "midi": 62,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 1290.3225806451612,
+        "midi": 64,
+        "dur": 645.1612903225805
+       },
+       {
+        "at": 1935.4838709677417,
+        "midi": 65,
+        "dur": 645.1612903225807
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 3180.6451612903224,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 3780.6451612903224,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 4380.645161290322,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 4980.645161290322,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 5632.8190743338,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 6284.992987377278,
+        "midi": 64,
+        "dur": 652.1739130434789
+       },
+       {
+        "at": 6937.166900420757,
+        "midi": 65,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 7589.340813464235,
+        "midi": 60,
+        "dur": 999.9999999999991
+       },
+       {
+        "at": 8589.340813464234,
+        "midi": 62,
+        "dur": 1000
+       },
+       {
+        "at": 9589.340813464234,
+        "midi": 64,
+        "dur": 1000
+       },
+       {
+        "at": 10589.340813464234,
+        "midi": 65,
+        "dur": 1000
+       }
+      ],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 860.2150537634408,
+        "midi": 62,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 1720.4301075268816,
+        "midi": 64,
+        "dur": 860.2150537634409
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 65,
+        "dur": 860.2150537634407
+       },
+       {
+        "at": 3440.860215053763,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 4240.860215053764,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 5040.860215053764,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 5840.860215053763,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 6640.860215053763,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 7510.425432445067,
+        "midi": 62,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 8379.99064983637,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 9249.555867227677,
+        "midi": 65,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 10119.12108461898,
+        "midi": 60,
+        "dur": 1333.3333333333303
+       },
+       {
+        "at": 11452.45441795231,
+        "midi": 62,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 12785.787751285645,
+        "midi": 64,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 14119.121084618979,
+        "midi": 65,
+        "dur": 1333.3333333333321
+       }
+      ],
+      "end": 15452.45441795231
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 1,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 2,
+     "steps": 4,
+     "clean": 3,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 1
+    },
+    {
+     "measure": 3,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 0,
+     "late": 1
+    },
+    {
+     "measure": 4,
+     "steps": 4,
+     "clean": 4,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 0
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 1,
+     "to": 2
+    },
+    "span3": {
+     "from": 1,
+     "to": 3
+    }
+   }
+  },
+  "rh/m2-3": {
+   "selection": {
+    "hands": "rh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [
+    {
+     "index": 0,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 1,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 2,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 3,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 4,
+     "notes": [
+      {
+       "midi": 60,
+       "spelled": {
+        "letter": "C",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 5,
+     "notes": [
+      {
+       "midi": 62,
+       "spelled": {
+        "letter": "D",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 6,
+     "notes": [
+      {
+       "midi": 64,
+       "spelled": {
+        "letter": "E",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    },
+    {
+     "index": 7,
+     "notes": [
+      {
+       "midi": 65,
+       "spelled": {
+        "letter": "F",
+        "acc": 0,
+        "octave": 4
+       },
+       "hand": "rh"
+      }
+     ],
+     "direction": "up"
+    }
+   ],
+   "beats": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "eventIndices": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "accompaniment": [],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [
+    0,
+    4
+   ],
+   "offsets": {
+    "75": [
+     0,
+     800.0000000000005,
+     1600.0000000000005,
+     2399.9999999999995,
+     3199.9999999999995,
+     4069.5652173913036,
+     4939.130434782608,
+     5808.695652173914
+    ],
+    "100": [
+     0,
+     600,
+     1200,
+     1799.9999999999995,
+     2399.9999999999995,
+     3052.1739130434776,
+     3704.3478260869556,
+     4356.521739130434
+    ]
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1799.9999999999995,
+       2399.9999999999995,
+       3052.1739130434776,
+       3704.3478260869556,
+       4356.521739130434
+      ],
+      "notes": [],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200.000000000002,
+       -2400.0000000000014,
+       -1600.000000000001,
+       -800.0000000000005
+      ],
+      "clicks": [
+       0,
+       800.0000000000005,
+       1600.0000000000005,
+       2399.9999999999995,
+       3199.9999999999995,
+       4069.5652173913036,
+       4939.130434782608,
+       5808.695652173914
+      ],
+      "notes": [],
+      "end": 6678.260869565218
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 600,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 1799.9999999999995,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3052.1739130434776,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3704.3478260869556,
+        "midi": 64,
+        "dur": 652.1739130434785
+       },
+       {
+        "at": 4356.521739130434,
+        "midi": 65,
+        "dur": 652.173913043478
+       }
+      ],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 800.0000000000005,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 1600.0000000000005,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 3199.9999999999995,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 4069.5652173913036,
+        "midi": 62,
+        "dur": 869.5652173913045
+       },
+       {
+        "at": 4939.130434782608,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 5808.695652173914,
+        "midi": 65,
+        "dur": 869.565217391304
+       }
+      ],
+      "end": 6678.260869565218
+     }
+    }
+   ],
+   "stats": [
+    {
+     "measure": 2,
+     "steps": 4,
+     "clean": 2,
+     "wrong": 1,
+     "missed": 1,
+     "early": 1,
+     "late": 0
+    },
+    {
+     "measure": 3,
+     "steps": 4,
+     "clean": 3,
+     "wrong": 1,
+     "missed": 0,
+     "early": 1,
+     "late": 1
+    }
+   ],
+   "weakest": {
+    "span2": {
+     "from": 2,
+     "to": 3
+    },
+    "span3": {
+     "from": 2,
+     "to": 3
+    }
+   }
+  },
+  "lh/all": {
+   "selection": {
+    "hands": "lh"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 12,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 13,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 14,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 15,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "all": [
+    {
+     "beat": 0,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 1,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 2,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 3,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 12,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 13,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 14,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 15,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2580.6451612903224,
+       -1935.483870967742,
+       -1290.3225806451612,
+       -645.1612903225806
+      ],
+      "clicks": [
+       0,
+       645.1612903225806,
+       1290.3225806451612,
+       1935.4838709677417,
+       2580.6451612903224,
+       3180.6451612903224,
+       3780.6451612903224,
+       4380.645161290322,
+       4980.645161290322,
+       5632.8190743338,
+       6284.992987377278,
+       6937.166900420757,
+       7589.340813464235,
+       8589.340813464234,
+       9589.340813464234,
+       10589.340813464234
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 645.1612903225806,
+        "midi": 62,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 1290.3225806451612,
+        "midi": 64,
+        "dur": 645.1612903225805
+       },
+       {
+        "at": 1935.4838709677417,
+        "midi": 65,
+        "dur": 645.1612903225807
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 3180.6451612903224,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 3780.6451612903224,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 4380.645161290322,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 4980.645161290322,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 5632.8190743338,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 6284.992987377278,
+        "midi": 64,
+        "dur": 652.1739130434789
+       },
+       {
+        "at": 6937.166900420757,
+        "midi": 65,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 7589.340813464235,
+        "midi": 60,
+        "dur": 999.9999999999991
+       },
+       {
+        "at": 8589.340813464234,
+        "midi": 62,
+        "dur": 1000
+       },
+       {
+        "at": 9589.340813464234,
+        "midi": 64,
+        "dur": 1000
+       },
+       {
+        "at": 10589.340813464234,
+        "midi": 65,
+        "dur": 1000
+       }
+      ],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3440.860215053763,
+       -2580.6451612903224,
+       -1720.4301075268816,
+       -860.2150537634408
+      ],
+      "clicks": [
+       0,
+       860.2150537634408,
+       1720.4301075268816,
+       2580.6451612903224,
+       3440.860215053763,
+       4240.860215053764,
+       5040.860215053764,
+       5840.860215053763,
+       6640.860215053763,
+       7510.425432445067,
+       8379.99064983637,
+       9249.555867227677,
+       10119.12108461898,
+       11452.45441795231,
+       12785.787751285645,
+       14119.121084618979
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 860.2150537634408,
+        "midi": 62,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 1720.4301075268816,
+        "midi": 64,
+        "dur": 860.2150537634409
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 65,
+        "dur": 860.2150537634407
+       },
+       {
+        "at": 3440.860215053763,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 4240.860215053764,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 5040.860215053764,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 5840.860215053763,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 6640.860215053763,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 7510.425432445067,
+        "midi": 62,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 8379.99064983637,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 9249.555867227677,
+        "midi": 65,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 10119.12108461898,
+        "midi": 60,
+        "dur": 1333.3333333333303
+       },
+       {
+        "at": 11452.45441795231,
+        "midi": 62,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 12785.787751285645,
+        "midi": 64,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 14119.121084618979,
+        "midi": 65,
+        "dur": 1333.3333333333321
+       }
+      ],
+      "end": 15452.45441795231
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 645.1612903225806,
+        "midi": 62,
+        "dur": 645.1612903225806
+       },
+       {
+        "at": 1290.3225806451612,
+        "midi": 64,
+        "dur": 645.1612903225805
+       },
+       {
+        "at": 1935.4838709677417,
+        "midi": 65,
+        "dur": 645.1612903225807
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 3180.6451612903224,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 3780.6451612903224,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 4380.645161290322,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 4980.645161290322,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 5632.8190743338,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 6284.992987377278,
+        "midi": 64,
+        "dur": 652.1739130434789
+       },
+       {
+        "at": 6937.166900420757,
+        "midi": 65,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 7589.340813464235,
+        "midi": 60,
+        "dur": 999.9999999999991
+       },
+       {
+        "at": 8589.340813464234,
+        "midi": 62,
+        "dur": 1000
+       },
+       {
+        "at": 9589.340813464234,
+        "midi": 64,
+        "dur": 1000
+       },
+       {
+        "at": 10589.340813464234,
+        "midi": 65,
+        "dur": 1000
+       }
+      ],
+      "end": 11589.340813464234
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 860.2150537634408,
+        "midi": 62,
+        "dur": 860.2150537634408
+       },
+       {
+        "at": 1720.4301075268816,
+        "midi": 64,
+        "dur": 860.2150537634409
+       },
+       {
+        "at": 2580.6451612903224,
+        "midi": 65,
+        "dur": 860.2150537634407
+       },
+       {
+        "at": 3440.860215053763,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 4240.860215053764,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 5040.860215053764,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 5840.860215053763,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 6640.860215053763,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 7510.425432445067,
+        "midi": 62,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 8379.99064983637,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 9249.555867227677,
+        "midi": 65,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 10119.12108461898,
+        "midi": 60,
+        "dur": 1333.3333333333303
+       },
+       {
+        "at": 11452.45441795231,
+        "midi": 62,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 12785.787751285645,
+        "midi": 64,
+        "dur": 1333.333333333334
+       },
+       {
+        "at": 14119.121084618979,
+        "midi": 65,
+        "dur": 1333.3333333333321
+       }
+      ],
+      "end": 15452.45441795231
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/m2-3": {
+   "selection": {
+    "hands": "lh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "all": [
+    {
+     "beat": 4,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 5,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 6,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 7,
+     "midi": 65,
+     "quarters": 1
+    },
+    {
+     "beat": 8,
+     "midi": 60,
+     "quarters": 1
+    },
+    {
+     "beat": 9,
+     "midi": 62,
+     "quarters": 1
+    },
+    {
+     "beat": 10,
+     "midi": 64,
+     "quarters": 1
+    },
+    {
+     "beat": 11,
+     "midi": 65,
+     "quarters": 1
+    }
+   ],
+   "startBeat": 4,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [
+       0,
+       600,
+       1200,
+       1799.9999999999995,
+       2399.9999999999995,
+       3052.1739130434776,
+       3704.3478260869556,
+       4356.521739130434
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 600,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 1799.9999999999995,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3052.1739130434776,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3704.3478260869556,
+        "midi": 64,
+        "dur": 652.1739130434785
+       },
+       {
+        "at": 4356.521739130434,
+        "midi": 65,
+        "dur": 652.173913043478
+       }
+      ],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200.000000000002,
+       -2400.0000000000014,
+       -1600.000000000001,
+       -800.0000000000005
+      ],
+      "clicks": [
+       0,
+       800.0000000000005,
+       1600.0000000000005,
+       2399.9999999999995,
+       3199.9999999999995,
+       4069.5652173913036,
+       4939.130434782608,
+       5808.695652173914
+      ],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 800.0000000000005,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 1600.0000000000005,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 3199.9999999999995,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 4069.5652173913036,
+        "midi": 62,
+        "dur": 869.5652173913045
+       },
+       {
+        "at": 4939.130434782608,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 5808.695652173914,
+        "midi": 65,
+        "dur": 869.565217391304
+       }
+      ],
+      "end": 6678.260869565218
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 600
+       },
+       {
+        "at": 600,
+        "midi": 62,
+        "dur": 600
+       },
+       {
+        "at": 1200,
+        "midi": 64,
+        "dur": 599.9999999999995
+       },
+       {
+        "at": 1799.9999999999995,
+        "midi": 65,
+        "dur": 600
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 60,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3052.1739130434776,
+        "midi": 62,
+        "dur": 652.173913043478
+       },
+       {
+        "at": 3704.3478260869556,
+        "midi": 64,
+        "dur": 652.1739130434785
+       },
+       {
+        "at": 4356.521739130434,
+        "midi": 65,
+        "dur": 652.173913043478
+       }
+      ],
+      "end": 5008.695652173912
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [
+       {
+        "at": 0,
+        "midi": 60,
+        "dur": 800.0000000000005
+       },
+       {
+        "at": 800.0000000000005,
+        "midi": 62,
+        "dur": 800
+       },
+       {
+        "at": 1600.0000000000005,
+        "midi": 64,
+        "dur": 799.9999999999991
+       },
+       {
+        "at": 2399.9999999999995,
+        "midi": 65,
+        "dur": 800
+       },
+       {
+        "at": 3199.9999999999995,
+        "midi": 60,
+        "dur": 869.565217391304
+       },
+       {
+        "at": 4069.5652173913036,
+        "midi": 62,
+        "dur": 869.5652173913045
+       },
+       {
+        "at": 4939.130434782608,
+        "midi": 64,
+        "dur": 869.5652173913059
+       },
+       {
+        "at": 5808.695652173914,
+        "midi": 65,
+        "dur": 869.565217391304
+       }
+      ],
+      "end": 6678.260869565218
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  }
+ }
+}
