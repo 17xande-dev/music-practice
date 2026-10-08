@@ -140,3 +140,10 @@ Each is one edge file; "confirmed" and "refuted" refer to the claim as it was pu
 12. **`dc-al-fine`: refuted.** The cursor does not ignore `<sound dacapo>` and `<sound fine>`: the
     walk plays measures 1 2 3, jumps back to 1, and stops after measure 2 (the Fine), with the
     beat still rising (20 entries). The Swift timeline needs D.C./Fine support.
+13. **`tie-cross-voice`: ties are matched per staff, by letter and octave, falling back to the
+    halftone: confirmed.** A voice-1 G4 `tied start` is closed by a voice-2 G4 `tied stop` on the same
+    staff (m1 start, 5 quarters, m2 continue). An enharmonic pair (F#4 start, Gb4 stop) ties through
+    the halftone fallback. A start that is never stopped in its own measure still joins a stop in
+    the next measure (C4 in m4 to C4 in m5, quarters 5): OSMD's `checkOpenTies` is never called in
+    2.1.3, so open ties are not dropped. The Swift port reads ties over the played order instead
+    (a tie joins only the measure played next), which no fixture contradicts.
