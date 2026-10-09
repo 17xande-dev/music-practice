@@ -35,6 +35,11 @@ means post-processing the walk, or building the timeline ourselves, rather than 
 - [ ] **Ties are resolved in score order, not playback order.** A tie before `:|`
   claims the note after the volta, and a tie into ending 2 is lost. Fix: resolve ties
   over the unrolled sequence (a tie only joins the next played measure).
+- [ ] **Under-encoded endings play in the wrong order.** In Satie's "Je te veux" (OpenScore),
+  OSMD walks 1-78, 6-35, 38-110. The intended order, from the segno signs and the lyrics, is
+  1-37, 47-78, 6-35, 38-39, 79-110, 6-35, 40-46 (Fine). ScoreKit counts a repeat's passes from
+  the highest ending in its section, and extends an open one-bar final ending to Fine.
+  Fixture: ScoreKit `complex/openscore/satie-je-te-veux.mxl`. See `upstream-bugs.md`.
 - [ ] *(Optional, musical)* **Metronome beat unit and dots are ignored.** "half = 60"
   plays as 60 quarters per minute. ScoreKit currently matches OSMD here
   (`Metronome.quarterBPM` holds the correct value). Decide whether both should switch.
