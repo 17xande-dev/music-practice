@@ -276,6 +276,16 @@ test inputs for the upstream issues.
 - Upstream: https://github.com/vexflow/vexflow/issues/206 ("Formatter vertical collisions")
 - Workaround: as above.
 
+## Source files / exporters
+
+- MuseScore (OpenScore Lieder exports): notes of a voice that lives mainly on the other staff (a cross-staff
+  arpeggio) are not shifted under an `<octave-shift>`, though `<pitch>` is sounding pitch. Boulanger m9-11 shows it:
+  the RH 8va covers the staff-1 notes only, and the printed original agrees. A reader that applies the shift to every
+  note of the staff by time (as the MusicXML text suggests) draws those notes an octave too low. ScoreKit skips them
+  (voice's main staff differs from the line's). Not an OSMD/VexFlow bug; recorded because OSMD's behaviour here is unchecked.
+- MuseScore reuses one `<slur number>` for slurs in different staves and voices at once; pair by number, then voice
+  and staff, else a stop takes another voice's start (Schumann m28).
+
 ## Checked, not bugs
 
 - Tempo words: OSMD turns a bare tempo word (`<words>Largo</words>`, no metronome or `<sound>`) into a tempo from
