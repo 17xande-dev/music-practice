@@ -55,7 +55,11 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   again, so it is dead code. iPad: seeks to the first step at or after the note's beat
   (`stepOfRef` + `stepOfPosition`).
 - [ ] **Changing tempo while playing resets to step 0** (`rebuild()` → `reset()`).
-  iPad: playback continues from the current step at the new tempo.
+  iPad: Listen, Learn and Notes continue from the current step at the new tempo. In Tempo
+  and Rubato modes a tempo change starts a fresh run from the current step, with a new
+  count-in, so a saved session always has one tempo. In Tempo mode, toggling the metronome
+  or the other hand mid-run replays from the current step with a count-in and keeps the
+  grades so far.
 - [ ] **Starter song ids are random UUIDs** when copied into the library, so personal
   bests can't match across devices. iPad uses stable `starter:<slug>` ids. Pick one scheme
   for both (A5 decides; until then, sessions match by title only).
@@ -65,6 +69,10 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   keeps `attempted` and the marks, and the next `finishRun` saves a second, inflated
   session merging both runs. iPad: a seek after a finished run clears it and starts
   fresh. The results card can also be dismissed.
+- [ ] **A Tempo run ends when the last timing window closes and cuts off the sound**
+  (`e.done` → `player.stop()`), so a long final note or held accompaniment chord is
+  clipped. iPad: the run ends once the last window has closed and the audio has played
+  out, so the results card appears after the final note finishes sounding.
 
 ## Shared quirks to fix in both apps
 
