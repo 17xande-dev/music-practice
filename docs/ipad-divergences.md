@@ -60,6 +60,20 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   bests can't match across devices. iPad uses stable `starter:<slug>` ids. Pick one scheme
   for both (A5 decides; until then, sessions match by title only).
 
+- [ ] **Seeking after a finished Learn/Notes run keeps the old run.** The web never
+  sets `phase = "done"` in wait modes, so a prev/next measure or tap after finishing
+  keeps `attempted` and the marks, and the next `finishRun` saves a second, inflated
+  session merging both runs. iPad: a seek after a finished run clears it and starts
+  fresh. The results card can also be dismissed.
+
+## Shared quirks to fix in both apps
+
+- [ ] **Accompaniment in wait modes only sounds other-hand notes that coincide with a
+  practised step** (`beat - from < 0.01`). Notes between steps, or under a rest in the
+  practised hand, never sound, even though the comment says "up to the next step".
+- [ ] **A note followed by an immediate reset logs a 0 ms Learn entry.** Drop
+  `ms == 0` entries.
+
 ## Not divergences, but worth knowing
 
 - The cursor band is centred on the notehead on iPad. The web's band starts 1.5 units
