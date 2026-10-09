@@ -60,9 +60,7 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   count-in, so a saved session always has one tempo. In Tempo mode, toggling the metronome
   or the other hand mid-run replays from the current step with a count-in and keeps the
   grades so far.
-- [ ] **Starter song ids are random UUIDs** when copied into the library, so personal
-  bests can't match across devices. iPad uses stable `starter:<slug>` ids. Pick one scheme
-  for both (A5 decides; until then, sessions match by title only).
+
 
 - [ ] **Seeking after a finished Learn/Notes run keeps the old run.** The web never
   sets `phase = "done"` in wait modes, so a prev/next measure or tap after finishing

@@ -4,6 +4,8 @@
 // reported rather than thrown at the page: a blocked or private-mode
 // IndexedDB means songs can still be opened, just not kept.
 
+import { planStarterMigration } from "./starters.ts";
+
 const DB_NAME = "mp.v1";
 const STORE = "songs";
 export const MAX_SONG_BYTES = 10 * 1024 * 1024;
@@ -104,10 +106,12 @@ export class SongLibrary {
   async add(
     meta: Omit<SongMeta, "id" | "added" | "lastPractised" | "size">,
     data: ArrayBuffer,
+    /** A fixed id (starters); otherwise a random one. */
+    id: string = newId(),
   ): Promise<SongRecord> {
     const rec: SongRecord = {
       ...meta,
-      id: newId(),
+      id,
       size: data.byteLength,
       added: Date.now(),
       lastPractised: null,
@@ -124,5 +128,42 @@ export class SongLibrary {
 
   async remove(id: string) {
     await request(this.store("readwrite").delete(id));
+  }
+
+  /**
+   * Which starter copies sit under random ids, and where they go; changes
+   * nothing. Pass the result to `applyStarterMigration` once the history that
+   * refers to the old ids has been rewritten.
+   */
+  async planStarterMigration() {
+    return planStarterMigration(await this.list());
+  }
+
+  /** Rename each kept copy to its starter id and delete the other copies. */
+  async applyStarterMigration(plan: ReturnType<typeof planStarterMigration>) {
+    const copies = new Map<string, SongRecord>();
+    for (const [target, oldId] of plan.keep) {
+      const rec = await this.get(oldId);
+      if (rec) copies.set(target, rec);
+    }
+    const lastPractised = new Map<string, number | null>();
+    for (const [oldId, target] of plan.remap) {
+      const m = (await this.get(oldId))?.lastPractised ?? null;
+      const prev = lastPractised.get(target) ?? null;
+      lastPractised.set(target, m === null ? prev : Math.max(prev ?? 0, m));
+    }
+    for (const [target, rec] of copies) {
+      await request(
+        this.store("readwrite").put({
+          ...rec,
+          id: target,
+          lastPractised: lastPractised.get(target) ?? rec.lastPractised,
+        }),
+      );
+    }
+    for (const [target, last] of lastPractised) {
+      if (!copies.has(target) && last !== null) await this.update(target, { lastPractised: last });
+    }
+    for (const oldId of plan.remap.keys()) await this.remove(oldId);
   }
 }

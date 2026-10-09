@@ -51,6 +51,7 @@ import {
   titleFromFileName,
   uploadProblem,
 } from "./lib/song_library.ts";
+import { starterId, starterSlugForFile } from "./lib/starters.ts";
 import { playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
@@ -229,7 +230,7 @@ async function renderLibrary() {
   }
 }
 
-async function addFile(file: File) {
+async function addFile(file: File, id?: string) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const problem = uploadProblem(file.name, bytes);
   if (problem) {
@@ -249,6 +250,7 @@ async function addFile(file: File) {
     const rec = await library.add(
       { title, composer: info.composer, fileName: file.name, format },
       bytes.buffer as ArrayBuffer,
+      id,
     );
     song!.meta = rec;
     ui.title.value = title;
@@ -1258,6 +1260,13 @@ ui.device.addEventListener("change", () => {
 for (const b of document.querySelectorAll<HTMLButtonElement>("button.starter")) {
   b.addEventListener("click", async () => {
     const file = b.dataset.file!;
+    // Starters have stable ids (shared with the iPad app), so the history matches.
+    const slug = starterSlugForFile(file);
+    const id = slug ? starterId(slug) : undefined;
+    if (id && await library?.get(id)) {
+      await openSong(id);
+      return;
+    }
     const existing = (await library?.list())?.find((s) => s.fileName === file);
     if (existing) {
       await openSong(existing.id);
@@ -1267,7 +1276,7 @@ for (const b of document.querySelectorAll<HTMLButtonElement>("button.starter")) 
     try {
       const res = await fetch(b.dataset.src!);
       if (!res.ok) throw new Error(String(res.status));
-      await addFile(new File([await res.arrayBuffer()], file, { type: "application/xml" }));
+      await addFile(new File([await res.arrayBuffer()], file, { type: "application/xml" }), id);
       ui.song.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch {
       setLibraryStatus("That piece couldn't be loaded. Check your connection and try again.", true);
@@ -1582,6 +1591,11 @@ void SongLibrary.open().then(async (lib) => {
     );
     return;
   }
+  // Starter copies from before they had stable ids: rewrite the history that
+  // refers to them first, and only then rename them, so a failed write is
+  // retried on the next visit.
+  const plan = await lib.planStarterMigration();
+  if (plan.remap.size && store.remapSongIds(plan.remap)) await lib.applyStarterMigration(plan);
   await renderLibrary();
   const last = store.settings().lastSong;
   if (last && (await lib.get(last))) await openSong(last);

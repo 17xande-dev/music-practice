@@ -398,3 +398,57 @@ Deno.test("learn is a valid mode on both pages", () => {
   assertEquals(store.settings().mode, "learn");
   assertEquals(store.settings().songMode, "learn");
 });
+
+Deno.test("starter migration: song and Learn sessions and the remembered song follow the new id", () => {
+  const store = new ProgressStore(new FakeStorage());
+  store.addSong(songRun({ songId: "uuid-a" }));
+  store.addSong(songRun({ songId: "uuid-b", ts: 1_790_000_000_001 }));
+  store.addSong(songRun({ songId: "mine" }));
+  store.addLearn(learnRun({ subject: "uuid-a" }));
+  store.addLearn(learnRun({ kind: "scale", subject: "uuid-a" })); // not a song: untouched
+  store.saveSettings({ lastSong: "uuid-b" });
+  const remap = new Map([["uuid-a", "starter:minuet-in-g"], ["uuid-b", "starter:minuet-in-g"]]);
+  assert(store.remapSongIds(remap));
+  assertEquals(
+    store.songSessions().map((s) => s.songId).sort(),
+    ["mine", "starter:minuet-in-g", "starter:minuet-in-g"],
+  );
+  assertEquals(
+    store.learnSessions().map((s) => `${s.kind}:${s.subject}`).sort(),
+    ["scale:uuid-a", "song:starter:minuet-in-g"],
+  );
+  assertEquals(store.settings().lastSong, "starter:minuet-in-g");
+  // Idempotent.
+  const before = store.exportJSON(new Date(0));
+  assert(store.remapSongIds(remap));
+  assertEquals(store.exportJSON(new Date(0)), before);
+  // removeSong works with the colon id.
+  store.removeSong("starter:minuet-in-g");
+  assertEquals(store.songSessions().map((s) => s.songId), ["mine"]);
+  assertEquals(store.learnSessions().map((s) => s.kind), ["scale"]);
+});
+
+Deno.test("importing an older export moves random-id starter sessions to starter ids", () => {
+  const src = new ProgressStore(new FakeStorage());
+  src.addSong(songRun({ songId: crypto.randomUUID(), title: "Minuet in G major" }));
+  src.addSong(songRun({ songId: crypto.randomUUID(), title: "Minuet in G major", ts: 5 }));
+  src.addSong(songRun({ songId: "own-upload", title: "My piece" }));
+  src.addLearn(learnRun({ subject: crypto.randomUUID(), title: "Ode to Joy" }));
+  src.addLearn(learnRun({ subject: "starter:ode-to-joy", title: "Ode to Joy", ts: 7 }));
+  const file = src.exportJSON();
+
+  const dst = new ProgressStore(new FakeStorage());
+  assertEquals(dst.importJSON(file).added, 5);
+  assertEquals(
+    dst.songSessions().map((s) => s.songId).sort(),
+    ["own-upload", "starter:minuet-in-g", "starter:minuet-in-g"],
+  );
+  assertEquals(dst.learnSessions().map((s) => s.subject), [
+    "starter:ode-to-joy",
+    "starter:ode-to-joy",
+  ]);
+  // Importing again changes nothing, and the same file from a migrated store matches.
+  const r = dst.importJSON(file);
+  assertEquals([r.added, r.duplicate], [0, 5]);
+  assertEquals(dst.songSessions().length, 3);
+});

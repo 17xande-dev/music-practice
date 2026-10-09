@@ -19,6 +19,7 @@ import {
   type SongSession,
   validSongSession,
 } from "./song_session.ts";
+import { isStarterId, starterId, starterSlugForTitle } from "./starters.ts";
 import { cleanLearnSession, LEARN_KEY, type LearnSession, validLearnSession } from "./learn_log.ts";
 
 export const SESSIONS_KEY = "mp.v1.sessions";
@@ -286,6 +287,25 @@ export function validSettings(x: unknown): Partial<Settings> {
   return out;
 }
 
+/**
+ * Exports from before starters had stable ids carry random-UUID song ids.
+ * Their title says which starter they were (the file name isn't exported),
+ * so such sessions are moved to the starter id.
+ */
+function starterIdFor(songId: string, title: string): string {
+  if (isStarterId(songId)) return songId;
+  const slug = starterSlugForTitle(title);
+  return slug ? starterId(slug) : songId;
+}
+
+function starterSongSession(s: SongSession): SongSession {
+  return { ...s, songId: starterIdFor(s.songId, s.title) };
+}
+
+function starterLearnSession(s: LearnSession): LearnSession {
+  return s.kind === "song" ? { ...s, subject: starterIdFor(s.subject, s.title) } : s;
+}
+
 function newId(): string {
   // randomUUID needs a secure context; fall back rather than fail on plain http.
   return globalThis.crypto?.randomUUID?.() ??
@@ -422,6 +442,35 @@ export class ProgressStore {
     return a && b;
   }
 
+  /**
+   * Point song and Learn sessions (and the remembered song) at new ids, as
+   * when starter copies move to their stable ids. Returns false when a write
+   * failed. Idempotent: ids that aren't keys of the map are left alone.
+   */
+  remapSongIds(remap: ReadonlyMap<string, string>): boolean {
+    if (!remap.size) return true;
+    let ok = true;
+    const songs = this.songSessions();
+    if (songs.some((s) => remap.has(s.songId))) {
+      ok = this.write(
+        SONG_SESSIONS_KEY,
+        songs.map((s) => ({ ...s, songId: remap.get(s.songId) ?? s.songId })),
+      ) && ok;
+    }
+    const learn = this.learnSessions();
+    if (learn.some((s) => s.kind === "song" && remap.has(s.subject))) {
+      ok = this.write(
+        LEARN_KEY,
+        learn.map((s) =>
+          s.kind === "song" ? { ...s, subject: remap.get(s.subject) ?? s.subject } : s
+        ),
+      ) && ok;
+    }
+    const last = this.settings().lastSong;
+    if (last && remap.has(last)) this.saveSettings({ lastSong: remap.get(last)! });
+    return ok;
+  }
+
   clear(): boolean {
     const a = this.write(SESSIONS_KEY, []);
     const b = this.write(SONG_SESSIONS_KEY, []);
@@ -491,7 +540,7 @@ export class ProgressStore {
         if (!validSongSession(s)) invalid++;
         else if (songIds.has(s.id)) duplicate++;
         else {
-          songs.push(cleanSongSession(s));
+          songs.push(starterSongSession(cleanSongSession(s)));
           songIds.add(s.id);
           songsAdded++;
         }
@@ -510,7 +559,7 @@ export class ProgressStore {
         if (!validLearnSession(s)) invalid++;
         else if (learnIds.has(s.id)) duplicate++;
         else {
-          learn.push(cleanLearnSession(s));
+          learn.push(starterLearnSession(cleanLearnSession(s)));
           learnIds.add(s.id);
           learnAdded++;
         }
