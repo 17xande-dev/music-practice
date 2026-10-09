@@ -43,7 +43,9 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 
 ### OSMD 2.1.3: `<repeat times="N">` is ignored; a repeat always plays twice
 - Status: confirmed on latest (re-run on 2.2.0: same walk, measures 1 2 3 2 3 4)
-- Repro: fixture `repeat-times-3`. A repeat with `times="3"` plays twice.
+- Repro: fixture `repeat-times-3`. A repeat with `times="3"` plays twice. Also LilyPond
+  `45a-SimpleRepeat` (`times="5"`, bar 1 plays twice, intended five times) and `45c-SimpleRepeat-Nested`
+  (inner repeat `times="5"`; OSMD walks 1-3 2-7 4-8, intended 1-3 then 2-3 four more times then 4-8).
 - Cause: `RepetitionInstruction.Times` is never read by the cursor or iterator walk.
 - Fix: honour `times` when unrolling.
 - Upstream: no issue or PR found searching the tracker for repeat/times (2026-10-09). The 2.2.0
@@ -73,6 +75,9 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
   `<ending>`), merged https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1758
   (a first ending with no second ending plays on the first pass only; changed the swapped-digits
   result).
+- Also: LilyPond `45d-Repeats-MultipleEndings` (endings "3, 5, 7" and "4, 6", the latter with the text "Foo"):
+  OSMD walks 1-2 1-2 1-2 1 11-12; the intended eight passes are 1-2, 1 3-5, 1 6-9, 1 10, 1 6-9, 1 10, 1 6-9, 1 11-12.
+  OSMD is correct for LilyPond `45i-Repeats-Nested` (1-3 3-4 1 5 5-7), which is not a bug.
 - Workaround: ScoreKit uses `number`, falling back to digits in the label only when `number` is missing. The web plays OSMD's walk.
 
 
@@ -101,9 +106,8 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
   https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1806
 - Workaround: none needed. ScoreKit follows the spec, and the web (OSMD 2.2.0) now matches.
 - Note: 2.2.0 also changed `sound-and-metronome-differ` (metronome 80 vs `sound tempo=120`): 2.1.3
-  played 80, 2.2.0 plays 120, the `<sound>` value. The web fixtures changed accordingly (2026-10-09), so the web now
-  differs from ScoreKit, which still lets the metronome win (80). Not a clear OSMD bug (arguably `<sound>` is
-  the playback value); the Swift side needs a decision.
+  played 80, 2.2.0 plays 120, the `<sound>` value (as the MusicXML spec says). Not a bug; decided
+  2026-10-09 that ScoreKit follows it too (`TempoMap`), so they agree again.
 
 ### OSMD 2.1.3: an invalid `tempo="fast"` resets to 100, and `tempo="0"` gives 60
 - Status: regressed in 2.2.0 for zero (2.1.3 gave 60, 2.2.0 gives 0); `fast` unchanged
@@ -124,6 +128,47 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 - Upstream: none found. The 2.2.0 and `develop` tie fixes are about drawing ties.
 - Workaround: ScoreKit resolves ties over the unrolled order. The web is unaffected only when no tie crosses a repeat or volta.
 
+
+### OSMD 2.2.0: `loadUrl`/`load` fails with "given music sheet was incomplete or could not be loaded." when a `<part>` is not in the `<part-list>`
+- Status: found on 2.2.0 (2026-10-09), cause read from the minified source, not stepped through
+- Repro: LilyPond `41h-TooManyParts` (ScoreKit `Tests/ScoreKitTests/Fixtures/complex/lilypond/41h-TooManyParts.mxl`):
+  `<part-list>` has one `<score-part id="P1">`, the body has `<part id="P1">`, `<part id="P3">` and
+  `<part id="P4">`. The test-suite description says a reader may convert the extra parts or ignore them.
+- Cause: in `MusicSheetReader.createInstrumentReaders` (found by its `getInstrumentNumberOfStavesFromXml`
+  call) the instrument is looked up by part id, `const r = s[e.value]`, then used unchecked
+  (`r.Name` in the catch, `r.createStaves(...)`). For `P3` the lookup is `undefined`, so it throws a TypeError;
+  `createMusicSheet` catches it and returns `undefined`, and `OpenSheetMusicDisplay.load` turns that into the
+  generic "given music sheet was incomplete or could not be loaded." (no hint about the part).
+- Fix: skip a `<part>` with no `<score-part>` (and push a `SheetErrors` entry), or create an instrument for it.
+- Upstream: none searched yet.
+- Workaround: none; the score does not load on the web. The fixture generator records it as an expected error
+  (`lilypond-41h-TooManyParts.walk.json` has `error`, no score). ScoreKit reads all three parts (`missingDivisions` test).
+
+### OSMD 2.2.0: ties are paired across measures (a tie start is never cleared)
+- Status: found (2.2.0, 2026-10-09; the dictionary is not cleared at the end of a measure, see the `tie-cross-voice` probe)
+- Repro: OpenScore Stanford "Sou'wester" (fixture `openscore-stanford-sou-wester`). In the first full bar,
+  voice 2 holds E-flat/G (`<tie start>`, 3 beats) and voice 1, written first in the file, has the matching
+  `<tie stop>` chord on beat 4. OSMD reads the stop before the start, so the start stays open and is closed by
+  the identical stop in bar 3: the bar 1 start reports 2.0 quarters and the bar 1 stop none; bar 3's start is
+  unpaired (1.5 quarters), its stop `continue` (the same note the next bar). Expected: each pair in its own bar.
+- Cause: the tie dictionary is filled in document order (a stop with no open start is dropped), and an
+  open start is never abandoned at the barline (`checkOpenTies` is not called).
+- Fix: pair starts and stops in time order within a measure, and drop a start left open at the end of the measure
+  (or at the end of the next).
+- Upstream: none found.
+- Workaround: ScoreKit pairs in time order (known divergence: `openscore-stanford-sou-wester`, ties only).
+
+### OSMD 2.2.0: one bar gains 0.375 quarters after a grace chord and a notehead-less 32nd, and a chord tie is partly lost
+- Status: found (2.2.0, 2026-10-09), cause not found; needs a minimal repro
+- Repro: OpenScore Boulanger "Parfois je suis triste" (fixture `openscore-boulanger-parfois-je-suis-triste`).
+  Bar 11 of the file ends with a grace chord and a 32nd (`<notehead>none</notehead>`) in both staves, using
+  `<backup>`/`<forward>` of 105 divisions. OSMD reports an empty position at 44.875 and starts the next bar at
+  45.375 instead of 45.0, so every later beat is 0.375 late. Bars 51-52: a 5-note chord tied across the barline
+  loses the tie on two of its notes (E5 and C6 report `start` 0.333 then `none`).
+- Cause: unknown.
+- Fix: reduce first (a bar ending in grace notes plus a headless 32nd with a forward/backup).
+- Upstream: none found.
+- Workaround: none on the web. ScoreKit gets 45.0 and keeps the tie (known divergence, played measure order only).
 
 ### OSMD 2.1.3: the metronome beat unit and dots are ignored (questionable, not a clear bug)
 - Status: confirmed on latest (re-run on 2.2.0: `metronome-half-note` unchanged, half = 60 plays 60)
@@ -190,7 +235,7 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 
 ## VexFlow 5.0.0
 
-Both entries below are open upstream issues from other reporters, read with `gh` on
+The first entry is a VexFlow error caused by OSMD passing it nothing; the next two below are open upstream issues from other reporters, read with `gh` on
 2026-10-09. Candidate repro scores (not yet rendered through OSMD/VexFlow; the web is not a target
 for these, ScoreKit engraves its own layout): the OpenScore fixtures in ScoreKit
 `Tests/ScoreKitTests/Fixtures/complex/openscore/`, found while doing S6b. Layouts with three voices on
@@ -201,6 +246,18 @@ interleaved voices, five tie arcs and a cautionary natural before a chord). Scor
 reproduced the same classes of collision (rests floating at stem height, a stem-up voice's stem
 running through the heads of a lower voice, a rest overlapping a flipped head), so these are good
 test inputs for the upstream issues.
+
+### VexFlow 5.0.0: "Bad key signature spec: 'undefined'" on a theoretical key signature (more than 7 sharps or flats)
+- Status: found (2026-10-09, OSMD 2.2.0 on VexFlow 5.0.0)
+- Repro: LilyPond `13a-KeySignatures` (ScoreKit `complex/lilypond/13a-KeySignatures.mxl`): `<fifths>` from -11 to 11.
+  `render()` throws `BadKeySignature: Bad key signature spec: 'undefined'` (`vexflow/src/tables.ts` `keySignature(spec)`).
+- Cause: OSMD's `VexFlowConverter.keySignature` looks up `majorMap[key]`/`minorMap[key]`, which only cover -7..7, so
+  it returns `undefined` for 8+ fifths and `new KeySignature(undefined)` throws; VexFlow cannot draw the key either.
+- Fix: in OSMD, fall back to a key signature of the nearest traditional key, or draw no signature, for |fifths| > 7;
+  in VexFlow, accept double accidentals in a key signature (G-sharp major is F-double-sharp and six sharps).
+- Upstream: none searched yet.
+- Workaround: none on the web; the score fails to render (the fixture generator records `lilypond-13a-KeySignatures.walk.json`
+  as an expected error). ScoreKit draws theoretical keys with doubled glyphs on the first letters, and clamps nothing.
 
 ### VexFlow 5.0.0: rests collide with notes of other voices
 - Status: reported vf#203 (open)
@@ -220,6 +277,12 @@ test inputs for the upstream issues.
 - Workaround: as above.
 
 ## Checked, not bugs
+
+- Tempo words: OSMD turns a bare tempo word (`<words>Largo</words>`, no metronome or `<sound>`) into a tempo from
+  its own table (Largo 52, Allegro 130, ...; English, Italian, German and French lists). LilyPond `21d` plays at 52 on
+  the web. This is a feature, not a bug. ScoreKit does not read tempo words and plays the default 100
+  (known divergence `lilypond-21d-Chords-SchubertStabatMater`, bpm only); decide whether to port the table.
+- LilyPond `45i-Repeats-Nested`: OSMD walks 1-3 3-4 1 5 5-7, which is correct (a nested repeat inside each of two endings).
 
 - Stanford "Sou'wester": OSMD walks 1-84, 29-57, 85-141, which is correct. The file exports
   volta 1 as start + discontinue on its first measure (m58) while the backward repeat is at m84.

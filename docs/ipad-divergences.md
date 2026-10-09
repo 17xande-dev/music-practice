@@ -35,9 +35,15 @@ means post-processing the walk, or building the timeline ourselves, rather than 
 - [x] **`tempo="0"`** (OSMD 2.2.0 gives 0, 2.1.3 gave 60): done for zero. `buildScore` ignores a zero BPM and
   keeps the current tempo, like ScoreKit. **An invalid `tempo="fast"` still resets to 100** in the walk
   and cannot be told from a real 100 (open). Fixture: `sound-decimal-tempo`.
-- [ ] **A `<metronome>` and a `<sound tempo>` in one direction** (new in 2.2.0): OSMD now takes the
-  `<sound>` value (120), ScoreKit the metronome (80). Decide which is right. Fixture:
-  `sound-and-metronome-differ`.
+- [x] **A `<metronome>` and a `<sound tempo>` in one direction**: OSMD 2.2.0 takes the `<sound>` value (120),
+  as the MusicXML spec says. Decided 2026-10-09: ScoreKit (`TempoMap`) does the same, so the web and the iPad
+  agree; no divergence left. Fixture: `sound-and-metronome-differ`. (`Metronome.quarterBPM` stays for display.)
+- [ ] **Tempo words (`Largo`, `Allegro`, ...) set a tempo in OSMD** (Largo 52, Allegro 130) when there is no
+  metronome mark or `<sound tempo>`. ScoreKit treats them as display only (default 100). Decide whether the iPad
+  should port OSMD's table. Fixture: `lilypond-21d-Chords-SchubertStabatMater`.
+- [ ] **Ties are paired across measures when the start is written after the stop in the file** (Stanford
+  "Sou'wester"): OSMD joins the start in bar 1 to the stop in bar 3. Fix: pair in time order within the measure.
+  Fixture: `openscore-stanford-sou-wester`. Also see `upstream-bugs.md` (Boulanger bar 11 beat drift).
 - [ ] **Ties are resolved in score order, not playback order.** A tie before `:|`
   claims the note after the volta, and a tie into ending 2 is lost. Fix: resolve ties
   over the unrolled sequence (a tie only joins the next played measure).
