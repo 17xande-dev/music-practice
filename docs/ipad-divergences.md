@@ -58,41 +58,20 @@ means post-processing the walk, or building the timeline ourselves, rather than 
 
 ## Songs page behaviour (`frontend/songs.ts`, `frontend/lib/score.ts`)
 
-- [ ] **A measure range inside a repeated section plays every pass with dead time between them.**
-  `practiceSteps` filters by written measure number, so range 9–9 in the Minuet plays
-  m9, about 15 silent measures (with metronome clicks), then m9 again. iPad: a range
-  plays each selected measure once, continuously, using the first pass. The whole piece keeps
-  its repeats. Per-measure stats still key on the written measure.
-- [ ] **Metronome in Listen mode.** The web forces it off and hides the checkbox. iPad:
-  Listen follows the user's metronome option.
-- [ ] **Tap to seek during a repeat goes to the first pass** (`findIndex`). iPad: picks
-  the pass nearest the current step, so a tap stays in the current pass.
-- [ ] **Tap to seek on a rest, on a note of the hand not being practised, or on a
-  tie-only position goes to step 0.** `stepOfRef`'s fallback searches `p.events`
-  again, so it is dead code. iPad: seeks to the first step at or after the note's beat
-  (`stepOfRef` + `stepOfPosition`).
-- [ ] **Changing tempo while playing resets to step 0** (`rebuild()` → `reset()`).
-  iPad: Listen, Learn and Notes continue from the current step at the new tempo. In Tempo
-  and Rubato modes a tempo change starts a fresh run from the current step, with a new
-  count-in, so a saved session always has one tempo. In Tempo mode, toggling the metronome
-  or the other hand mid-run replays from the current step with a count-in and keeps the
-  grades so far.
+Done 2026-10-09 (this section's items were fixed on the web and are removed): a measure range plays
+one pass continuously (`practiceSteps` first pass + `spans`); Listen follows the metronome option;
+tap to seek picks the pass nearest the current step and maps other-hand, tie-only and out-of-range
+notes to the step at their beat (`stepOfRef`; repeat passes share one `ref` in `ScoreView.walk`); a
+tempo change continues Listen and restarts Tempo/Rubato from the current step (`tempoChange`); a seek
+after a finished run starts fresh; a Tempo run ends once the audio has played out (`tempoRunOver`);
+the range is remembered per song (`Settings.songRanges`, not exported, dropped with the song); the
+results heat map also tints the score (`ScoreView.setHeat`). Parity fixtures regenerated: `m2-3` now
+plays one pass, with `spans` (see the fixtures README), so the iPad's "known divergence" for ranges
+in `SongParityTests` / `TimelineParityTests` can go.
 
-- [ ] **Seeking after a finished Learn/Notes run keeps the old run.** The web never
-  sets `phase = "done"` in wait modes, so a prev/next measure or tap after finishing
-  keeps `attempted` and the marks, and the next `finishRun` saves a second, inflated
-  session merging both runs. iPad: a seek after a finished run clears it and starts
-  fresh. The results card can also be dismissed.
-- [ ] **A Tempo run ends when the last timing window closes and cuts off the sound**
-  (`e.done` → `player.stop()`), so a long final note or held accompaniment chord is
-  clipped. iPad: the run ends once the last window has closed and the audio has played
-  out, so the results card appears after the final note finishes sounding.
-
-- [ ] **The practice range resets to the whole piece every time a song opens.** iPad:
-  the from/to range is remembered per song under an iPad-only key, so it isn't in the
-  export. "Whole piece" clears it, and deleting the song drops it.
-- [ ] **After a run the heat map only appears in the results card.** iPad: each measure on
-  the score is also tinted with its heat colour until the results clear.
+Left, not needed on the web: tap-to-seek on a *rest* (the web's tap picks the nearest note, so a rest
+is never the target; `stepOfPosition` has no use here), and "toggling the metronome or the other hand
+mid-run in Tempo mode replays with a count-in" (not in this batch; the web applies them at the next Play).
 
 ## Shared quirks to fix in both apps
 
@@ -104,11 +83,10 @@ means post-processing the walk, or building the timeline ourselves, rather than 
 
 ## Library limitations (OSMD / VexFlow), to fix in both apps
 
-- [ ] **Measure numbers are OSMD's `CurrentMeasureIndex + 1`, not the printed numbers**
-  (`score_walk.ts`). In a piece with a pickup (printed m0) or non-sequential numbering,
-  the heat cells, "Practise measure N" and the range pickers are off by one from the score.
-  Keep the stored index for export compatibility, but label measures with the printed
-  `<measure number>`. The iPad does this where ScoreKit exposes the number.
+- [x] **Measure numbers** are labelled with the printed `<measure number>` (pickup = 0) in the heat
+  cells, "Practise measure N", the range pickers (now selects) and the status line; `RawEntry.printed`
+  from OSMD's `getPrintedMeasureNumber()`, `Score.printed`, `measureLabel`. The stored measure stays the
+  written index (sessions, export).
 
 ## Not divergences, but worth knowing
 
