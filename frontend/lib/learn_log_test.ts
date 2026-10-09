@@ -37,6 +37,18 @@ Deno.test("the clock counts gaps between notes, capping long pauses", () => {
   assertEquals(c.ms, 2000 + IDLE_CAP_MS + 500);
 });
 
+Deno.test("a single note, or notes at one instant, is not worth logging", () => {
+  const c = new LearnClock();
+  assertEquals(c.worthLogging, false);
+  c.note(1000);
+  assertEquals(c.started, true);
+  assertEquals(c.worthLogging, false);
+  c.note(1000);
+  assertEquals(c.worthLogging, false);
+  c.note(1400);
+  assertEquals(c.worthLogging, true);
+});
+
 Deno.test("stumbles: measures with the most unclean steps, in measure order", () => {
   const ms = stumbleMeasures([
     learn({ measures: [{ measure: 1, steps: 4, clean: 4 }, { measure: 2, steps: 4, clean: 1 }] }),

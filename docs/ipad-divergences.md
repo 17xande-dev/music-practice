@@ -75,11 +75,15 @@ mid-run in Tempo mode replays with a count-in" (not in this batch; the web appli
 
 ## Shared quirks to fix in both apps
 
-- [ ] **Accompaniment in wait modes only sounds other-hand notes that coincide with a
-  practised step** (`beat - from < 0.01`). Notes between steps, or under a rest in the
-  practised hand, never sound, even though the comment says "up to the next step".
-- [ ] **A note followed by an immediate reset logs a 0 ms Learn entry.** Drop
-  `ms == 0` entries.
+- [ ] **Accompaniment in wait modes only sounded other-hand notes that coincide with a
+  practised step.** Fixed on the web: `accompanyNotes` (`frontend/lib/song_player.ts`)
+  returns every other-hand note in [beat(k), beat(k+1)) with a `delay`, scaled to the run
+  tempo (gaps between spans closed up via `runMs`; step 0 also takes the lead-in from
+  `startBeat`; the last step runs to the end); `SongPlayer.playNow` schedules by `delay`.
+  Pending on the iPad.
+- [ ] **A note followed by an immediate reset logged a 0 ms Learn entry.** Fixed on the web:
+  `LearnClock.worthLogging` (`frontend/lib/learn_log.ts`, `ms > 0`) guards `logLearn` in
+  `practice.ts` and `songs.ts`. Pending on the iPad.
 
 ## Library limitations (OSMD / VexFlow), to fix in both apps
 

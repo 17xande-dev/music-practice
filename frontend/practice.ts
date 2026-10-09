@@ -670,7 +670,7 @@ function stat(label: string, value: string): HTMLDivElement {
  * played when it is restarted, changed or left. Nothing if no note was played.
  */
 function logLearn(complete: boolean): number {
-  if (!clock.started || !(engine instanceof NotesEngine)) return 0;
+  if (!clock.worthLogging || !(engine instanceof NotesEngine)) return 0;
   const ms = clock.ms;
   clock = new LearnClock();
   store.addLearn({

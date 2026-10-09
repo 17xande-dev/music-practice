@@ -55,7 +55,7 @@ import {
 } from "./lib/song_library.ts";
 import { runFinished, tempoChange, tempoRunOver } from "./lib/song_rules.ts";
 import { starterId, starterSlugForFile } from "./lib/starters.ts";
-import { playPlan, SongPlayer } from "./lib/song_player.ts";
+import { accompanyNotes, playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
 
@@ -923,15 +923,9 @@ function handleNote(ev: NoteEvent) {
  */
 function accompanyStep(i: number) {
   if (!song || !practice || !ui.accompany.checked || ui.hands.value === "both") return;
-  const from = practice.beats[i];
-  const to = practice.beats[i + 1] ?? Infinity;
   // Rubato: at the player's own tempo, as far as it's known.
   const ratio = engine instanceof RubatoEngine ? engine.ratioBefore(i - offset + 1) ?? 1 : 1;
-  const bpm = bpmAt(song.score.tempo, from) / ratio;
-  const notes = practice.accompaniment
-    .filter((n) => n.beat >= from && n.beat < to && n.beat - from < 0.01)
-    .map((n) => ({ midi: n.midi, dur: (n.quarters * 60000) / bpm }));
-  void player.playNow(notes);
+  void player.playNow(accompanyNotes(song.score, practice, i, ratio));
 }
 
 const qwertyHeld = new Map<string, number[]>();
@@ -1080,9 +1074,9 @@ function finishRun() {
  */
 function logLearn(complete: boolean): number {
   const ms = clock.ms;
-  const started = clock.started;
+  const worth = clock.worthLogging;
   clock = new LearnClock();
-  if (!started || !song?.meta || !practice?.steps.length) return ms;
+  if (!worth || !song?.meta || !practice?.steps.length) return ms;
   // Every step played since the reset, with the segment in progress.
   const played = new Map(attempted);
   engine?.results.forEach((r, j) => {

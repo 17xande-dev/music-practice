@@ -8,7 +8,7 @@
 // in a loop rather than all at once.
 
 import { audioToPerf } from "./metronome.ts";
-import { msAt, type Practice, runMs, type Score } from "./score.ts";
+import { bpmAt, msAt, type Practice, runMs, type Score } from "./score.ts";
 
 export interface PlayNote {
   /** ms after the selection starts. */
@@ -69,6 +69,32 @@ export function playPlan(
   return { countIn, clicks, notes, end: at(lastBeat) };
 }
 
+/**
+ * Wait mode with the other hand played for you: what to sound when step i is
+ * completed. Every other-hand note from step i up to the next step, `delay` ms
+ * after, at the marked tempo slowed by `ratio` (the player's own tempo). The
+ * first step also takes the notes before it, timed from the selection's start.
+ * Gaps between spans are closed up, as in a run.
+ */
+export function accompanyNotes(
+  score: Score,
+  p: Practice,
+  i: number,
+  ratio = 1,
+): { midi: number; dur: number; delay: number }[] {
+  const from = i === 0 ? p.startBeat : p.beats[i];
+  const to = p.beats[i + 1] ?? Infinity;
+  const bpm = bpmAt(score.tempo, from) / ratio;
+  const t0 = runMs(score.tempo, p, from);
+  return p.accompaniment
+    .filter((n) => n.beat >= from - 1e-9 && n.beat < to - 1e-9)
+    .map((n) => ({
+      midi: n.midi,
+      dur: (n.quarters * 60000) / bpm,
+      delay: (runMs(score.tempo, p, n.beat) - t0) * ratio,
+    }));
+}
+
 const LOOKAHEAD_S = 0.6;
 const TICK_MS = 100;
 
@@ -121,14 +147,14 @@ export class SongPlayer {
    * Sound notes now, outside any plan: wait mode plays the other hand as
    * each step is completed. Not silenced by stop(), so a chord rings out.
    */
-  async playNow(notes: readonly { midi: number; dur: number }[]) {
+  async playNow(notes: readonly { midi: number; dur: number; delay?: number }[]) {
     if (!notes.length) return;
     this.ctx ??= new AudioContext({ latencyHint: "interactive" });
     if (this.ctx.state === "suspended") await this.ctx.resume();
     const out = this.ctx.createGain();
     out.connect(this.ctx.destination);
     const at = this.ctx.currentTime + 0.01;
-    for (const n of notes) this.tone(at, n.midi, n.dur / 1000, out);
+    for (const n of notes) this.tone(at + (n.delay ?? 0) / 1000, n.midi, n.dur / 1000, out);
   }
 
   /**

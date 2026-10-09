@@ -106,6 +106,11 @@ export class LearnClock {
     return this.last !== null;
   }
 
+  /** Worth logging: time has passed since the first note (a note, then a reset, is not). */
+  get worthLogging(): boolean {
+    return this.ms > 0;
+  }
+
   get ms(): number {
     return Math.round(this.total);
   }
