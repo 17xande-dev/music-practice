@@ -71,6 +71,12 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   clipped. iPad: the run ends once the last window has closed and the audio has played
   out, so the results card appears after the final note finishes sounding.
 
+- [ ] **The practice range resets to the whole piece every time a song opens.** iPad:
+  the from/to range is remembered per song under an iPad-only key, so it isn't in the
+  export. "Whole piece" clears it, and deleting the song drops it.
+- [ ] **After a run the heat map only appears in the results card.** iPad: each measure on
+  the score is also tinted with its heat colour until the results clear.
+
 ## Shared quirks to fix in both apps
 
 - [ ] **Accompaniment in wait modes only sounds other-hand notes that coincide with a
@@ -79,9 +85,18 @@ means post-processing the walk, or building the timeline ourselves, rather than 
 - [ ] **A note followed by an immediate reset logs a 0 ms Learn entry.** Drop
   `ms == 0` entries.
 
+## Library limitations (OSMD / VexFlow), to fix in both apps
+
+- [ ] **Measure numbers are OSMD's `CurrentMeasureIndex + 1`, not the printed numbers**
+  (`score_walk.ts`). In a piece with a pickup (printed m0) or non-sequential numbering,
+  the heat cells, "Practise measure N" and the range pickers are off by one from the score.
+  Keep the stored index for export compatibility, but label measures with the printed
+  `<measure number>`. The iPad does this where ScoreKit exposes the number.
+
 ## Not divergences, but worth knowing
 
 - The cursor band is centred on the notehead on iPad. The web's band starts 1.5 units
   left of the staff entry, as OSMD places it.
 - ScoreKit draws the line view without a sticky clef or key signature, as the web
   does. It's on the iPad polish backlog.
+- The iPad reopens on the last page and song (UserDefaults); the web uses its URL.
