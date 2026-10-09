@@ -1,0 +1,588 @@
+{
+ "source": "23a-Tuplets.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0.6666666666666666,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 62,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1.3333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 64,
+     "spelled": {
+      "letter": "E",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 2.6666666666666665,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 3.3333333333333335,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 69,
+     "spelled": {
+      "letter": "A",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 4.666666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 5.333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 74,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 6,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 76,
+     "spelled": {
+      "letter": "E",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 6.5,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 77,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 7,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 79,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 7.5,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 81,
+     "spelled": {
+      "letter": "A",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 8,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 83,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.25
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 8.25,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 84,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 6
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.25
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 8.5,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 84,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 6
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.25
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 8.75,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 83,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.25
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 9,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 81,
+     "spelled": {
+      "letter": "A",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 9.428571428571429,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 79,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 9.857142857142858,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 77,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 10.285714285714285,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 76,
+     "spelled": {
+      "letter": "E",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 10.714285714285715,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 74,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 11.142857142857142,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 11.571428571428571,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.42857142857142855
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 12,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 69,
+     "spelled": {
+      "letter": "A",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 12.333333333333334,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 12.666666666666666,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 13,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 64,
+     "spelled": {
+      "letter": "E",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 13.333333333333334,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 62,
+     "spelled": {
+      "letter": "D",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 13.666666666666666,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  }
+ ]
+}

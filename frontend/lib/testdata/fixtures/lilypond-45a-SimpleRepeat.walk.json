@@ -1,0 +1,39 @@
+{
+ "source": "45a-SimpleRepeat.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 3,
+   "beat": 8,
+   "bpm": 100,
+   "notes": []
+  }
+ ]
+}

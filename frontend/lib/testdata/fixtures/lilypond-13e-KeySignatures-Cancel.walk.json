@@ -1,0 +1,113 @@
+{
+ "source": "13e-KeySignatures-Cancel.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 4,
+   "occurrence": 4,
+   "beat": 6,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  },
+  {
+   "measure": 5,
+   "occurrence": 5,
+   "beat": 8,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 2
+    }
+   ]
+  }
+ ]
+}

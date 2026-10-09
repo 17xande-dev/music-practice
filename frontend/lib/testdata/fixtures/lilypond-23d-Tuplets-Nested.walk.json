@@ -1,0 +1,512 @@
+{
+ "source": "23d-Tuplets-Nested.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0.3333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0.6666666666666666,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0.8,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0.9333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1.0666666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1.2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1.3333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1.6666666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2.1333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2.2666666666666666,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2.4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2.533333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 2.6666666666666665,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.3333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3.3333333333333335,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3.466666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3.6,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3.7333333333333334,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 3.8666666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.13333333333333333
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 71,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 4.666666666666667,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 60,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.6666666666666666
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 5.333333333333333,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 55,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 3
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.2222222222222222
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 5.555555555555555,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 55,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 3
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.2222222222222222
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 5.777777777777778,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 55,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 3
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.2222222222222222
+    }
+   ]
+  }
+ ]
+}

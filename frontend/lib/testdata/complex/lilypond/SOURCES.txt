@@ -1,0 +1,3 @@
+Selected files from the LilyPond unofficial MusicXML test suite (MIT, see LICENSE):
+https://github.com/lilypond/lilypond/tree/master/input/regression/musicxml
+Each .mxl is the original .xml, zipped with a container.xml by Scripts/make-lilypond-fixtures.sh.

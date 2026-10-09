@@ -30,7 +30,8 @@ import { walkCursor } from "../frontend/lib/score_walk.ts";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const OUT = `${ROOT}frontend/lib/testdata/fixtures`;
-const INPUTS = [
+type Input = { dir: string; file: string; prefix?: string };
+const INPUTS: Input[] = [
   ...[...Deno.readDirSync(`${ROOT}internal/handler/static/songs`)].map((e) => ({
     dir: `${ROOT}internal/handler/static/songs`,
     file: e.name,
@@ -39,6 +40,15 @@ const INPUTS = [
     dir: `${ROOT}frontend/lib/testdata/edge`,
     file: e.name,
   })),
+  // Larger real scores (OpenScore Lieder, CC0; LilyPond test suite, MIT): the
+  // same files ScoreKit tests against. Fixture names get the folder as prefix.
+  ...["openscore", "lilypond"].flatMap((sub) =>
+    [...Deno.readDirSync(`${ROOT}frontend/lib/testdata/complex/${sub}`)].map((e) => ({
+      dir: `${ROOT}frontend/lib/testdata/complex/${sub}`,
+      file: e.name,
+      prefix: `${sub}-`,
+    }))
+  ),
 ]
   .filter((f) => /\.(musicxml|mxl)$/.test(f.file))
   .sort((a, b) => a.file.localeCompare(b.file));
@@ -192,14 +202,41 @@ for (const e of Deno.readDirSync(OUT)) {
   if (/\.(walk|score)\.json$/.test(e.name)) Deno.removeSync(`${OUT}/${e.name}`);
 }
 const seen = new Set<string>();
+// Inputs OSMD is known to throw on: the failure is recorded as the fixture
+// (`<name>.walk.json` with an `error`, no `.score.json`); any other failure,
+// or a listed one that stops failing, aborts the run.
+const EXPECTED_ERRORS: Record<string, string> = {
+  // A trill whose wavy-line starts and stops on the same note (docs/upstream-bugs.md).
+  "openscore-grandval-les-clochettes": "start index of line is greater than the end index",
+  // VexFlow throws (not an Error) while drawing the key signatures.
+  "lilypond-13a-KeySignatures": "Bad key signature spec",
+  // OSMD cannot read the score (a part with no staves).
+  "lilypond-41h-TooManyParts": "could not be loaded",
+};
 for (const f of INPUTS) {
-  const name = f.file.replace(/\.(musicxml|mxl)$/, "");
-  const label = f.file.endsWith(".mxl") ? `${name}.mxl` : name;
-  const { parts, entries, title } = await walkFile(`${f.dir}/${f.file}`);
-  const walk = normalise(entries);
-  const fileName = f.file.endsWith(".mxl") ? `${name}-mxl` : name;
+  const isMxl = f.file.endsWith(".mxl");
+  const name = (f.prefix ?? "") + f.file.replace(/\.(musicxml|mxl)$/, "");
+  const label = isMxl ? `${name}.mxl` : name;
+  // Only the edge/starter .mxl is the zipped twin of a .musicxml; prefixed ones are alone.
+  const fileName = isMxl && !f.prefix ? `${name}-mxl` : name;
   if (seen.has(fileName)) throw new Error(`duplicate fixture name: ${fileName}`);
   seen.add(fileName);
+  let walked: Awaited<ReturnType<typeof walkFile>>;
+  try {
+    walked = await walkFile(`${f.dir}/${f.file}`);
+  } catch (e) {
+    const want = EXPECTED_ERRORS[fileName];
+    const msg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? String(e);
+    if (!want || !msg.includes(want)) throw e;
+    write(`${fileName}.walk.json`, { source: f.file, error: msg });
+    console.log(`${label}: expected error: ${msg}`);
+    continue;
+  }
+  if (EXPECTED_ERRORS[fileName]) {
+    throw new Error(`${fileName} no longer fails; update EXPECTED_ERRORS`);
+  }
+  const { parts, entries, title } = walked;
+  const walk = normalise(entries);
   write(`${fileName}.walk.json`, {
     source: f.file,
     title,

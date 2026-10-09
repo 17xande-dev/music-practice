@@ -1,0 +1,571 @@
+{
+ "score": {
+  "events": [],
+  "tempo": [
+   {
+    "beat": 0,
+    "bpm": 100
+   }
+  ],
+  "measures": [
+   1,
+   2,
+   3,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "measureCount": 8,
+  "twoHands": false
+ },
+ "practice": {
+  "both/all": {
+   "selection": {
+    "hands": "both"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "both/m2-3": {
+   "selection": {
+    "hands": "both",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "rh/all": {
+   "selection": {
+    "hands": "rh"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "rh/m2-3": {
+   "selection": {
+    "hands": "rh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/all": {
+   "selection": {
+    "hands": "lh"
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  },
+  "lh/m2-3": {
+   "selection": {
+    "hands": "lh",
+    "from": 2,
+    "to": 3
+   },
+   "steps": [],
+   "beats": [],
+   "eventIndices": [],
+   "accompaniment": [],
+   "all": [],
+   "startBeat": 0,
+   "measureStarts": [],
+   "offsets": {
+    "75": [],
+    "100": []
+   },
+   "plans": [
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -2400,
+       -1800,
+       -1200,
+       -600
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": true,
+      "notes": "other",
+      "countIn": true
+     },
+     "plan": {
+      "countIn": [
+       -3200,
+       -2400,
+       -1600,
+       -800
+      ],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 100,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    },
+    {
+     "opts": {
+      "pct": 75,
+      "metronome": false,
+      "notes": "all",
+      "countIn": false
+     },
+     "plan": {
+      "countIn": [],
+      "clicks": [],
+      "notes": [],
+      "end": 0
+     }
+    }
+   ],
+   "stats": [],
+   "weakest": {
+    "span2": null,
+    "span3": null
+   }
+  }
+ }
+}

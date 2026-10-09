@@ -1,0 +1,48 @@
+{
+ "source": "43a-PianoStaff.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 2
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 4
+    },
+    {
+     "midi": 47,
+     "spelled": {
+      "letter": "B",
+      "acc": 0,
+      "octave": 2
+     },
+     "staff": 1,
+     "tie": "none",
+     "quarters": 4
+    }
+   ]
+  }
+ ]
+}

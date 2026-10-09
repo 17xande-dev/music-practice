@@ -7,7 +7,7 @@ When one is done, also update the parity fixtures
 (`deno task score-fixtures`) and remove the matching "known divergence" from
 ScoreKit's `TimelineParityTests` / MusicCore's `SongParityTests`.
 
-## Playback order and tempo (OSMD 2.1.3 bugs)
+## Playback order and tempo (OSMD bugs; the web is on 2.2.0)
 
 The web gets these from OSMD's cursor walk (`frontend/lib/score_walk.ts`). Fixing them
 means post-processing the walk, or building the timeline ourselves, rather than trusting
@@ -26,12 +26,18 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   `ending-text-digits-swapped`.
 - [ ] **A hidden ending (`print-object="no"`) is skipped entirely.** Fix: it still plays;
   only the bracket is hidden. Fixture: `ending-print-object-no`.
-- [ ] **Tempo `<offset>`.** A direction's offset applies only at a measure start, and a
+- [x] **Tempo `<offset>`.** Fixed by OSMD 2.2.0, which now matches ScoreKit (offset ignored without
+  `sound="yes"`, tempo at the direction's own position): remove the divergence on the Swift side.
+  (Original problem: A direction's offset applies only at a measure start, and a
   mid-measure tempo with an offset never takes effect. Fix: follow the MusicXML spec. A
   direction's `<offset>` affects playback only with `sound="yes"`; `<sound><offset>`
-  always does. Fixtures: `tempo-offset`, `tempo-offset-mid-measure`.
-- [ ] **An invalid `tempo="fast"` resets to 100, and `tempo="0"` gives 60.** Fix:
-  ignore invalid or zero values and keep the current tempo. Fixture: `sound-decimal-tempo`.
+  always does.) Fixtures: `tempo-offset`, `tempo-offset-mid-measure`.
+- [x] **`tempo="0"`** (OSMD 2.2.0 gives 0, 2.1.3 gave 60): done for zero. `buildScore` ignores a zero BPM and
+  keeps the current tempo, like ScoreKit. **An invalid `tempo="fast"` still resets to 100** in the walk
+  and cannot be told from a real 100 (open). Fixture: `sound-decimal-tempo`.
+- [ ] **A `<metronome>` and a `<sound tempo>` in one direction** (new in 2.2.0): OSMD now takes the
+  `<sound>` value (120), ScoreKit the metronome (80). Decide which is right. Fixture:
+  `sound-and-metronome-differ`.
 - [ ] **Ties are resolved in score order, not playback order.** A tie before `:|`
   claims the note after the volta, and a tie into ending 2 is lost. Fix: resolve ties
   over the unrolled sequence (a tie only joins the next played measure).

@@ -1,0 +1,56 @@
+{
+ "source": "33b-Spanners-Tie.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "start",
+     "quarters": 8
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "continue",
+     "quarters": 4
+    }
+   ]
+  }
+ ]
+}

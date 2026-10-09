@@ -1,0 +1,81 @@
+{
+ "source": "45d-Repeats-MultipleEndings.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 3,
+   "beat": 8,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 4,
+   "beat": 12,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 5,
+   "beat": 16,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 6,
+   "beat": 20,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 1,
+   "occurrence": 7,
+   "beat": 24,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 11,
+   "occurrence": 8,
+   "beat": 28,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 12,
+   "occurrence": 9,
+   "beat": 32,
+   "bpm": 100,
+   "notes": []
+  }
+ ]
+}

@@ -125,7 +125,9 @@ export function buildScore(entries: readonly RawEntry[]): Score {
 
   const tempo: TempoChange[] = [];
   for (const e of sorted) {
-    const bpm = e.bpm > 0 ? e.bpm : DEFAULT_BPM;
+    // OSMD 2.2.0 reports 0 for `<sound tempo="0">` (2.1.3 said 60); ignore it
+    // and keep the tempo in force (docs/upstream-bugs.md).
+    const bpm = e.bpm > 0 ? e.bpm : tempo.at(-1)?.bpm ?? DEFAULT_BPM;
     if (!tempo.length || tempo.at(-1)!.bpm !== bpm) tempo.push({ beat: e.beat, bpm });
   }
   if (!tempo.length) tempo.push({ beat: 0, bpm: DEFAULT_BPM });

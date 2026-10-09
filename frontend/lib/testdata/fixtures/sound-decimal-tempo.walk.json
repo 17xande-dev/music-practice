@@ -246,7 +246,7 @@
    "measure": 4,
    "occurrence": 4,
    "beat": 12,
-   "bpm": 60,
+   "bpm": 0,
    "notes": [
     {
      "midi": 60,
@@ -265,7 +265,7 @@
    "measure": 4,
    "occurrence": 4,
    "beat": 13,
-   "bpm": 60,
+   "bpm": 0,
    "notes": [
     {
      "midi": 62,
@@ -284,7 +284,7 @@
    "measure": 4,
    "occurrence": 4,
    "beat": 14,
-   "bpm": 60,
+   "bpm": 0,
    "notes": [
     {
      "midi": 64,
@@ -303,7 +303,7 @@
    "measure": 4,
    "occurrence": 4,
    "beat": 15,
-   "bpm": 60,
+   "bpm": 0,
    "notes": [
     {
      "midi": 65,

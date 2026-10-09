@@ -246,7 +246,7 @@
    "measure": 2,
    "occurrence": 2,
    "beat": 6,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 67,
@@ -265,7 +265,7 @@
    "measure": 2,
    "occurrence": 2,
    "beat": 6.5,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 69,
@@ -284,7 +284,7 @@
    "measure": 2,
    "occurrence": 2,
    "beat": 7,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 71,
@@ -303,7 +303,7 @@
    "measure": 2,
    "occurrence": 2,
    "beat": 7.5,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 72,
@@ -322,7 +322,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 8,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 60,
@@ -341,7 +341,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 8.5,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 62,
@@ -360,7 +360,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 9,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 64,
@@ -379,7 +379,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 9.5,
-   "bpm": 120,
+   "bpm": 60,
    "notes": [
     {
      "midi": 65,
@@ -398,7 +398,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 10,
-   "bpm": 120,
+   "bpm": 90,
    "notes": [
     {
      "midi": 67,
@@ -417,7 +417,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 10.5,
-   "bpm": 120,
+   "bpm": 90,
    "notes": [
     {
      "midi": 69,
@@ -436,7 +436,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 11,
-   "bpm": 120,
+   "bpm": 90,
    "notes": [
     {
      "midi": 71,
@@ -455,7 +455,7 @@
    "measure": 3,
    "occurrence": 3,
    "beat": 11.5,
-   "bpm": 120,
+   "bpm": 90,
    "notes": [
     {
      "midi": 72,

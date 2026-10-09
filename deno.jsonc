@@ -49,6 +49,6 @@
     // Song scores: renders MusicXML (and zipped .mxl) and walks it with a
     // cursor. BSD-3. Pinned exactly like VexFlow, for the same reason; it
     // carries its own VexFlow 1.x fork, used only on the songs page.
-    "opensheetmusicdisplay": "npm:opensheetmusicdisplay@2.1.3"
+    "opensheetmusicdisplay": "npm:opensheetmusicdisplay@2.2.0"
   }
 }

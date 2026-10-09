@@ -1,0 +1,157 @@
+{
+ "source": "21d-Chords-SchubertStabatMater.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 52,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 4
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 52,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1.5
+    },
+    {
+     "midi": 68,
+     "spelled": {
+      "letter": "A",
+      "acc": -1,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1.5
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 5.5,
+   "bpm": 52,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    },
+    {
+     "midi": 68,
+     "spelled": {
+      "letter": "A",
+      "acc": -1,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 0.5
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 6,
+   "bpm": 52,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    },
+    {
+     "midi": 70,
+     "spelled": {
+      "letter": "B",
+      "acc": -1,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 7,
+   "bpm": 52,
+   "notes": [
+    {
+     "midi": 67,
+     "spelled": {
+      "letter": "G",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    },
+    {
+     "midi": 70,
+     "spelled": {
+      "letter": "B",
+      "acc": -1,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  }
+ ]
+}

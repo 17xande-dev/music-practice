@@ -1,0 +1,116 @@
+{
+ "source": "45c-SimpleRepeat-Nested.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 8,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 2,
+   "occurrence": 4,
+   "beat": 12,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 3,
+   "occurrence": 5,
+   "beat": 16,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 4,
+   "occurrence": 6,
+   "beat": 20,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 5,
+   "occurrence": 7,
+   "beat": 24,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 6,
+   "occurrence": 8,
+   "beat": 28,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 7,
+   "occurrence": 9,
+   "beat": 32,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 4,
+   "occurrence": 10,
+   "beat": 36,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 5,
+   "occurrence": 11,
+   "beat": 40,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 6,
+   "occurrence": 12,
+   "beat": 44,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 7,
+   "occurrence": 13,
+   "beat": 48,
+   "bpm": 100,
+   "notes": []
+  },
+  {
+   "measure": 8,
+   "occurrence": 14,
+   "beat": 52,
+   "bpm": 100,
+   "notes": []
+  }
+ ]
+}

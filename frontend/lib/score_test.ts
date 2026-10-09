@@ -92,6 +92,11 @@ Deno.test("tempo map: a file without a tempo plays at 100 BPM", () => {
   assertEquals(msAt(s.tempo, 1), 600);
 });
 
+Deno.test('tempo map: a zero tempo (OSMD 2.2.0 for tempo="0") keeps the tempo in force', () => {
+  const s = buildScore([at(1, 0, [n(60)], 92), at(2, 4, [n(62)], 0), at(2, 5, [n(64)], 0)]);
+  assertEquals(s.tempo, [{ beat: 0, bpm: 92 }]);
+});
+
 Deno.test("selection: both hands grade chords; one hand leaves the other as accompaniment", () => {
   const s = buildScore(twoHandPiece());
   const both = practiceSteps(s, { hands: "both" });

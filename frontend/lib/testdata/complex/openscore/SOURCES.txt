@@ -1,0 +1,13 @@
+All five files: OpenScore Lieder corpus, https://github.com/OpenScore/Lieder (licence: CC0 1.0, see LICENSE in this folder).
+Each is the .mxl exported from the MuseScore transcription; path in the repo under scores/:
+boulanger-parfois-je-suis-triste.mxl  Boulanger,_Lili/Clairieres_dans_le_ciel/03_Parfois,_je_suis_triste/lc5855622.mxl
+schumann-widmung.mxl                  Schumann,_Robert/Myrthen,_Op.25/01_Widmung/lc6885211.mxl
+grandval-les-clochettes.mxl           Grandval,_Clemence_de/6_Nouvelles_melodies/1_Les_clochettes/lc6613355.mxl
+satie-je-te-veux.mxl                  Satie,_Erik/_/Je_te_veux/lc6986302.mxl
+stanford-sou-wester.mxl               Stanford,_Charles_Villiers/Songs_of_the_Fleet_(Piano),_Op.117/2_The_Song_of_The_Sou'wester/lc31208321.mxl
+
+Upstream commits (looked up 2026-10-09 with the GitHub API; repository HEAD was 38c5db510224d9facdc4b08d741fc788cfb58ea8):
+schumann-widmung.mxl    last commit touching the path: 9d9f38dffa1ff0307f149634b0184d13b10bb9c5 (2026-09-09)
+satie-je-te-veux.mxl    last commit touching the path: 40d212cea9f858c4e83e8bfa46ce729ef939606a (2025-09-03)
+The other three paths returned no commit from the API; their exact upstream commit is not recorded.
+These hashes are the latest change to each path, not necessarily the revision the fixture was copied from.

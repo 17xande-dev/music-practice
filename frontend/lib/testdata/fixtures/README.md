@@ -9,10 +9,21 @@ in `../edge/` (each 2-4 measures; `ode-to-joy.mxl` is a zip of the starter with
 `META-INF/container.xml`, written to `ode-to-joy-mxl.*.json`). Source commit: record the web repo's
 HEAD when copying these into the Swift repos.
 
+Also the larger real scores in `../complex/` (the same files as ScoreKit's
+`Tests/ScoreKitTests/Fixtures/complex/`, with their LICENSE and SOURCES.txt): five OpenScore Lieder
+(CC0) and 20 LilyPond test-suite files (MIT), written to `openscore-<name>.*` and `lilypond-<name>.*`.
+OSMD cannot walk three of them; the generator records that instead of failing
+(`EXPECTED_ERRORS` in tools/score_fixtures.ts): the `<name>.walk.json` has `{source, error}` and
+there is no `.score.json`. They are `openscore-grandval-les-clochettes` (a trill whose `wavy-line`
+starts and stops on one note; still throws on 2.2.0), `lilypond-13a-KeySignatures` (VexFlow
+"Bad key signature spec") and `lilypond-41h-TooManyParts` (OSMD cannot load it). Known wrong walk:
+`openscore-satie-je-te-veux` is 1-78 6-35 38-110 where 1-37 47-78 6-35 38-39 79-110 6-35 40-46 is
+intended (docs/upstream-bugs.md).
+
 ## `<name>.walk.json`
 
 What `walkCursor` (frontend/lib/score_walk.ts, the loop `ScoreView.walk` runs in the browser)
-returns for OSMD 2.1.3:
+returns for OSMD 2.2.0:
 
 - `parts`: OSMD's instruments, `{name, staves}`; `chosen`: `chooseParts(parts)`.
 - `entries`: `RawEntry[]` in cursor order, repeats played out. The `ref` of each note is removed.
@@ -46,7 +57,7 @@ practice's steps) only:
 | `wrong`  | `[60]` if `i % 4 == 2`, else `[]`                              |
 | `grade`  | `"early"` if `i % 6 == 0`, `"late"` if `i % 6 == 4`, else null |
 
-## OSMD behaviours seen (2.1.3, headless under jsdom)
+## OSMD behaviours seen (2.1.3, headless under jsdom; re-run on 2.2.0, differences noted)
 
 - **No tempo anywhere** (`no-tempo`): `CurrentBpm` is 100 (OSMD's default). `DEFAULT_BPM` in
   score.ts is also 100, so the fallback never triggers from the walk.
@@ -88,6 +99,13 @@ practice's steps) only:
 - The `.mxl` yields the same walk as its `.musicxml`.
 
 ## OSMD probes (claims from reading the minified source, checked against the walks)
+
+Written against 2.1.3. On 2.2.0 (fixtures regenerated 2026-10-09) three results changed: probe 1
+(a direction's `<offset>` is now ignored, mid-measure directions apply at their own position,
+matching the spec: `tempo-offset` 120/60 at beat 2/90 at beat 8; `tempo-offset-mid-measure` 60 at
+beat 6, 90 at beat 10); probe 3 (`<sound tempo>` now wins over the metronome: 120, not 80); probe 4
+(`tempo="0"` gives 0, not 60; `score.ts` ignores it, so the score keeps 92). The endings probe
+`ending-text-digits-swapped` now plays once (1 2 1 2 3 4) instead of twice. All else is unchanged.
 
 Each is one edge file; "confirmed" and "refuted" refer to the claim as it was put to us.
 

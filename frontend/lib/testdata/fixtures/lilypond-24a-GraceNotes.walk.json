@@ -1,0 +1,245 @@
+{
+ "source": "24a-GraceNotes.mxl",
+ "title": "Untitled Score",
+ "parts": [
+  {
+   "name": "MusicXML Part",
+   "staves": 1
+  }
+ ],
+ "chosen": [
+  {
+   "part": 0,
+   "staffOffset": 0
+  }
+ ],
+ "entries": [
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 0,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 1,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 2,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 1,
+   "occurrence": 1,
+   "beat": 3,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 4,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 5,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 6,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 2,
+   "occurrence": 2,
+   "beat": 7,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 8,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 65,
+     "spelled": {
+      "letter": "F",
+      "acc": 0,
+      "octave": 4
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    },
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 9,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 10,
+   "bpm": 100,
+   "notes": [
+    {
+     "midi": 72,
+     "spelled": {
+      "letter": "C",
+      "acc": 0,
+      "octave": 5
+     },
+     "staff": 0,
+     "tie": "none",
+     "quarters": 1
+    }
+   ]
+  },
+  {
+   "measure": 3,
+   "occurrence": 3,
+   "beat": 11,
+   "bpm": 100,
+   "notes": []
+  }
+ ]
+}
