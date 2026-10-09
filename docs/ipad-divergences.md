@@ -61,7 +61,6 @@ means post-processing the walk, or building the timeline ourselves, rather than 
   or the other hand mid-run replays from the current step with a count-in and keeps the
   grades so far.
 
-
 - [ ] **Seeking after a finished Learn/Notes run keeps the old run.** The web never
   sets `phase = "done"` in wait modes, so a prev/next measure or tap after finishing
   keeps `attempted` and the marks, and the next `finishRun` saves a second, inflated
