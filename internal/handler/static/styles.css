@@ -951,7 +951,7 @@ label.button { display: inline-flex; align-items: center; }
   align-items: center;
   gap: var(--gap-xs);
 
-  input { width: 4.5rem; }
+  select { width: auto; min-width: 4.5rem; }
   span { color: var(--ink-soft); font-size: var(--small); }
 }
 
@@ -1282,6 +1282,14 @@ body.song-big { overflow: hidden; }
 .song.big:fullscreen { background: var(--paper); }
 
 /* Gliding with the music: moved every frame, so no transition. */
+/* The results' heat map, tinted behind each measure of the score (ScoreView.setHeat). */
+.score-page .heat-tint { fill-opacity: 0.22; pointer-events: none; }
+.score-page .heat-tint.level-4 { fill: var(--ok); }
+.score-page .heat-tint.level-3 { fill: color-mix(in oklab, var(--ok), var(--warn) 45%); }
+.score-page .heat-tint.level-2 { fill: var(--warn); }
+.score-page .heat-tint.level-1 { fill: color-mix(in oklab, var(--warn), var(--bad) 55%); }
+.score-page .heat-tint.level-0 { fill: var(--bad); }
+
 .score-cursor.gliding { transition: none; }
 
 /* Rubato's leeway slider, with its value beside the label. */

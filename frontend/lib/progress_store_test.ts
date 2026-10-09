@@ -9,6 +9,7 @@ import {
   SESSIONS_KEY,
   SETTINGS_KEY,
   validSession,
+  validSettings,
 } from "./progress_store.ts";
 import {
   betterSong,
@@ -495,4 +496,35 @@ Deno.test("findProblems describes what's bad and only deletes when asked", async
   assertFalse(fs.data.has(SESSIONS_KEY));
   assertEquals(JSON.parse(fs.data.get(SETTINGS_KEY)!), {});
   assertEquals(removed, ["lib"]);
+});
+
+Deno.test("song ranges: remembered per song, validated, forgotten with the song, not exported", () => {
+  const store = new ProgressStore(new FakeStorage());
+  assertEquals(store.songRange("a"), undefined);
+  store.setSongRange("a", { from: 9, to: 12 });
+  store.setSongRange("b", { from: 2, to: 2 });
+  assertEquals(store.songRange("a"), { from: 9, to: 12 });
+  assertEquals(store.songRange("b"), { from: 2, to: 2 });
+  store.setSongRange("a", null); // "whole piece" forgets it
+  assertEquals(store.songRange("a"), undefined);
+  assertEquals(store.songRange("b"), { from: 2, to: 2 });
+  store.removeSong("b"); // deleting the song drops it
+  assertEquals(store.songRange("b"), undefined);
+  // Other settings are kept alongside.
+  store.saveSettings({ songZoom: 1.2 });
+  store.setSongRange("c", { from: 1, to: 4 });
+  assertEquals(store.settings().songZoom, 1.2);
+  assert(!store.exportJSON().includes("songRanges"));
+  // Nonsense entries are dropped.
+  assertEquals(
+    validSettings({
+      songRanges: {
+        ok: { from: 1, to: 3 },
+        bad: { from: 5, to: 2 },
+        z: { from: 0, to: 1 },
+        s: "x",
+      },
+    }),
+    { songRanges: { ok: { from: 1, to: 3 } } },
+  );
 });

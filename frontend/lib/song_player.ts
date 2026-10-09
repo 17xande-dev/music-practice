@@ -8,7 +8,7 @@
 // in a loop rather than all at once.
 
 import { audioToPerf } from "./metronome.ts";
-import { msAt, type Practice, type Score } from "./score.ts";
+import { msAt, type Practice, runMs, type Score } from "./score.ts";
 
 export interface PlayNote {
   /** ms after the selection starts. */
@@ -38,8 +38,7 @@ export function playPlan(
   p: Practice,
   opts: { pct: number; metronome: boolean; notes: "none" | "other" | "all"; countIn: boolean },
 ): PlayPlan {
-  const t0 = msAt(score.tempo, p.startBeat, opts.pct);
-  const at = (beat: number) => msAt(score.tempo, beat, opts.pct) - t0;
+  const at = (beat: number) => runMs(score.tempo, p, beat, opts.pct);
   const source = opts.notes === "all" ? p.all : opts.notes === "other" ? p.accompaniment : [];
   const notes = source.map((n) => ({
     at: at(n.beat),
@@ -53,9 +52,17 @@ export function playPlan(
   );
   const clicks: number[] = [];
   if (opts.metronome) {
-    for (let b = Math.ceil(p.startBeat - 1e-9); b < lastBeat - 1e-9; b++) clicks.push(at(b));
+    // A click on every beat of each run of the selection; the gaps between
+    // runs have none, so there is no dead time.
+    const runs = p.spans.length ? p.spans : [{ from: p.startBeat, to: Infinity }];
+    for (const run of runs) {
+      const stop = Math.min(run.to, lastBeat);
+      for (let b = Math.ceil(run.from - 1e-9); b < stop - 1e-9; b++) clicks.push(at(b));
+    }
   }
-  const beatMs = at(p.startBeat + 1);
+  // The beat's length on the tempo map, not on the run clock (which clamps at a span's end).
+  const beatMs = msAt(score.tempo, p.startBeat + 1, opts.pct) -
+    msAt(score.tempo, p.startBeat, opts.pct);
   const countIn = opts.countIn
     ? Array.from({ length: COUNT_IN_BEATS }, (_, k) => (k - COUNT_IN_BEATS) * beatMs)
     : [];

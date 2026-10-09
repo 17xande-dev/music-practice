@@ -1,16 +1,22 @@
 import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 import { NotesEngine, TempoEngine } from "./engine.ts";
+import { playPlan } from "./song_player.ts";
 import {
   bpmAt,
   buildScore,
   chooseParts,
+  heatLevel,
+  measureLabel,
   measureStarts,
   measureStats,
   msAt,
+  nearestStep,
   practiceSteps,
   type RawEntry,
   type RawNote,
+  runMs,
   sliceFrom,
+  stepCandidates,
   stepFromMeasure,
   stepOffsets,
   stepOfRef,
@@ -149,7 +155,9 @@ Deno.test("selection: repeats play measures twice, in order", () => {
     at(2, 8, [n(62)], 120, 3),
   ]);
   assertEquals(s.measures, [1, 1, 2]);
-  assertEquals(practiceSteps(s, { hands: "both", from: 1, to: 1 }).steps.length, 2);
+  // A range plays each measure once; the whole piece keeps both passes.
+  assertEquals(practiceSteps(s, { hands: "both", from: 1, to: 1 }).steps.length, 1);
+  assertEquals(practiceSteps(s, { hands: "both", from: 1, to: 2 }).steps.length, 3);
 });
 
 Deno.test("the engines grade a song selection end to end", () => {
@@ -234,11 +242,134 @@ Deno.test("seeking: a clicked note maps to its step, slices time from there", ()
   const s = buildScore(twoHandPiece());
   const p = practiceSteps(s, { hands: "rh" });
   const lhRef = s.events[4].notes.find((x) => x.hand === "lh")!.ref; // under the G at beat 4
-  assertEquals(stepOfRef(p, p.events[2].notes[0].ref), 2);
-  assertEquals(stepOfRef(p, lhRef), 4); // not graded for RH: the step at its beat
+  assertEquals(stepOfRef(s, p, p.events[2].notes[0].ref), 2);
+  assertEquals(stepOfRef(s, p, lhRef), 4); // not graded for RH: the step at its beat
   const tail = sliceFrom(p, 4);
   assertEquals(tail.steps.map((x) => x.index), [0, 1]);
   assertEquals(tail.startBeat, 4);
   assertEquals(stepOffsets(s, tail), [0, 1000]);
   assertEquals(tail.accompaniment.map((a) => a.midi), [43]);
+});
+
+// |: m1 m2 :| m3 | m4, played out: m1 m2 m1 m2 m3 m4. One note a measure, 4 quarters
+// long, at 120 BPM (2 s a measure); beats 0 4 8 12 16 20. Refs are shared by
+// the passes, as ScoreView.walk gives them.
+function repeated() {
+  const r = [0, 1, 2, 3].map(() => n(60));
+  const e = (m: number, beat: number, occ: number, k: number) =>
+    at(m, beat, [{ ...r[k], midi: 60 + k, quarters: 4, ref: 100 + k }], 120, occ);
+  return buildScore([
+    e(1, 0, 1, 0),
+    e(2, 4, 2, 1),
+    e(1, 8, 3, 0),
+    e(2, 12, 4, 1),
+    e(3, 16, 5, 2),
+    e(4, 20, 6, 3),
+  ]);
+}
+
+Deno.test("range: a measure inside a repeat plays its first pass only, with no dead time", () => {
+  const s = repeated();
+  const p = practiceSteps(s, { hands: "both", from: 2, to: 2 });
+  assertEquals(p.beats, [4]);
+  assertEquals(p.spans, []);
+  const q = practiceSteps(s, { hands: "both", from: 1, to: 2 });
+  assertEquals(q.beats, [0, 4]); // not 0 4 8 12
+  assertEquals(stepOffsets(s, q), [0, 2000]);
+  const plan = playPlan(s, q, { pct: 100, metronome: true, notes: "all", countIn: false });
+  assertEquals(plan.clicks.length, 8); // a click on each of 8 beats
+  assertEquals(plan.end, 4000);
+});
+
+Deno.test("range: the whole piece keeps its repeats; stats still key on the written measure", () => {
+  const s = repeated();
+  const all = practiceSteps(s, { hands: "both" });
+  assertEquals(all.events.map((e) => e.measure), [1, 2, 1, 2, 3, 4]);
+  const full = practiceSteps(s, { hands: "both", from: 1, to: 4 });
+  assertEquals(full.beats, all.beats);
+  const res = all.steps.map(() => ({ status: "ok", clean: true, wrong: [], grade: null }));
+  assertEquals(measureStats(all, res).map((m) => [m.measure, m.steps]), [[1, 2], [2, 2], [3, 1], [
+    4,
+    1,
+  ]]);
+});
+
+Deno.test("range: measures that are not adjacent in play close up the gap between them", () => {
+  // m2 (first pass, beat 4) and m3 (beat 16) with the second pass of m1 m2 between: two runs.
+  const s = repeated();
+  const p = practiceSteps(s, { hands: "both", from: 2, to: 3 });
+  assertEquals(p.beats, [4, 16]);
+  assertEquals(p.spans, [{ from: 4, to: 8 }, { from: 16, to: Infinity }]);
+  assertEquals(stepOffsets(s, p), [0, 2000]); // m3 follows m2 at once
+  assertEquals(runMs(s.tempo, p, 10), 2000); // a beat in the gap is the end of the run before
+  const plan = playPlan(s, p, { pct: 100, metronome: true, notes: "all", countIn: true });
+  assertEquals(plan.clicks.length, 8); // four beats in each run, none in the gap
+  assertEquals(plan.clicks[4], 2000);
+  assertEquals(plan.end, 4000);
+  assertEquals(plan.countIn, [-2000, -1500, -1000, -500]);
+  // Slicing from the second run keeps one run.
+  const tail = sliceFrom(p, 1);
+  assertEquals(tail.spans, []);
+  assertEquals(stepOffsets(s, tail), [0]);
+});
+
+Deno.test("seek: a tap in a repeated measure picks the pass nearest the current step", () => {
+  const s = repeated();
+  const p = practiceSteps(s, { hands: "both" }); // steps: m1 m2 m1 m2 m3 m4
+  assertEquals(stepCandidates(s, p, 100), [0, 2]);
+  assertEquals(stepOfRef(s, p, 100, 0), 0);
+  assertEquals(stepOfRef(s, p, 100, 3), 2); // second pass: stay in it
+  assertEquals(stepOfRef(s, p, 101, 3), 3);
+  assertEquals(stepOfRef(s, p, 101, 1), 1);
+  assertEquals(stepOfRef(s, p, 100, 1), 2); // equidistant: the later one
+  assertEquals(stepOfRef(s, p, 999, 3), 0); // unknown ref
+  assertEquals(nearestStep([], 5), 0);
+});
+
+Deno.test("seek: a range of one pass has one candidate; a note out of range goes to the next step", () => {
+  const s = repeated();
+  const p = practiceSteps(s, { hands: "both", from: 2, to: 3 }); // steps: m2 (4), m3 (16)
+  assertEquals(stepCandidates(s, p, 101), [0]); // m2 is in the range on its first pass only
+  assertEquals(stepCandidates(s, p, 100), [0, 1]); // m1 is out of range: the step at or after each pass
+  assertEquals(stepCandidates(s, p, 103), [1]); // m4 is past the end: the last step
+});
+
+Deno.test("seek: the other hand's note, a tie-only position and a rest go to the step at their beat", () => {
+  // RH only. Beat 0: RH 60 + LH 48. Beat 1: only a tied continuation (LH). Beat 2: RH 62.
+  const s = buildScore([
+    at(1, 0, [n(60), n(48, 1, { tie: "start", quarters: 2 })]),
+    at(1, 1, [n(48, 1, { tie: "continue" })]),
+    at(1, 2, [n(62)]),
+  ]);
+  const p = practiceSteps(s, { hands: "rh" });
+  assertEquals(p.beats, [0, 2]);
+  const tie = s.events[1].notes[0].ref;
+  const lh = s.events[0].notes[1].ref;
+  assertEquals(stepOfRef(s, p, tie), 1); // no step of its own: the next one
+  assertEquals(stepOfRef(s, p, lh), 0);
+});
+
+Deno.test("printed numbers: labels follow <measure number>, a pickup is 0", () => {
+  const s = buildScore([
+    { ...at(1, 0, [n(60)]), printed: 0 },
+    { ...at(2, 1, [n(62)]), printed: 1 },
+    { ...at(3, 5, [n(64)]), printed: 2 },
+  ]);
+  assertEquals(s.printed, [0, 1, 2]);
+  assertEquals(measureLabel(s, 1), 0);
+  assertEquals(measureLabel(s, 3), 2);
+  assertEquals(measureLabel(s, 9), 9); // unknown: as written
+  // Without a printed number the label is the written one.
+  assertEquals(buildScore(twoHandPiece()).printed, [1, 2]);
+  // A repeat keeps the first pass's label.
+  assertEquals(repeated().printed, [1, 2, 3, 4]);
+});
+
+Deno.test("heat level: clean is 4, then down to 0", () => {
+  assertEquals(heatLevel({ steps: 4, clean: 4 }), 4);
+  assertEquals(heatLevel({ steps: 4, clean: 3 }), 3);
+  assertEquals(heatLevel({ steps: 4, clean: 2 }), 2);
+  assertEquals(heatLevel({ steps: 4, clean: 1 }), 1);
+  assertEquals(heatLevel({ steps: 4, clean: 0 }), 0);
+  assertEquals(heatLevel({ steps: 0, clean: 0 }), 4);
 });

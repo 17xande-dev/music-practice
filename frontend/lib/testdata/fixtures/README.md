@@ -26,7 +26,9 @@ What `walkCursor` (frontend/lib/score_walk.ts, the loop `ScoreView.walk` runs in
 returns for OSMD 2.2.0:
 
 - `parts`: OSMD's instruments, `{name, staves}`; `chosen`: `chooseParts(parts)`.
-- `entries`: `RawEntry[]` in cursor order, repeats played out. The `ref` of each note is removed.
+- `entries`: `RawEntry[]` in cursor order, repeats played out. `printed` is the number printed on the
+  score (`<measure number>`; a pickup is 0), where OSMD gives one; `measure` is the position in the
+  file from 1. The `ref` of each note is removed.
   Notes within an entry are sorted by (staff, midi) (OSMD's order is not part of the contract).
   `finger` is absent when there is none. Rest-only positions appear as entries with `notes: []`.
 
@@ -35,13 +37,18 @@ returns for OSMD 2.2.0:
 The pure layer, run on the walk above (with refs renumbered 0.. in file order, then stripped from
 the output):
 
-- `score`: `buildScore(entries)` (events, tempo, measures, measureCount, twoHands).
+- `score`: `buildScore(entries)` (events, tempo, measures, measureCount, `printed`, twoHands).
+  `printed[m - 1]` is the printed number of written measure `m`; stats and sessions key on `m`.
 - `practice["<hands>/<range>"]` for hands `both|rh|lh` and range `all` (whole piece) or `m2-3`
   (`from: 2, to: 3`), each with: `selection`, `steps`, `beats`, `eventIndices` (`events[i].index`),
-  `accompaniment`, `all`, `startBeat`, `measureStarts`, `offsets` (`stepOffsets` at `"100"` and
+  `accompaniment`, `all`, `startBeat`, `spans`, `measureStarts`, `offsets` (`stepOffsets` at `"100"` and
   `"75"` percent), `plans` (four `playPlan` results with their `opts`: other/metronome/count-in at
   100 and 75 %, and all/no metronome/no count-in at 100 and 75 %), `stats` (`measureStats` of the
   synthetic results below), `weakest` (`weakestRange` with span 2 and span 3).
+- A range (`m2-3`) plays each selected measure once, from its first pass over the piece; the whole
+  piece keeps its repeats. `spans` are the runs of beats the selection plays when the range leaves
+  gaps (`{from, to}`, `to: null` = open-ended on the last; empty = one run): the gaps are closed up in
+  `offsets` and `plans` (no dead time, no clicks there).
 - Floats are doubles as JavaScript computed them; compare with a small tolerance (tuplet quarters
   are 1/3).
 

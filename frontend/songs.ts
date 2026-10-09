@@ -30,6 +30,8 @@ import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
 import {
   bpmAt,
   buildScore,
+  heatLevel,
+  measureLabel,
   type MeasureStat,
   measureStats,
   type Practice,
@@ -51,6 +53,7 @@ import {
   titleFromFileName,
   uploadProblem,
 } from "./lib/song_library.ts";
+import { runFinished, tempoChange, tempoRunOver } from "./lib/song_rules.ts";
 import { starterId, starterSlugForFile } from "./lib/starters.ts";
 import { playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
@@ -93,8 +96,8 @@ const ui = {
   form: el<HTMLFormElement>("song-form"),
   mode: el<HTMLSelectElement>("song-mode"),
   hands: el<HTMLSelectElement>("song-hands"),
-  from: el<HTMLInputElement>("song-from"),
-  to: el<HTMLInputElement>("song-to"),
+  from: el<HTMLSelectElement>("song-from"),
+  to: el<HTMLSelectElement>("song-to"),
   whole: el<HTMLButtonElement>("song-whole"),
   tempo: el<HTMLInputElement>("song-tempo"),
   rubato: el<HTMLInputElement>("song-rubato"),
@@ -168,6 +171,12 @@ let shownCurrent = -1;
 let loopTimer = 0;
 
 // ---- Library ------------------------------------------------------------------
+
+/** Hide the results card, and the heat tint it put on the score. */
+function clearResults() {
+  ui.results.hidden = true;
+  view.clearHeat();
+}
 
 function setLibraryStatus(text: string, warn = false) {
   ui.libraryStatus.textContent = text;
@@ -291,9 +300,23 @@ async function show(data: ArrayBuffer, format: SongFormat, meta: SongMeta | null
   song = { meta, score };
   ui.title.value = meta?.title ?? info.title;
   ui.composer.textContent = meta?.composer ?? info.composer;
-  ui.from.max = ui.to.max = String(score.measureCount);
+  // The pickers show the printed numbers; the values are the written ones.
+  for (const pick of [ui.from, ui.to]) {
+    pick.replaceChildren(
+      ...Array.from(
+        { length: score.measureCount },
+        (_, i) => new Option(String(measureLabel(score, i + 1)), String(i + 1)),
+      ),
+    );
+  }
   ui.from.value = "1";
   ui.to.value = String(score.measureCount);
+  // The range last practised in this song, if it still fits the score.
+  const saved = meta && store.songRange(meta.id);
+  if (saved && saved.to <= score.measureCount) {
+    ui.from.value = String(saved.from);
+    ui.to.value = String(saved.to);
+  }
   ui.hands.disabled = !score.twoHands;
   if (!score.twoHands) ui.hands.value = "both";
   fingersShown = showingFingers();
@@ -308,7 +331,7 @@ function closeSong() {
   song = null;
   practice = null;
   ui.song.hidden = true;
-  ui.results.hidden = true;
+  clearResults();
 }
 
 // ---- Selection and lifecycle ----------------------------------------------------
@@ -343,6 +366,10 @@ function rebuild() {
   showOptions();
   applyFingering();
   const sel = selection();
+  if (song.meta) {
+    const whole = sel.from! <= 1 && sel.to! >= song.score.measureCount;
+    store.setSongRange(song.meta.id, whole ? null : { from: sel.from!, to: sel.to! });
+  }
   practice = practiceSteps(song.score, sel);
   const plays = (hand: string) => sel.hands === "both" || hand === sel.hands;
   stepRefs = practice.events.map((e) =>
@@ -370,18 +397,23 @@ function keepSegment(upto = Infinity) {
   });
 }
 
-/** Back to the start of the selection, nothing played. */
-function reset() {
+/** Drop the run so far: nothing played, ready at step k of the selection. */
+function clearRun(k = 0) {
   logLearn(false);
   stop();
   attempted = new Map();
-  position = 0;
+  position = k;
   phase = "idle";
   shownCurrent = -1;
   keyboard.releaseAll();
   view.clearMarks();
-  ui.results.hidden = true;
-  beginWaiting(0);
+  clearResults();
+  beginWaiting(k);
+}
+
+/** Back to the start of the selection, nothing played. */
+function reset() {
+  clearRun(0);
   showProgress();
 }
 
@@ -485,7 +517,7 @@ function showTransport() {
   ui.stop.disabled = !playingNow() && phase !== "paused";
   const n = practice?.steps.length ?? 0;
   const i = currentStep();
-  ui.position.textContent = n && i >= 0 ? `m. ${measureOf(i)} · ${i + 1}/${n}` : "";
+  ui.position.textContent = n && i >= 0 ? `m. ${label(measureOf(i))} · ${i + 1}/${n}` : "";
 }
 
 /** The step the player is at, in the selection (-1 when finished). */
@@ -529,8 +561,14 @@ function showTargets(i: number) {
   keyboard.setTargets(practice.steps[i].notes.map((n) => n.midi), fingersFor(i));
 }
 
+/** The written measure (its position in the file) of step i; stats and history use it. */
 function measureOf(i: number): number {
   return practice?.events[i]?.measure ?? 0;
+}
+
+/** A written measure as the score prints it (a pickup is 0): what the page shows. */
+function label(measure: number): number {
+  return song ? measureLabel(song.score, measure) : measure;
 }
 
 /** Status line and highlights (wait mode, and before Play or while paused). */
@@ -559,7 +597,7 @@ function showProgress() {
   view.showCursor(stepRefs[i]);
   view.reveal(stepRefs[i][0]);
   const n = practice.steps.length;
-  const where = `measure ${measureOf(i)}`;
+  const where = `measure ${label(measureOf(i))}`;
   ui.status.textContent = waiting()
     ? (i === 0 && !attempted.size
       ? `Play the first note to begin · ${where}`
@@ -585,7 +623,7 @@ async function start(k = position) {
     view.clearMarks();
     k = 0;
   }
-  ui.results.hidden = true;
+  clearResults();
   offset = Math.min(Math.max(0, k), practice.steps.length - 1);
   position = offset;
   segment = sliceFrom(practice, offset);
@@ -598,7 +636,7 @@ async function start(k = position) {
     : "none";
   const plan = playPlan(song.score, segment, {
     pct,
-    metronome: mode !== "listen" && ui.metronome.checked,
+    metronome: ui.metronome.checked,
     notes,
     countIn: mode === "tempo",
   });
@@ -656,17 +694,46 @@ function seek(k: number) {
     void start(k);
     return;
   }
-  if (phase === "done") {
+  // After a finished run a seek starts fresh: the old marks and grades go, so
+  // the next run isn't merged with it into one inflated session.
+  const finished = runFinished(phase, engine?.done ?? false);
+  if (finished) {
+    clearTimeout(loopTimer);
     attempted = new Map();
     view.clearMarks();
+    clearResults();
     phase = "idle";
+    shownCurrent = -1;
   }
   if (waiting()) {
-    if (engine instanceof NotesEngine) keepSegment(engine.cursor);
+    if (engine instanceof NotesEngine && !finished) keepSegment(engine.cursor);
     beginWaiting(k);
   }
   position = k;
   showProgress();
+}
+
+/**
+ * The tempo % changed. Listen carries on from the current step at the new
+ * tempo. Tempo and Rubato start a fresh run from the current step (with a
+ * count-in if it was playing): the steps graded so far were at the old tempo,
+ * and a saved session should have one.
+ */
+function tempoChanged() {
+  if (guideOn) void toggleGuide(); // stops the guide click; Play starts it at the new tempo
+  if (!song || !practice?.steps.length) return;
+  const was = playingNow();
+  const at = Math.max(0, currentStep());
+  const act = tempoChange(mode, {
+    playing: was,
+    finished: runFinished(phase, engine?.done ?? false),
+  });
+  if (act === "replay") seek(at);
+  else if (act === "restart") {
+    clearRun(at);
+    if (was) void start(at);
+    else showProgress();
+  }
 }
 
 function skipMeasure(dir: -1 | 1) {
@@ -736,7 +803,7 @@ function tick() {
     glideCursor(now);
     ui.status.textContent = now < startTime
       ? "Listening…"
-      : `Listening · measure ${measureOf(offset + j)}`;
+      : `Listening · measure ${label(measureOf(offset + j))}`;
     frame = requestAnimationFrame(tick);
     return;
   }
@@ -752,14 +819,17 @@ function tick() {
   }
   if (phase === "playing") {
     for (const j of e.tick(now)) view.mark(stepRefs[offset + j], markFor(e.results[j]));
-    if (e.done) {
+    // Over once the last window has closed and the final notes have sounded.
+    if (tempoRunOver(e.done, now, endTime)) {
       finishTempo();
       return;
     }
     const j = Math.max(0, Math.min(seg.steps.length - 1, e.stepAt(now - (e.opts.latencyMs ?? 0))));
     setCurrent(offset + j);
     glideCursor(now);
-    ui.status.textContent = `Measure ${measureOf(offset + j)} · ${Math.round(e.opts.bpm)} BPM`;
+    ui.status.textContent = `Measure ${label(measureOf(offset + j))} · ${
+      Math.round(e.opts.bpm)
+    } BPM`;
   }
   frame = requestAnimationFrame(tick);
 }
@@ -1096,12 +1166,14 @@ function showResults(s: Summary, stats: MeasureStat[]) {
 /** The heat map, and a button to practise the weakest measures. */
 function showHeat(stats: MeasureStat[]) {
   renderHeat(stats);
+  // Also on the score itself, until the results are cleared.
+  view.setHeat(new Map(stats.map((m) => [m.measure - 1, heatLevel(m)])));
   const weak = weakestRange(stats, 2);
   ui.loopWeakest.hidden = !weak;
   if (weak) {
     ui.loopWeakest.textContent = weak.from === weak.to
-      ? `Practise measure ${weak.from}`
-      : `Practise measures ${weak.from}–${weak.to}`;
+      ? `Practise measure ${label(weak.from)}`
+      : `Practise measures ${label(weak.from)}–${label(weak.to)}`;
     ui.loopWeakest.onclick = () => setRange(weak.from, weak.to);
   }
 }
@@ -1111,18 +1183,19 @@ function renderHeat(stats: MeasureStat[]) {
   ui.heat.replaceChildren(...stats.map((m) => {
     const b = document.createElement("button");
     b.type = "button";
-    const ratio = m.steps ? m.clean / m.steps : 1;
     // Five levels, so the colours come from the stylesheet (no inline
     // styles). Green is kept for measures with nothing wrong at all.
-    b.className = `heat-cell level-${ratio === 1 ? 4 : Math.min(3, Math.floor(ratio * 4))}`;
-    b.textContent = String(m.measure);
+    b.className = `heat-cell level-${heatLevel(m)}`;
+    b.textContent = String(label(m.measure));
     const issues = [
       m.wrong ? `${m.wrong} wrong` : "",
       m.missed ? `${m.missed} missed` : "",
       m.early ? `${m.early} early` : "",
       m.late ? `${m.late} late` : "",
     ].filter(Boolean).join(", ");
-    b.title = `Measure ${m.measure}: ${m.clean} of ${m.steps} clean${issues ? ` (${issues})` : ""}`;
+    b.title = `Measure ${label(m.measure)}: ${m.clean} of ${m.steps} clean${
+      issues ? ` (${issues})` : ""
+    }`;
     b.setAttribute("aria-label", b.title + ". Practise this measure.");
     b.addEventListener("click", () => setRange(m.measure, m.measure));
     return b;
@@ -1200,6 +1273,7 @@ ui.form.addEventListener("change", (e) => {
   persist();
   const t = e.target as HTMLElement;
   if (t === ui.fingering) return applyFingering();
+  if (t === ui.tempo) return tempoChanged();
   // Read at Start, or as it plays: no rebuild needed.
   if (t === ui.guide && guideOn) void toggleGuide(); // stops; Play starts the new kind
   if (
@@ -1246,8 +1320,11 @@ for (
   });
 }
 // A click on the score moves the play position there.
+// In a repeat the tap means the pass nearest where the player is.
 view.onSeek = (ref) => {
-  if (practice) seek(stepOfRef(practice, ref));
+  if (!song || !practice?.steps.length) return;
+  const at = currentStep();
+  seek(stepOfRef(song.score, practice, ref, at < 0 ? practice.steps.length - 1 : at));
 };
 ui.device.addEventListener("change", () => {
   midi.select(ui.device.value);

@@ -107,7 +107,16 @@ export interface Settings {
   songZoom: number;
   /** While playing, the cursor flows with the music or jumps note to note. */
   songCursor: "flow" | "jump";
+  /**
+   * The measure range last practised in each song (by song id), written
+   * measure numbers. Absent = the whole piece. Settings are not exported, so
+   * neither is this; deleting a song drops its entry (removeSong).
+   */
+  songRanges: Record<string, { from: number; to: number }>;
 }
+
+/** Songs whose range is remembered; the oldest are forgotten beyond this. */
+const MAX_SONG_RANGES = 500;
 
 export interface ExportFile {
   app: typeof EXPORT_APP;
@@ -276,6 +285,15 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (x.theme === "light" || x.theme === "dark") out.theme = x.theme;
   if (x.songView === "page" || x.songView === "line") out.songView = x.songView;
   if (x.songCursor === "flow" || x.songCursor === "jump") out.songCursor = x.songCursor;
+  if (isObj(x.songRanges)) {
+    const ranges: Settings["songRanges"] = {};
+    for (const [id, r] of Object.entries(x.songRanges).slice(0, MAX_SONG_RANGES)) {
+      if (id.length > 0 && id.length <= 64 && isObj(r) && isCount(r.from) && isCount(r.to)) {
+        if (r.from >= 1 && r.to >= r.from) ranges[id] = { from: r.from, to: r.to };
+      }
+    }
+    out.songRanges = ranges;
+  }
   if (isNum(x.songZoom) && x.songZoom >= 0.6 && x.songZoom <= 2) out.songZoom = x.songZoom;
   if (["auto", "light", "dark"].includes(x.sheetTheme as string)) {
     out.sheetTheme = x.sheetTheme as Settings["sheetTheme"];
@@ -361,6 +379,7 @@ const SETTING_KEYS: readonly (keyof Settings)[] = [
   "songView",
   "songZoom",
   "songCursor",
+  "songRanges",
 ];
 
 /** Null when every known field is valid (or the key is absent). Bad fields fall back to defaults. */
@@ -545,6 +564,7 @@ export class ProgressStore {
 
   /** Forget a song's history (when the song itself is deleted). */
   removeSong(songId: string): boolean {
+    this.setSongRange(songId, null);
     const a = this.write(
       SONG_SESSIONS_KEY,
       this.songSessions().filter((s) => s.songId !== songId),
@@ -565,6 +585,21 @@ export class ProgressStore {
 
   settings(): Partial<Settings> {
     return validSettings(this.read(SETTINGS_KEY));
+  }
+
+  /** The range remembered for a song, or undefined for the whole piece. */
+  songRange(songId: string): { from: number; to: number } | undefined {
+    return this.settings().songRanges?.[songId];
+  }
+
+  /** Remember a song's range; null (the whole piece) forgets it. */
+  setSongRange(songId: string, range: { from: number; to: number } | null): void {
+    const was = this.songRange(songId);
+    if (was?.from === range?.from && was?.to === range?.to) return;
+    const all = { ...this.settings().songRanges };
+    if (range) all[songId] = { from: range.from, to: range.to };
+    else delete all[songId];
+    this.saveSettings({ songRanges: all });
   }
 
   saveSettings(patch: Partial<Settings>): void {

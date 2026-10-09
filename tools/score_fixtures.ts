@@ -171,6 +171,7 @@ function scoreFixture(score: Score) {
         accompaniment: p.accompaniment,
         all: p.all,
         startBeat: p.startBeat,
+        spans: p.spans,
         measureStarts: measureStarts(p),
         offsets: { "100": stepOffsets(score, p, 100), "75": stepOffsets(score, p, 75) },
         plans: [

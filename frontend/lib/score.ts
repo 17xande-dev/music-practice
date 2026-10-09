@@ -28,8 +28,10 @@ export interface RawNote {
 
 /** One cursor position: what starts at a moment in the piece. */
 export interface RawEntry {
-  /** Written measure number (as printed, from 1). */
+  /** Written measure number: its position in the file, from 1. */
   measure: number;
+  /** The number printed on the score (`<measure number>`; a pickup is 0). Absent = `measure`. */
+  printed?: number;
   /**
    * Counts measures as played, rising each time a measure starts, so a
    * measure repeated straight after itself is told apart from itself.
@@ -67,6 +69,8 @@ export interface Score {
   measures: number[];
   /** The highest written measure number. */
   measureCount: number;
+  /** The printed number of each written measure: `printed[m - 1]` (see measureLabel). */
+  printed: number[];
   /** True when the piece has more than one staff (two hands). */
   twoHands: boolean;
 }
@@ -149,13 +153,24 @@ export function buildScore(entries: readonly RawEntry[]): Score {
     if (e.occurrence !== last) measures.push(e.measure);
     last = e.occurrence;
   }
-  return {
-    events,
-    tempo,
-    measures,
-    measureCount: Math.max(0, ...sorted.map((e) => e.measure)),
-    twoHands,
-  };
+  const measureCount = Math.max(0, ...sorted.map((e) => e.measure));
+  const printedBy = new Map<number, number>();
+  for (const e of sorted) {
+    if (e.printed !== undefined && Number.isFinite(e.printed) && !printedBy.has(e.measure)) {
+      printedBy.set(e.measure, e.printed);
+    }
+  }
+  const printed = Array.from({ length: measureCount }, (_, i) => printedBy.get(i + 1) ?? i + 1);
+  return { events, tempo, measures, measureCount, printed, twoHands };
+}
+
+/**
+ * How a written measure is labelled on screen: the number printed on the
+ * score (a pickup is 0). Stats, sessions and the export keep the written
+ * number, so history is unchanged; only what the person reads differs.
+ */
+export function measureLabel(score: Pick<Score, "printed">, measure: number): number {
+  return score.printed[measure - 1] ?? measure;
 }
 
 /** Milliseconds from the start of the piece to `beat`, at `pct` % of the marked tempo. */
@@ -191,6 +206,12 @@ export interface AccompanimentNote {
   quarters: number;
 }
 
+/** A run of the piece's beats the selection plays: `from` up to (not including) `to`. */
+export interface BeatSpan {
+  from: number;
+  to: number;
+}
+
 export interface Practice {
   steps: Step[];
   /** Beat of each step. */
@@ -203,6 +224,29 @@ export interface Practice {
   all: AccompanimentNote[];
   /** Beat where the selection starts (its first measure's first event). */
   startBeat: number;
+  /**
+   * The runs of beats the selection plays, in order, when a measure range
+   * leaves gaps between them (the passes and measures in between are not
+   * played, and their time is closed up: see runMs). Empty = one run from
+   * startBeat on. The last run is open-ended.
+   */
+  spans: BeatSpan[];
+}
+
+/**
+ * Milliseconds from the start of the selection to `beat`, at `pct` % of the
+ * marked tempo, with the gaps between its spans taken out. A beat inside a
+ * gap counts as the end of the run before it.
+ */
+export function runMs(tempo: readonly TempoChange[], p: Practice, beat: number, pct = 100): number {
+  if (!p.spans.length) return msAt(tempo, beat, pct) - msAt(tempo, p.startBeat, pct);
+  let acc = 0;
+  for (const s of p.spans) {
+    const b = Math.min(Math.max(beat, s.from), s.to);
+    acc += msAt(tempo, b, pct) - msAt(tempo, s.from, pct);
+    if (beat <= s.to) return acc;
+  }
+  return acc;
 }
 
 /**
@@ -214,7 +258,12 @@ export interface Practice {
 export function practiceSteps(score: Score, sel: Selection): Practice {
   const from = sel.from ?? 1;
   const to = sel.to ?? score.measureCount;
-  const inRange = score.events.filter((e) => e.measure >= from && e.measure <= to);
+  // The whole piece keeps its repeats as written. A range plays each of its
+  // measures once, from its first pass, as one continuous run.
+  const whole = from <= 1 && to >= score.measureCount;
+  const { inRange, spans } = whole
+    ? { inRange: score.events, spans: [] }
+    : firstPass(score, from, to);
   const plays = (n: ScoreNote) => sel.hands === "both" || n.hand === sel.hands;
 
   const steps: Step[] = [];
@@ -242,13 +291,41 @@ export function practiceSteps(score: Score, sel: Selection): Practice {
     beats.push(e.beat);
     events.push(e);
   }
-  return { steps, beats, events, accompaniment, all, startBeat: inRange[0]?.beat ?? 0 };
+  return { steps, beats, events, accompaniment, all, startBeat: inRange[0]?.beat ?? 0, spans };
+}
+
+/**
+ * The events of measures from..to on their first pass over the piece, and
+ * the runs of beats they fill (none when it is one run).
+ */
+function firstPass(score: Score, from: number, to: number) {
+  const first = new Map<number, number>();
+  for (const e of score.events) {
+    if (e.measure >= from && e.measure <= to) {
+      first.set(e.measure, Math.min(first.get(e.measure) ?? e.occurrence, e.occurrence));
+    }
+  }
+  const inRange: ScoreEvent[] = [];
+  const spans: BeatSpan[] = [];
+  let open: number | null = null;
+  for (const e of score.events) {
+    if (e.measure >= from && e.measure <= to && first.get(e.measure) === e.occurrence) {
+      inRange.push(e);
+      open ??= e.beat;
+    } else if (open !== null) {
+      // The first event outside the selection ends the run.
+      spans.push({ from: open, to: e.beat });
+      open = null;
+    }
+  }
+  if (open !== null) spans.push({ from: open, to: Infinity });
+  else if (spans.length) spans[spans.length - 1].to = Infinity;
+  return { inRange, spans: spans.length > 1 ? spans : [] };
 }
 
 /** Each step's due time in ms after the selection starts, at `pct` % tempo. */
 export function stepOffsets(score: Score, p: Practice, pct = 100): number[] {
-  const t0 = msAt(score.tempo, p.startBeat, pct);
-  return p.beats.map((b) => msAt(score.tempo, b, pct) - t0);
+  return p.beats.map((b) => runMs(score.tempo, p, b, pct));
 }
 
 export interface MeasureStat {
@@ -290,6 +367,15 @@ export function measureStats(
     by.set(e.measure, m);
   });
   return [...by.values()].sort((a, b) => a.measure - b.measure);
+}
+
+/**
+ * How a measure went, as one of five heat levels: 4 = nothing wrong, down to
+ * 0 = most trouble. Shared by the results grid and the tint on the score.
+ */
+export function heatLevel(m: Pick<MeasureStat, "steps" | "clean">): 0 | 1 | 2 | 3 | 4 {
+  const ratio = m.steps ? m.clean / m.steps : 1;
+  return ratio === 1 ? 4 : Math.min(3, Math.floor(ratio * 4)) as 0 | 1 | 2 | 3;
 }
 
 /**
@@ -343,16 +429,46 @@ export function stepFromMeasure(p: Practice, i: number, dir: -1 | 1): number {
   return starts[Math.min(starts.length - 1, cur + 1)];
 }
 
-/** The step holding the note `ref` (the renderer's handle), or the next one after it. */
-export function stepOfRef(p: Practice, ref: number): number {
-  const at = p.events.findIndex((e) => e.notes.some((n) => n.ref === ref));
-  if (at >= 0) return at;
-  // A ref not graded here (the other hand, a tied note): the step at its beat.
-  const all = p.events.flatMap((e) => e.notes.map((n) => ({ ref: n.ref, beat: e.beat })));
-  const beat = all.find((x) => x.ref === ref)?.beat;
-  if (beat === undefined) return 0;
-  const next = p.beats.findIndex((b) => b >= beat - 1e-9);
-  return next >= 0 ? next : p.steps.length - 1;
+/**
+ * The steps a tap on the note `ref` can mean: in each pass over the note,
+ * the first step at or after its beat. The note need not be graded in `p`
+ * (the other hand, a tied continuation, a note outside the range): it maps
+ * to the step at its beat. When some pass of it is in the selection, only
+ * those passes count, so a range of one pass has one candidate. An unknown
+ * `ref` has none. (A repeated note has one `ref` for all its passes.)
+ */
+export function stepCandidates(score: Score, p: Practice, ref: number): number[] {
+  if (!p.steps.length) return [];
+  const mine = score.events.filter((e) => e.notes.some((n) => n.ref === ref));
+  const selected = new Set(p.events.map((e) => e.occurrence));
+  const inSelection = mine.filter((e) => selected.has(e.occurrence));
+  const out = new Set<number>();
+  for (const e of inSelection.length ? inSelection : mine) {
+    const k = p.beats.findIndex((b) => b >= e.beat - 1e-9);
+    out.add(k >= 0 ? k : p.steps.length - 1);
+  }
+  return [...out].sort((a, b) => a - b);
+}
+
+/**
+ * The candidate closest to the step the player is at (a tie goes to the
+ * later one); 0 when there are none. A tap in a repeated section has a step
+ * per pass: this keeps a tap just behind the cursor in the pass it is in,
+ * and a tap on the start of the repeat while near its end goes to the next pass.
+ */
+export function nearestStep(candidates: readonly number[], current: number): number {
+  let best = 0;
+  let bestD = Infinity;
+  for (const c of candidates) {
+    const d = Math.abs(c - current);
+    if (d < bestD || (d === bestD && c > best)) [best, bestD] = [c, d];
+  }
+  return candidates.length ? best : 0;
+}
+
+/** The step to seek to for a tap on the note `ref`, from step `current`. */
+export function stepOfRef(score: Score, p: Practice, ref: number, current = 0): number {
+  return nearestStep(stepCandidates(score, p, ref), current);
 }
 
 /**
@@ -370,5 +486,15 @@ export function sliceFrom(p: Practice, k: number): Practice {
     accompaniment: p.accompaniment.filter((n) => n.beat >= startBeat - 1e-9),
     all: p.all.filter((n) => n.beat >= startBeat - 1e-9),
     startBeat,
+    spans: clipSpans(p.spans, startBeat),
   };
+}
+
+/** The runs from `beat` on (the one it falls in starts there); one run is no runs. */
+function clipSpans(spans: readonly BeatSpan[], beat: number): BeatSpan[] {
+  const out = spans.filter((s) => s.to > beat + 1e-9).map((s) => ({
+    from: Math.max(s.from, beat),
+    to: s.to,
+  }));
+  return out.length > 1 ? out : [];
 }

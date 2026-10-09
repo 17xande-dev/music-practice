@@ -87,8 +87,11 @@ export function walkCursor(
         ref: onNote(raw),
       });
     }
+    // The number printed on the score (a pickup is 0), where OSMD has one.
+    const printed = it.CurrentMeasure?.getPrintedMeasureNumber?.();
     out.push({
       measure: mi + 1,
+      ...(Number.isInteger(printed) ? { printed } : {}),
       occurrence,
       beat: it.CurrentEnrolledTimestamp.RealValue * 4,
       bpm: it.CurrentBpm,

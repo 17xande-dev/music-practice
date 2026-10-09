@@ -16,6 +16,7 @@
  "entries": [
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 0,
    "bpm": 120,
@@ -35,6 +36,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 1,
    "bpm": 120,
@@ -54,6 +56,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 2,
    "bpm": 60,
@@ -73,6 +76,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 3,
    "bpm": 60,
@@ -92,6 +96,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 4,
    "bpm": 60,
@@ -111,6 +116,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 4.5,
    "bpm": 60,
@@ -130,6 +136,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 5,
    "bpm": 60,
@@ -149,6 +156,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 5.5,
    "bpm": 60,
@@ -168,6 +176,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 6,
    "bpm": 60,
@@ -187,6 +196,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 6.5,
    "bpm": 60,
@@ -206,6 +216,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 7,
    "bpm": 60,
@@ -225,6 +236,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 7.5,
    "bpm": 60,
@@ -244,6 +256,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 8,
    "bpm": 90,
@@ -263,6 +276,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 8.5,
    "bpm": 90,
@@ -282,6 +296,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 9,
    "bpm": 90,
@@ -301,6 +316,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 9.5,
    "bpm": 90,
@@ -320,6 +336,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 10,
    "bpm": 90,
@@ -339,6 +356,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 10.5,
    "bpm": 90,
@@ -358,6 +376,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 11,
    "bpm": 90,
@@ -377,6 +396,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 11.5,
    "bpm": 90,

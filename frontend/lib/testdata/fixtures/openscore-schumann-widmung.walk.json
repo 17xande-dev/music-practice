@@ -20,6 +20,7 @@
  "entries": [
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 0,
    "bpm": 120,
@@ -61,6 +62,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 0.5,
    "bpm": 120,
@@ -91,6 +93,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 1,
    "bpm": 120,
@@ -121,6 +124,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 1.75,
    "bpm": 120,
@@ -151,6 +155,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 2,
    "bpm": 120,
@@ -181,6 +186,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 2.5,
    "bpm": 120,
@@ -211,6 +217,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 3,
    "bpm": 120,
@@ -241,6 +248,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 3.5,
    "bpm": 120,
@@ -271,6 +279,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 4,
    "bpm": 120,
@@ -312,6 +321,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 4.5,
    "bpm": 120,
@@ -342,6 +352,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 5,
    "bpm": 120,
@@ -372,6 +383,7 @@
   },
   {
    "measure": 1,
+   "printed": 1,
    "occurrence": 1,
    "beat": 5.5,
    "bpm": 120,
@@ -402,6 +414,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 6,
    "bpm": 120,
@@ -443,6 +456,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 6.5,
    "bpm": 120,
@@ -473,6 +487,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 7,
    "bpm": 120,
@@ -503,6 +518,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 7.5,
    "bpm": 120,
@@ -510,6 +526,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 7.75,
    "bpm": 120,
@@ -540,6 +557,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 8,
    "bpm": 120,
@@ -570,6 +588,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 8.5,
    "bpm": 120,
@@ -600,6 +619,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 9,
    "bpm": 120,
@@ -630,6 +650,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 9.5,
    "bpm": 120,
@@ -660,6 +681,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 10,
    "bpm": 120,
@@ -701,6 +723,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 10.5,
    "bpm": 120,
@@ -731,6 +754,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 11,
    "bpm": 120,
@@ -761,6 +785,7 @@
   },
   {
    "measure": 2,
+   "printed": 2,
    "occurrence": 2,
    "beat": 11.5,
    "bpm": 120,
@@ -791,6 +816,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 12,
    "bpm": 120,
@@ -832,6 +858,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 12.5,
    "bpm": 120,
@@ -862,6 +889,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 13,
    "bpm": 120,
@@ -892,6 +920,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 13.75,
    "bpm": 120,
@@ -922,6 +951,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 14,
    "bpm": 120,
@@ -952,6 +982,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 14.5,
    "bpm": 120,
@@ -982,6 +1013,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 15,
    "bpm": 120,
@@ -1012,6 +1044,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 15.5,
    "bpm": 120,
@@ -1042,6 +1075,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 16,
    "bpm": 120,
@@ -1083,6 +1117,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 16.5,
    "bpm": 120,
@@ -1113,6 +1148,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 17,
    "bpm": 120,
@@ -1143,6 +1179,7 @@
   },
   {
    "measure": 3,
+   "printed": 3,
    "occurrence": 3,
    "beat": 17.5,
    "bpm": 120,
@@ -1173,6 +1210,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 18,
    "bpm": 120,
@@ -1214,6 +1252,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 18.5,
    "bpm": 120,
@@ -1244,6 +1283,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 19,
    "bpm": 120,
@@ -1274,6 +1314,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 19.75,
    "bpm": 120,
@@ -1304,6 +1345,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 20,
    "bpm": 120,
@@ -1334,6 +1376,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 20.5,
    "bpm": 120,
@@ -1364,6 +1407,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 21,
    "bpm": 120,
@@ -1405,6 +1449,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 21.5,
    "bpm": 120,
@@ -1435,6 +1480,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 22,
    "bpm": 120,
@@ -1476,6 +1522,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 22.5,
    "bpm": 120,
@@ -1506,6 +1553,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 23,
    "bpm": 120,
@@ -1547,6 +1595,7 @@
   },
   {
    "measure": 4,
+   "printed": 4,
    "occurrence": 4,
    "beat": 23.5,
    "bpm": 120,
@@ -1577,6 +1626,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 24,
    "bpm": 120,
@@ -1618,6 +1668,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 24.5,
    "bpm": 120,
@@ -1637,6 +1688,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 25,
    "bpm": 120,
@@ -1656,6 +1708,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 25.75,
    "bpm": 120,
@@ -1675,6 +1728,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 26,
    "bpm": 120,
@@ -1694,6 +1748,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 26.5,
    "bpm": 120,
@@ -1713,6 +1768,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 27,
    "bpm": 120,
@@ -1732,6 +1788,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 27.5,
    "bpm": 120,
@@ -1751,6 +1808,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 28,
    "bpm": 120,
@@ -1803,6 +1861,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 28.5,
    "bpm": 120,
@@ -1822,6 +1881,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 29,
    "bpm": 120,
@@ -1841,6 +1901,7 @@
   },
   {
    "measure": 5,
+   "printed": 5,
    "occurrence": 5,
    "beat": 29.5,
    "bpm": 120,
@@ -1860,6 +1921,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 30,
    "bpm": 120,
@@ -1912,6 +1974,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 30.5,
    "bpm": 120,
@@ -1931,6 +1994,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 31,
    "bpm": 120,
@@ -1950,6 +2014,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 31.75,
    "bpm": 120,
@@ -1969,6 +2034,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 32,
    "bpm": 120,
@@ -1988,6 +2054,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 32.5,
    "bpm": 120,
@@ -2007,6 +2074,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 33,
    "bpm": 120,
@@ -2026,6 +2094,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 33.5,
    "bpm": 120,
@@ -2045,6 +2114,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 34,
    "bpm": 120,
@@ -2086,6 +2156,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 34.5,
    "bpm": 120,
@@ -2105,6 +2176,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 35,
    "bpm": 120,
@@ -2124,6 +2196,7 @@
   },
   {
    "measure": 6,
+   "printed": 6,
    "occurrence": 6,
    "beat": 35.5,
    "bpm": 120,
@@ -2143,6 +2216,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 36,
    "bpm": 120,
@@ -2184,6 +2258,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 36.5,
    "bpm": 120,
@@ -2203,6 +2278,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 37,
    "bpm": 120,
@@ -2222,6 +2298,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 37.5,
    "bpm": 120,
@@ -2241,6 +2318,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 38,
    "bpm": 120,
@@ -2282,6 +2360,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 38.5,
    "bpm": 120,
@@ -2301,6 +2380,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 39,
    "bpm": 120,
@@ -2320,6 +2400,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 39.5,
    "bpm": 120,
@@ -2339,6 +2420,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 40,
    "bpm": 120,
@@ -2402,6 +2484,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 40.5,
    "bpm": 120,
@@ -2421,6 +2504,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 41,
    "bpm": 120,
@@ -2451,6 +2535,7 @@
   },
   {
    "measure": 7,
+   "printed": 7,
    "occurrence": 7,
    "beat": 41.5,
    "bpm": 120,
@@ -2481,6 +2566,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 42,
    "bpm": 120,
@@ -2533,6 +2619,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 42.5,
    "bpm": 120,
@@ -2552,6 +2639,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 43,
    "bpm": 120,
@@ -2571,6 +2659,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 43.75,
    "bpm": 120,
@@ -2590,6 +2679,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 44,
    "bpm": 120,
@@ -2620,6 +2710,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 44.5,
    "bpm": 120,
@@ -2639,6 +2730,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 45,
    "bpm": 120,
@@ -2669,6 +2761,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 45.5,
    "bpm": 120,
@@ -2688,6 +2781,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 46,
    "bpm": 120,
@@ -2729,6 +2823,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 46.5,
    "bpm": 120,
@@ -2748,6 +2843,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 47,
    "bpm": 120,
@@ -2778,6 +2874,7 @@
   },
   {
    "measure": 8,
+   "printed": 8,
    "occurrence": 8,
    "beat": 47.5,
    "bpm": 120,
@@ -2797,6 +2894,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 48,
    "bpm": 120,
@@ -2838,6 +2936,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 48.5,
    "bpm": 120,
@@ -2857,6 +2956,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 49,
    "bpm": 120,
@@ -2876,6 +2976,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 49.5,
    "bpm": 120,
@@ -2895,6 +2996,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 50,
    "bpm": 120,
@@ -2958,6 +3060,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 51,
    "bpm": 120,
@@ -3010,6 +3113,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 51.5,
    "bpm": 120,
@@ -3029,6 +3133,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 52,
    "bpm": 120,
@@ -3070,6 +3175,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 52.5,
    "bpm": 120,
@@ -3089,6 +3195,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 53,
    "bpm": 120,
@@ -3141,6 +3248,7 @@
   },
   {
    "measure": 9,
+   "printed": 9,
    "occurrence": 9,
    "beat": 53.5,
    "bpm": 120,
@@ -3160,6 +3268,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 54,
    "bpm": 120,
@@ -3201,6 +3310,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 54.5,
    "bpm": 120,
@@ -3220,6 +3330,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 55,
    "bpm": 120,
@@ -3239,6 +3350,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 55.75,
    "bpm": 120,
@@ -3258,6 +3370,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 56,
    "bpm": 120,
@@ -3288,6 +3401,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 56.5,
    "bpm": 120,
@@ -3307,6 +3421,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 57,
    "bpm": 120,
@@ -3337,6 +3452,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 57.5,
    "bpm": 120,
@@ -3356,6 +3472,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 58,
    "bpm": 120,
@@ -3397,6 +3514,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 58.5,
    "bpm": 120,
@@ -3416,6 +3534,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 59,
    "bpm": 120,
@@ -3446,6 +3565,7 @@
   },
   {
    "measure": 10,
+   "printed": 10,
    "occurrence": 10,
    "beat": 59.5,
    "bpm": 120,
@@ -3465,6 +3585,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 60,
    "bpm": 120,
@@ -3506,6 +3627,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 60.5,
    "bpm": 120,
@@ -3525,6 +3647,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 61,
    "bpm": 120,
@@ -3544,6 +3667,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 61.75,
    "bpm": 120,
@@ -3563,6 +3687,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 62,
    "bpm": 120,
@@ -3593,6 +3718,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 62.5,
    "bpm": 120,
@@ -3612,6 +3738,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 63,
    "bpm": 120,
@@ -3631,6 +3758,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 63.5,
    "bpm": 120,
@@ -3650,6 +3778,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 64,
    "bpm": 120,
@@ -3702,6 +3831,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 64.5,
    "bpm": 120,
@@ -3732,6 +3862,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 65,
    "bpm": 120,
@@ -3784,6 +3915,7 @@
   },
   {
    "measure": 11,
+   "printed": 11,
    "occurrence": 11,
    "beat": 65.5,
    "bpm": 120,
@@ -3814,6 +3946,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 66,
    "bpm": 120,
@@ -3855,6 +3988,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 66.5,
    "bpm": 120,
@@ -3874,6 +4008,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 67,
    "bpm": 120,
@@ -3893,6 +4028,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 67.5,
    "bpm": 120,
@@ -3912,6 +4048,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 68,
    "bpm": 120,
@@ -3953,6 +4090,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 68.5,
    "bpm": 120,
@@ -3972,6 +4110,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 69,
    "bpm": 120,
@@ -3991,6 +4130,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 69.75,
    "bpm": 120,
@@ -4010,6 +4150,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 70,
    "bpm": 120,
@@ -4040,6 +4181,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 70.5,
    "bpm": 120,
@@ -4059,6 +4201,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 71,
    "bpm": 120,
@@ -4089,6 +4232,7 @@
   },
   {
    "measure": 12,
+   "printed": 12,
    "occurrence": 12,
    "beat": 71.5,
    "bpm": 120,
@@ -4108,6 +4252,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 72,
    "bpm": 120,
@@ -4149,6 +4294,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 72.5,
    "bpm": 120,
@@ -4168,6 +4314,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 73,
    "bpm": 120,
@@ -4187,6 +4334,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 73.75,
    "bpm": 120,
@@ -4206,6 +4354,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 74,
    "bpm": 120,
@@ -4225,6 +4374,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 74.5,
    "bpm": 120,
@@ -4244,6 +4394,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 75,
    "bpm": 120,
@@ -4263,6 +4414,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 75.5,
    "bpm": 120,
@@ -4282,6 +4434,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 76,
    "bpm": 120,
@@ -4312,6 +4465,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 76.5,
    "bpm": 120,
@@ -4331,6 +4485,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 77,
    "bpm": 120,
@@ -4350,6 +4505,7 @@
   },
   {
    "measure": 13,
+   "printed": 13,
    "occurrence": 13,
    "beat": 77.5,
    "bpm": 120,
@@ -4369,6 +4525,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 78,
    "bpm": 120,
@@ -4432,6 +4589,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 78.66666666666667,
    "bpm": 120,
@@ -4473,6 +4631,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 79.33333333333333,
    "bpm": 120,
@@ -4514,6 +4673,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 80,
    "bpm": 120,
@@ -4555,6 +4715,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 80.66666666666667,
    "bpm": 120,
@@ -4596,6 +4757,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 81.33333333333333,
    "bpm": 120,
@@ -4637,6 +4799,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 82,
    "bpm": 120,
@@ -4689,6 +4852,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 82.66666666666667,
    "bpm": 120,
@@ -4730,6 +4894,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 83,
    "bpm": 120,
@@ -4737,6 +4902,7 @@
   },
   {
    "measure": 14,
+   "printed": 14,
    "occurrence": 14,
    "beat": 83.33333333333333,
    "bpm": 120,
@@ -4778,6 +4944,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 84,
    "bpm": 120,
@@ -4841,6 +5008,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 84.66666666666667,
    "bpm": 120,
@@ -4882,6 +5050,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 85.33333333333333,
    "bpm": 120,
@@ -4923,6 +5092,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 86,
    "bpm": 120,
@@ -4964,6 +5134,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 86.66666666666667,
    "bpm": 120,
@@ -5005,6 +5176,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 87.33333333333333,
    "bpm": 120,
@@ -5046,6 +5218,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 88,
    "bpm": 120,
@@ -5098,6 +5271,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 88.66666666666667,
    "bpm": 120,
@@ -5139,6 +5313,7 @@
   },
   {
    "measure": 15,
+   "printed": 15,
    "occurrence": 15,
    "beat": 89.33333333333333,
    "bpm": 120,
@@ -5180,6 +5355,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 90,
    "bpm": 120,
@@ -5243,6 +5419,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 90.66666666666667,
    "bpm": 120,
@@ -5284,6 +5461,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 91.33333333333333,
    "bpm": 120,
@@ -5325,6 +5503,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 92,
    "bpm": 120,
@@ -5366,6 +5545,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 92.66666666666667,
    "bpm": 120,
@@ -5407,6 +5587,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 93.33333333333333,
    "bpm": 120,
@@ -5448,6 +5629,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 94,
    "bpm": 120,
@@ -5511,6 +5693,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 94.66666666666667,
    "bpm": 120,
@@ -5563,6 +5746,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 95,
    "bpm": 120,
@@ -5570,6 +5754,7 @@
   },
   {
    "measure": 16,
+   "printed": 16,
    "occurrence": 16,
    "beat": 95.33333333333333,
    "bpm": 120,
@@ -5622,6 +5807,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 96,
    "bpm": 120,
@@ -5685,6 +5871,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 96.66666666666667,
    "bpm": 120,
@@ -5726,6 +5913,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 97.33333333333333,
    "bpm": 120,
@@ -5767,6 +5955,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 98,
    "bpm": 120,
@@ -5797,6 +5986,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 98.66666666666667,
    "bpm": 120,
@@ -5827,6 +6017,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 99.33333333333333,
    "bpm": 120,
@@ -5857,6 +6048,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 100,
    "bpm": 120,
@@ -5909,6 +6101,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 100.66666666666667,
    "bpm": 120,
@@ -5939,6 +6132,7 @@
   },
   {
    "measure": 17,
+   "printed": 17,
    "occurrence": 17,
    "beat": 101.33333333333333,
    "bpm": 120,
@@ -5969,6 +6163,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 102,
    "bpm": 120,
@@ -6032,6 +6227,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 102.66666666666667,
    "bpm": 120,
@@ -6073,6 +6269,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 103.33333333333333,
    "bpm": 120,
@@ -6114,6 +6311,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 104,
    "bpm": 120,
@@ -6177,6 +6375,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 104.66666666666667,
    "bpm": 120,
@@ -6218,6 +6417,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 105.33333333333333,
    "bpm": 120,
@@ -6259,6 +6459,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 106,
    "bpm": 120,
@@ -6322,6 +6523,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 106.66666666666667,
    "bpm": 120,
@@ -6363,6 +6565,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 107,
    "bpm": 120,
@@ -6370,6 +6573,7 @@
   },
   {
    "measure": 18,
+   "printed": 18,
    "occurrence": 18,
    "beat": 107.33333333333333,
    "bpm": 120,
@@ -6411,6 +6615,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 108,
    "bpm": 120,
@@ -6474,6 +6679,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 108.66666666666667,
    "bpm": 120,
@@ -6515,6 +6721,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 109,
    "bpm": 120,
@@ -6534,6 +6741,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 109.33333333333333,
    "bpm": 120,
@@ -6575,6 +6783,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 110,
    "bpm": 120,
@@ -6627,6 +6836,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 110.66666666666667,
    "bpm": 120,
@@ -6668,6 +6878,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 111,
    "bpm": 120,
@@ -6687,6 +6898,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 111.33333333333333,
    "bpm": 120,
@@ -6728,6 +6940,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 112,
    "bpm": 120,
@@ -6791,6 +7004,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 112.66666666666667,
    "bpm": 120,
@@ -6832,6 +7046,7 @@
   },
   {
    "measure": 19,
+   "printed": 19,
    "occurrence": 19,
    "beat": 113.33333333333333,
    "bpm": 120,
@@ -6873,6 +7088,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 114,
    "bpm": 120,
@@ -6936,6 +7152,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 114.66666666666667,
    "bpm": 120,
@@ -6977,6 +7194,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 115.33333333333333,
    "bpm": 120,
@@ -7018,6 +7236,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 116,
    "bpm": 120,
@@ -7070,6 +7289,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 116.66666666666667,
    "bpm": 120,
@@ -7111,6 +7331,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 117,
    "bpm": 120,
@@ -7130,6 +7351,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 117.33333333333333,
    "bpm": 120,
@@ -7171,6 +7393,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 118,
    "bpm": 120,
@@ -7234,6 +7457,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 118.66666666666667,
    "bpm": 120,
@@ -7275,6 +7499,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 119.33333333333333,
    "bpm": 120,
@@ -7305,6 +7530,7 @@
   },
   {
    "measure": 20,
+   "printed": 20,
    "occurrence": 20,
    "beat": 119.5,
    "bpm": 120,
@@ -7324,6 +7550,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 120,
    "bpm": 120,
@@ -7398,6 +7625,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 120.66666666666667,
    "bpm": 120,
@@ -7428,6 +7656,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 121.33333333333333,
    "bpm": 120,
@@ -7458,6 +7687,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 122,
    "bpm": 120,
@@ -7532,6 +7762,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 122.66666666666667,
    "bpm": 120,
@@ -7562,6 +7793,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 123,
    "bpm": 120,
@@ -7569,6 +7801,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 123.33333333333333,
    "bpm": 120,
@@ -7599,6 +7832,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 124,
    "bpm": 120,
@@ -7662,6 +7896,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 124.66666666666667,
    "bpm": 120,
@@ -7725,6 +7960,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 125,
    "bpm": 120,
@@ -7732,6 +7968,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 125.33333333333333,
    "bpm": 120,
@@ -7795,6 +8032,7 @@
   },
   {
    "measure": 21,
+   "printed": 21,
    "occurrence": 21,
    "beat": 125.5,
    "bpm": 120,
@@ -7802,6 +8040,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 126,
    "bpm": 120,
@@ -7854,6 +8093,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 126.66666666666667,
    "bpm": 120,
@@ -7906,6 +8146,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 127.33333333333333,
    "bpm": 120,
@@ -7958,6 +8199,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 128,
    "bpm": 120,
@@ -8010,6 +8252,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 128.66666666666666,
    "bpm": 120,
@@ -8062,6 +8305,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 129,
    "bpm": 120,
@@ -8069,6 +8313,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 129.33333333333334,
    "bpm": 120,
@@ -8121,6 +8366,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 130,
    "bpm": 120,
@@ -8195,6 +8441,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 130.66666666666666,
    "bpm": 120,
@@ -8269,6 +8516,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 131.33333333333334,
    "bpm": 120,
@@ -8343,6 +8591,7 @@
   },
   {
    "measure": 22,
+   "printed": 22,
    "occurrence": 22,
    "beat": 131.5,
    "bpm": 120,
@@ -8350,6 +8599,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 132,
    "bpm": 120,
@@ -8424,6 +8674,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 132.66666666666666,
    "bpm": 120,
@@ -8498,6 +8749,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 133.33333333333334,
    "bpm": 120,
@@ -8572,6 +8824,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 134,
    "bpm": 120,
@@ -8635,6 +8888,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 134.66666666666666,
    "bpm": 120,
@@ -8698,6 +8952,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 135,
    "bpm": 120,
@@ -8705,6 +8960,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 135.33333333333334,
    "bpm": 120,
@@ -8768,6 +9024,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 136,
    "bpm": 120,
@@ -8831,6 +9088,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 136.66666666666666,
    "bpm": 120,
@@ -8894,6 +9152,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 137.33333333333334,
    "bpm": 120,
@@ -8957,6 +9216,7 @@
   },
   {
    "measure": 23,
+   "printed": 23,
    "occurrence": 23,
    "beat": 137.5,
    "bpm": 120,
@@ -8964,6 +9224,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 138,
    "bpm": 120,
@@ -9027,6 +9288,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 138.66666666666666,
    "bpm": 120,
@@ -9090,6 +9352,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 139.33333333333334,
    "bpm": 120,
@@ -9153,6 +9416,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 140,
    "bpm": 120,
@@ -9216,6 +9480,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 140.66666666666666,
    "bpm": 120,
@@ -9279,6 +9544,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 141,
    "bpm": 120,
@@ -9286,6 +9552,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 141.33333333333334,
    "bpm": 120,
@@ -9349,6 +9616,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 142,
    "bpm": 120,
@@ -9423,6 +9691,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 142.66666666666666,
    "bpm": 120,
@@ -9497,6 +9766,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 143.33333333333334,
    "bpm": 120,
@@ -9571,6 +9841,7 @@
   },
   {
    "measure": 24,
+   "printed": 24,
    "occurrence": 24,
    "beat": 143.5,
    "bpm": 120,
@@ -9578,6 +9849,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 144,
    "bpm": 120,
@@ -9652,6 +9924,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 144.66666666666666,
    "bpm": 120,
@@ -9726,6 +9999,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 145.33333333333334,
    "bpm": 120,
@@ -9800,6 +10074,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 146,
    "bpm": 120,
@@ -9863,6 +10138,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 146.66666666666666,
    "bpm": 120,
@@ -9926,6 +10202,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 147,
    "bpm": 120,
@@ -9933,6 +10210,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 147.33333333333334,
    "bpm": 120,
@@ -9996,6 +10274,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 148,
    "bpm": 120,
@@ -10048,6 +10327,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 148.66666666666666,
    "bpm": 120,
@@ -10100,6 +10380,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 149,
    "bpm": 120,
@@ -10107,6 +10388,7 @@
   },
   {
    "measure": 25,
+   "printed": 25,
    "occurrence": 25,
    "beat": 149.33333333333334,
    "bpm": 120,
@@ -10159,6 +10441,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 150,
    "bpm": 120,
@@ -10200,6 +10483,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 150.5,
    "bpm": 120,
@@ -10219,6 +10503,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 151,
    "bpm": 120,
@@ -10238,6 +10523,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 151.75,
    "bpm": 120,
@@ -10257,6 +10543,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 152,
    "bpm": 120,
@@ -10287,6 +10574,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 152.5,
    "bpm": 120,
@@ -10306,6 +10594,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 153,
    "bpm": 120,
@@ -10336,6 +10625,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 153.5,
    "bpm": 120,
@@ -10355,6 +10645,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 154,
    "bpm": 120,
@@ -10396,6 +10687,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 154.5,
    "bpm": 120,
@@ -10415,6 +10707,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 155,
    "bpm": 120,
@@ -10434,6 +10727,7 @@
   },
   {
    "measure": 26,
+   "printed": 26,
    "occurrence": 26,
    "beat": 155.5,
    "bpm": 120,
@@ -10464,6 +10758,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 156,
    "bpm": 120,
@@ -10527,6 +10822,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 156.5,
    "bpm": 120,
@@ -10546,6 +10842,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 157,
    "bpm": 120,
@@ -10565,6 +10862,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 157.75,
    "bpm": 120,
@@ -10584,6 +10882,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 158,
    "bpm": 120,
@@ -10603,6 +10902,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 158.5,
    "bpm": 120,
@@ -10622,6 +10922,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 159,
    "bpm": 120,
@@ -10641,6 +10942,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 159.5,
    "bpm": 120,
@@ -10660,6 +10962,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 160,
    "bpm": 120,
@@ -10690,6 +10993,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 160.5,
    "bpm": 120,
@@ -10709,6 +11013,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 161,
    "bpm": 120,
@@ -10728,6 +11033,7 @@
   },
   {
    "measure": 27,
+   "printed": 27,
    "occurrence": 27,
    "beat": 161.5,
    "bpm": 120,
@@ -10747,6 +11053,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 162,
    "bpm": 120,
@@ -10788,6 +11095,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 162.5,
    "bpm": 120,
@@ -10807,6 +11115,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 163,
    "bpm": 120,
@@ -10826,6 +11135,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 163.5,
    "bpm": 120,
@@ -10833,6 +11143,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 163.75,
    "bpm": 120,
@@ -10863,6 +11174,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 164,
    "bpm": 120,
@@ -10893,6 +11205,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 164.5,
    "bpm": 120,
@@ -10912,6 +11225,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 165,
    "bpm": 120,
@@ -10942,6 +11256,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 165.5,
    "bpm": 120,
@@ -10961,6 +11276,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 166,
    "bpm": 120,
@@ -11002,6 +11318,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 166.5,
    "bpm": 120,
@@ -11021,6 +11338,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 167,
    "bpm": 120,
@@ -11051,6 +11369,7 @@
   },
   {
    "measure": 28,
+   "printed": 28,
    "occurrence": 28,
    "beat": 167.5,
    "bpm": 120,
@@ -11070,6 +11389,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 168,
    "bpm": 120,
@@ -11122,6 +11442,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 168.5,
    "bpm": 120,
@@ -11141,6 +11462,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 169,
    "bpm": 120,
@@ -11160,6 +11482,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 169.75,
    "bpm": 120,
@@ -11179,6 +11502,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 170,
    "bpm": 120,
@@ -11198,6 +11522,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 170.5,
    "bpm": 120,
@@ -11217,6 +11542,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 171,
    "bpm": 120,
@@ -11236,6 +11562,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 171.5,
    "bpm": 120,
@@ -11255,6 +11582,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 172,
    "bpm": 120,
@@ -11285,6 +11613,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 172.5,
    "bpm": 120,
@@ -11304,6 +11633,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 173,
    "bpm": 120,
@@ -11323,6 +11653,7 @@
   },
   {
    "measure": 29,
+   "printed": 29,
    "occurrence": 29,
    "beat": 173.5,
    "bpm": 120,
@@ -11342,6 +11673,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 174,
    "bpm": 120,
@@ -11383,6 +11715,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 174.5,
    "bpm": 120,
@@ -11413,6 +11746,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 175,
    "bpm": 120,
@@ -11443,6 +11777,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 175.5,
    "bpm": 120,
@@ -11450,6 +11785,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 175.75,
    "bpm": 120,
@@ -11480,6 +11816,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 176,
    "bpm": 120,
@@ -11510,6 +11847,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 176.5,
    "bpm": 120,
@@ -11540,6 +11878,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 177,
    "bpm": 120,
@@ -11570,6 +11909,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 177.5,
    "bpm": 120,
@@ -11600,6 +11940,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 178,
    "bpm": 120,
@@ -11641,6 +11982,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 178.5,
    "bpm": 120,
@@ -11671,6 +12013,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 179,
    "bpm": 120,
@@ -11701,6 +12044,7 @@
   },
   {
    "measure": 30,
+   "printed": 30,
    "occurrence": 30,
    "beat": 179.5,
    "bpm": 120,
@@ -11731,6 +12075,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 180,
    "bpm": 120,
@@ -11772,6 +12117,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 180.5,
    "bpm": 120,
@@ -11802,6 +12148,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 181,
    "bpm": 120,
@@ -11832,6 +12179,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 181.75,
    "bpm": 120,
@@ -11862,6 +12210,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 182,
    "bpm": 120,
@@ -11892,6 +12241,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 182.5,
    "bpm": 120,
@@ -11922,6 +12272,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 183,
    "bpm": 120,
@@ -11952,6 +12303,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 183.5,
    "bpm": 120,
@@ -11982,6 +12334,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 184,
    "bpm": 120,
@@ -12023,6 +12376,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 184.5,
    "bpm": 120,
@@ -12053,6 +12407,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 185,
    "bpm": 120,
@@ -12083,6 +12438,7 @@
   },
   {
    "measure": 31,
+   "printed": 31,
    "occurrence": 31,
    "beat": 185.5,
    "bpm": 120,
@@ -12113,6 +12469,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 186,
    "bpm": 120,
@@ -12154,6 +12511,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 186.5,
    "bpm": 120,
@@ -12184,6 +12542,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 187,
    "bpm": 120,
@@ -12214,6 +12573,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 187.75,
    "bpm": 120,
@@ -12244,6 +12604,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 188,
    "bpm": 120,
@@ -12274,6 +12635,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 188.5,
    "bpm": 120,
@@ -12304,6 +12666,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 189,
    "bpm": 120,
@@ -12345,6 +12708,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 189.5,
    "bpm": 120,
@@ -12375,6 +12739,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 190,
    "bpm": 120,
@@ -12416,6 +12781,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 190.5,
    "bpm": 120,
@@ -12446,6 +12812,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 191,
    "bpm": 120,
@@ -12487,6 +12854,7 @@
   },
   {
    "measure": 32,
+   "printed": 32,
    "occurrence": 32,
    "beat": 191.5,
    "bpm": 120,
@@ -12517,6 +12885,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 192,
    "bpm": 120,
@@ -12558,6 +12927,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 192.5,
    "bpm": 120,
@@ -12577,6 +12947,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 193,
    "bpm": 120,
@@ -12596,6 +12967,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 193.75,
    "bpm": 120,
@@ -12615,6 +12987,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 194,
    "bpm": 120,
@@ -12634,6 +13007,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 194.5,
    "bpm": 120,
@@ -12653,6 +13027,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 195,
    "bpm": 120,
@@ -12672,6 +13047,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 195.5,
    "bpm": 120,
@@ -12691,6 +13067,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 196,
    "bpm": 120,
@@ -12743,6 +13120,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 196.5,
    "bpm": 120,
@@ -12762,6 +13140,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 197,
    "bpm": 120,
@@ -12781,6 +13160,7 @@
   },
   {
    "measure": 33,
+   "printed": 33,
    "occurrence": 33,
    "beat": 197.5,
    "bpm": 120,
@@ -12800,6 +13180,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 198,
    "bpm": 120,
@@ -12852,6 +13233,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 198.5,
    "bpm": 120,
@@ -12871,6 +13253,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 199,
    "bpm": 120,
@@ -12890,6 +13273,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 199.75,
    "bpm": 120,
@@ -12909,6 +13293,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 200,
    "bpm": 120,
@@ -12928,6 +13313,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 200.5,
    "bpm": 120,
@@ -12947,6 +13333,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 201,
    "bpm": 120,
@@ -12977,6 +13364,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 201.5,
    "bpm": 120,
@@ -12996,6 +13384,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 202,
    "bpm": 120,
@@ -13037,6 +13426,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 202.5,
    "bpm": 120,
@@ -13056,6 +13446,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 203,
    "bpm": 120,
@@ -13086,6 +13477,7 @@
   },
   {
    "measure": 34,
+   "printed": 34,
    "occurrence": 34,
    "beat": 203.5,
    "bpm": 120,
@@ -13105,6 +13497,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 204,
    "bpm": 120,
@@ -13146,6 +13539,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 204.5,
    "bpm": 120,
@@ -13165,6 +13559,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 205,
    "bpm": 120,
@@ -13184,6 +13579,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 205.5,
    "bpm": 120,
@@ -13203,6 +13599,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 206,
    "bpm": 120,
@@ -13244,6 +13641,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 206.5,
    "bpm": 120,
@@ -13263,6 +13661,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 207,
    "bpm": 120,
@@ -13282,6 +13681,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 207.5,
    "bpm": 120,
@@ -13301,6 +13701,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 208,
    "bpm": 120,
@@ -13364,6 +13765,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 208.5,
    "bpm": 120,
@@ -13394,6 +13796,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 209,
    "bpm": 120,
@@ -13413,6 +13816,7 @@
   },
   {
    "measure": 35,
+   "printed": 35,
    "occurrence": 35,
    "beat": 209.5,
    "bpm": 120,
@@ -13432,6 +13836,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 210,
    "bpm": 120,
@@ -13484,6 +13889,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 210.5,
    "bpm": 120,
@@ -13503,6 +13909,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 211,
    "bpm": 120,
@@ -13522,6 +13929,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 211.75,
    "bpm": 120,
@@ -13541,6 +13949,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 212,
    "bpm": 120,
@@ -13560,6 +13969,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 212.5,
    "bpm": 120,
@@ -13579,6 +13989,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 213,
    "bpm": 120,
@@ -13609,6 +14020,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 213.5,
    "bpm": 120,
@@ -13628,6 +14040,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 214,
    "bpm": 120,
@@ -13669,6 +14082,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 214.5,
    "bpm": 120,
@@ -13688,6 +14102,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 215,
    "bpm": 120,
@@ -13718,6 +14133,7 @@
   },
   {
    "measure": 36,
+   "printed": 36,
    "occurrence": 36,
    "beat": 215.5,
    "bpm": 120,
@@ -13737,6 +14153,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 216,
    "bpm": 120,
@@ -13778,6 +14195,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 216.5,
    "bpm": 120,
@@ -13797,6 +14215,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 217,
    "bpm": 120,
@@ -13816,6 +14235,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 217.5,
    "bpm": 120,
@@ -13835,6 +14255,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 218,
    "bpm": 120,
@@ -13898,6 +14319,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 219,
    "bpm": 120,
@@ -13961,6 +14383,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 220,
    "bpm": 120,
@@ -14024,6 +14447,7 @@
   },
   {
    "measure": 37,
+   "printed": 37,
    "occurrence": 37,
    "beat": 221,
    "bpm": 120,
@@ -14087,6 +14511,7 @@
   },
   {
    "measure": 38,
+   "printed": 38,
    "occurrence": 38,
    "beat": 222,
    "bpm": 120,
@@ -14150,6 +14575,7 @@
   },
   {
    "measure": 38,
+   "printed": 38,
    "occurrence": 38,
    "beat": 223,
    "bpm": 120,
@@ -14213,6 +14639,7 @@
   },
   {
    "measure": 38,
+   "printed": 38,
    "occurrence": 38,
    "beat": 224,
    "bpm": 120,
@@ -14276,6 +14703,7 @@
   },
   {
    "measure": 38,
+   "printed": 38,
    "occurrence": 38,
    "beat": 226,
    "bpm": 120,
@@ -14306,6 +14734,7 @@
   },
   {
    "measure": 38,
+   "printed": 38,
    "occurrence": 38,
    "beat": 227,
    "bpm": 120,
@@ -14325,6 +14754,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 228,
    "bpm": 120,
@@ -14366,6 +14796,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 228.5,
    "bpm": 120,
@@ -14385,6 +14816,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 229,
    "bpm": 120,
@@ -14404,6 +14836,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 229.75,
    "bpm": 120,
@@ -14423,6 +14856,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 230,
    "bpm": 120,
@@ -14442,6 +14876,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 230.5,
    "bpm": 120,
@@ -14461,6 +14896,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 231,
    "bpm": 120,
@@ -14480,6 +14916,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 231.5,
    "bpm": 120,
@@ -14499,6 +14936,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 232,
    "bpm": 120,
@@ -14529,6 +14967,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 232.5,
    "bpm": 120,
@@ -14548,6 +14987,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 233,
    "bpm": 120,
@@ -14567,6 +15007,7 @@
   },
   {
    "measure": 39,
+   "printed": 39,
    "occurrence": 39,
    "beat": 233.5,
    "bpm": 120,
@@ -14586,6 +15027,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 234,
    "bpm": 120,
@@ -14627,6 +15069,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 234.5,
    "bpm": 120,
@@ -14646,6 +15089,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 235,
    "bpm": 120,
@@ -14665,6 +15109,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 235.5,
    "bpm": 120,
@@ -14684,6 +15129,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 236,
    "bpm": 120,
@@ -14725,6 +15171,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 236.5,
    "bpm": 120,
@@ -14744,6 +15191,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 237,
    "bpm": 120,
@@ -14774,6 +15222,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 237.5,
    "bpm": 120,
@@ -14793,6 +15242,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 238,
    "bpm": 120,
@@ -14834,6 +15284,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 238.5,
    "bpm": 120,
@@ -14853,6 +15304,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 239,
    "bpm": 120,
@@ -14872,6 +15324,7 @@
   },
   {
    "measure": 40,
+   "printed": 40,
    "occurrence": 40,
    "beat": 239.5,
    "bpm": 120,
@@ -14902,6 +15355,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 240,
    "bpm": 120,
@@ -14943,6 +15397,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 240.5,
    "bpm": 120,
@@ -14962,6 +15417,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 241,
    "bpm": 120,
@@ -14981,6 +15437,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 241.75,
    "bpm": 120,
@@ -15000,6 +15457,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 242,
    "bpm": 120,
@@ -15019,6 +15477,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 242.5,
    "bpm": 120,
@@ -15038,6 +15497,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 243,
    "bpm": 120,
@@ -15057,6 +15517,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 243.5,
    "bpm": 120,
@@ -15076,6 +15537,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 244,
    "bpm": 120,
@@ -15117,6 +15579,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 244.5,
    "bpm": 120,
@@ -15136,6 +15599,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 245,
    "bpm": 120,
@@ -15155,6 +15619,7 @@
   },
   {
    "measure": 41,
+   "printed": 41,
    "occurrence": 41,
    "beat": 245.5,
    "bpm": 120,
@@ -15174,6 +15639,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 246,
    "bpm": 120,
@@ -15226,6 +15692,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 246.5,
    "bpm": 120,
@@ -15245,6 +15712,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 247,
    "bpm": 120,
@@ -15264,6 +15732,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 247.5,
    "bpm": 120,
@@ -15283,6 +15752,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 248,
    "bpm": 120,
@@ -15335,6 +15805,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 248.5,
    "bpm": 120,
@@ -15354,6 +15825,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 249,
    "bpm": 120,
@@ -15384,6 +15856,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 249.5,
    "bpm": 120,
@@ -15414,6 +15887,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 250,
    "bpm": 120,
@@ -15466,6 +15940,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 250.5,
    "bpm": 120,
@@ -15485,6 +15960,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 251,
    "bpm": 120,
@@ -15504,6 +15980,7 @@
   },
   {
    "measure": 42,
+   "printed": 42,
    "occurrence": 42,
    "beat": 251.5,
    "bpm": 120,
@@ -15545,6 +16022,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 252,
    "bpm": 120,
@@ -15586,6 +16064,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 252.5,
    "bpm": 120,
@@ -15605,6 +16084,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 253,
    "bpm": 120,
@@ -15624,6 +16104,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 253.75,
    "bpm": 120,
@@ -15643,6 +16124,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 254,
    "bpm": 120,
@@ -15662,6 +16144,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 254.5,
    "bpm": 120,
@@ -15681,6 +16164,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 255,
    "bpm": 120,
@@ -15700,6 +16184,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 255.5,
    "bpm": 120,
@@ -15719,6 +16204,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 256,
    "bpm": 120,
@@ -15738,6 +16224,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 256.5,
    "bpm": 120,
@@ -15757,6 +16244,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 257,
    "bpm": 120,
@@ -15776,6 +16264,7 @@
   },
   {
    "measure": 43,
+   "printed": 43,
    "occurrence": 43,
    "beat": 257.5,
    "bpm": 120,
@@ -15795,6 +16284,7 @@
   },
   {
    "measure": 44,
+   "printed": 44,
    "occurrence": 44,
    "beat": 258,
    "bpm": 120,
@@ -15814,6 +16304,7 @@
   },
   {
    "measure": 44,
+   "printed": 44,
    "occurrence": 44,
    "beat": 259,
    "bpm": 120,
@@ -15821,6 +16312,7 @@
   },
   {
    "measure": 44,
+   "printed": 44,
    "occurrence": 44,
    "beat": 260,
    "bpm": 120,
@@ -15884,6 +16376,7 @@
   },
   {
    "measure": 44,
+   "printed": 44,
    "occurrence": 44,
    "beat": 261,
    "bpm": 120,
@@ -15891,6 +16384,7 @@
   },
   {
    "measure": 44,
+   "printed": 44,
    "occurrence": 44,
    "beat": 262,
    "bpm": 120,

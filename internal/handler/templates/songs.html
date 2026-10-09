@@ -70,9 +70,9 @@
     <div class="field">
       <label for="song-from">Measures</label>
       <div class="range-inputs">
-        <input id="song-from" name="from" type="number" min="1" step="1" inputmode="numeric" aria-label="From measure">
+        <select id="song-from" name="from" aria-label="From measure"></select>
         <span aria-hidden="true">to</span>
-        <input id="song-to" name="to" type="number" min="1" step="1" inputmode="numeric" aria-label="To measure">
+        <select id="song-to" name="to" aria-label="To measure"></select>
         <button id="song-whole" type="button" class="secondary small">Whole piece</button>
       </div>
     </div>
@@ -102,7 +102,7 @@
     <div class="field">
       <span class="field-label" aria-hidden="true">Options</span>
       <label class="check"><input id="song-loop" name="loop" type="checkbox"> Repeat the selection</label>
-      <label class="check" data-modes="tempo rubato"><input id="song-metronome" name="metronome" type="checkbox" checked> Metronome</label>
+      <label class="check" data-modes="tempo rubato listen"><input id="song-metronome" name="metronome" type="checkbox" checked> Metronome</label>
       <label class="check"><input id="song-accompany" name="accompany" type="checkbox" checked> Play the other hand</label>
       <label class="check"><input id="fingering" name="fingering" type="checkbox"> Show fingers</label>
     </div>

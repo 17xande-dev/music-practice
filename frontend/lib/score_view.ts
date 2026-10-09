@@ -32,6 +32,10 @@ interface OsmdSystem {
   PositionAndShape: OsmdBox;
   StaffLines: { PositionAndShape: OsmdBox; StaffHeight: number }[];
 }
+interface OsmdMeasure {
+  PositionAndShape: OsmdBox & { BorderLeft: number; BorderRight: number };
+  ParentStaffLine?: { PositionAndShape: OsmdBox; StaffHeight: number };
+}
 interface OsmdGNote {
   getSVGGElement?(): SVGGElement;
   parentVoiceEntry?: {
@@ -67,6 +71,8 @@ export class ScoreView {
   private line = false;
   private gliding = false;
   private marks = new Map<number, StepMark>();
+  /** Heat level (0-4) to tint each measure with, by 0-based measure index. */
+  private heat = new Map<number, number>();
   private loaded = false;
   private lastWidth = 0;
   /** Called after a re-render (resize, theme), when refs point at new elements. */
@@ -124,6 +130,7 @@ export class ScoreView {
     }
     this.loaded = false;
     this.marks.clear();
+    this.heat.clear();
     try {
       await this.osmd.load(content);
     } catch (e) {
@@ -158,6 +165,7 @@ export class ScoreView {
     // freshly drawn elements.
     this.walk();
     for (const [ref, m] of this.marks) this.apply(ref, m);
+    this.drawHeat();
     // OSMD replaces the page's contents when it renders.
     this.page.append(this.cursor);
     if (this.cursorRefs) this.showCursor(this.cursorRefs);
@@ -172,7 +180,12 @@ export class ScoreView {
     const rules = this.osmd.EngravingRules;
     this.elements = [];
     this.spots = [];
+    // A note played in each pass of a repeat is one note on the page, so it
+    // gets one ref: a tap on it can then find every pass (stepOfRef).
+    const known = new Map<unknown, number>();
     return walkCursor(this.osmd, (raw) => {
+      const seen = known.get(raw);
+      if (seen !== undefined) return seen;
       let el: SVGGElement | null = null;
       let spot: Spot | null = null;
       try {
@@ -184,6 +197,7 @@ export class ScoreView {
       }
       this.elements.push(el);
       this.spots.push(spot);
+      known.set(raw, this.elements.length - 1);
       return this.elements.length - 1;
     });
   }
@@ -311,6 +325,55 @@ export class ScoreView {
   clearMarks() {
     for (const r of this.marks.keys()) this.apply(r, null);
     this.marks.clear();
+  }
+
+  /**
+   * Tint measures by how they went (the results' heat map, on the score
+   * itself): `levels` maps a 0-based measure index to a level 0-4. Drawn as
+   * rects behind the notes; the colours come from the stylesheet.
+   */
+  setHeat(levels: ReadonlyMap<number, number>) {
+    this.heat = new Map(levels);
+    this.drawHeat();
+  }
+
+  clearHeat() {
+    if (!this.heat.size) return;
+    this.heat.clear();
+    this.drawHeat();
+  }
+
+  private drawHeat() {
+    const svg = this.container.querySelector("svg");
+    if (!svg) return;
+    for (const r of svg.querySelectorAll(".heat-tint")) r.remove();
+    const list = (this.osmd.GraphicSheet as unknown as { MeasureList?: OsmdMeasure[][] })
+      ?.MeasureList;
+    const zoom = UNIT * this.osmd.Zoom;
+    const rects: SVGRectElement[] = [];
+    for (const [index, level] of this.heat) {
+      let [x0, x1, y0, y1] = [Infinity, -Infinity, Infinity, -Infinity];
+      for (const m of list?.[index] ?? []) {
+        const line = m?.ParentStaffLine;
+        if (!m || !line) continue;
+        const box = m.PositionAndShape;
+        x0 = Math.min(x0, box.AbsolutePosition.x + box.BorderLeft);
+        x1 = Math.max(x1, box.AbsolutePosition.x + box.BorderRight);
+        const top = line.PositionAndShape.AbsolutePosition.y;
+        y0 = Math.min(y0, top);
+        y1 = Math.max(y1, top + line.StaffHeight);
+      }
+      if (!Number.isFinite(x0 + x1 + y0 + y1)) continue;
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("class", `heat-tint level-${level}`);
+      rect.setAttribute("x", String(x0 * zoom));
+      rect.setAttribute("y", String((y0 - 1) * zoom));
+      rect.setAttribute("width", String((x1 - x0) * zoom));
+      rect.setAttribute("height", String((y1 - y0 + 2) * zoom));
+      rects.push(rect);
+    }
+    // First in the svg, so behind the staff lines and notes.
+    svg.prepend(...rects);
   }
 
   /** Scroll so the note `ref` is in view, keeping the line above it visible. */

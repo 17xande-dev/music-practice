@@ -16,6 +16,7 @@
  "entries": [
   {
    "measure": 1,
+   "printed": 0,
    "occurrence": 1,
    "beat": 0,
    "bpm": 100,
@@ -35,6 +36,7 @@
   },
   {
    "measure": 1,
+   "printed": 0,
    "occurrence": 1,
    "beat": 1,
    "bpm": 100,
@@ -54,6 +56,7 @@
   },
   {
    "measure": 2,
+   "printed": 1,
    "occurrence": 2,
    "beat": 1.5,
    "bpm": 100,
@@ -73,6 +76,7 @@
   },
   {
    "measure": 2,
+   "printed": 1,
    "occurrence": 2,
    "beat": 2.5,
    "bpm": 100,
@@ -92,6 +96,7 @@
   },
   {
    "measure": 3,
+   "printed": 2,
    "occurrence": 3,
    "beat": 3.5,
    "bpm": 100,
@@ -111,6 +116,7 @@
   },
   {
    "measure": 3,
+   "printed": 2,
    "occurrence": 3,
    "beat": 4.5,
    "bpm": 100,
@@ -130,6 +136,7 @@
   },
   {
    "measure": 4,
+   "printed": 2,
    "occurrence": 4,
    "beat": 5.5,
    "bpm": 100,
@@ -149,6 +156,7 @@
   },
   {
    "measure": 4,
+   "printed": 2,
    "occurrence": 4,
    "beat": 6.5,
    "bpm": 100,
@@ -168,6 +176,7 @@
   },
   {
    "measure": 4,
+   "printed": 2,
    "occurrence": 4,
    "beat": 7.5,
    "bpm": 100,

@@ -149,6 +149,10 @@
    2
   ],
   "measureCount": 2,
+  "printed": [
+   1,
+   2
+  ],
   "twoHands": true
  },
  "practice": {
@@ -318,6 +322,7 @@
     }
    ],
    "startBeat": 0,
+   "spans": [],
    "measureStarts": [
     0,
     4
@@ -589,6 +594,7 @@
     }
    ],
    "startBeat": 4,
+   "spans": [],
    "measureStarts": [
     0
    ],
@@ -871,6 +877,7 @@
     }
    ],
    "startBeat": 0,
+   "spans": [],
    "measureStarts": [
     0,
     4
@@ -1171,6 +1178,7 @@
     }
    ],
    "startBeat": 4,
+   "spans": [],
    "measureStarts": [
     0
    ],
@@ -1441,6 +1449,7 @@
     }
    ],
    "startBeat": 0,
+   "spans": [],
    "measureStarts": [
     0,
     2
@@ -1757,6 +1766,7 @@
     }
    ],
    "startBeat": 4,
+   "spans": [],
    "measureStarts": [
     0
    ],
