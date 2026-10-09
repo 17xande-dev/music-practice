@@ -72,6 +72,7 @@ import {
 import type { Command } from "./lib/commands.ts";
 import { installCommands } from "./lib/palette.ts";
 import { setPlaying } from "./lib/transport.ts";
+import { checkStoredData } from "./lib/data_repair.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
@@ -141,6 +142,7 @@ const midi = new Midi();
 const metronome = new Metronome();
 const calibration = new Calibration(metronome);
 const store = ProgressStore.fromWindow();
+void checkStoredData(store);
 
 /** Learn waits like notes-only, with hints, and keeps out of the graded history. */
 type Mode = "notes" | "tempo" | "learn";

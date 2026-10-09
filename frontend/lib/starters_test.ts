@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import {
   isStarterId,
-  planStarterMigration,
+  staleStarterIds,
   starterId,
   STARTERS,
   starterSlugForFile,
@@ -28,33 +28,13 @@ Deno.test("starter ids are starter:<slug>, matching the files served", async () 
   assertEquals(starterSlugForTitle("Something else"), null);
 });
 
-const e = (id: string, fileName: string, added: number) => ({ id, fileName, added });
-
-Deno.test("migration plan: rename the earliest copy, merge the rest, ignore other songs", () => {
-  const plan = planStarterMigration([
-    e("u2", "ode-to-joy.musicxml", 20),
-    e("u1", "ode-to-joy.musicxml", 10),
-    e("u3", "minuet-in-g.musicxml", 5),
-    e("mine", "my-song.musicxml", 1),
-  ]);
+Deno.test("stale starter copies (starter file, non-starter id) are the ones to delete", () => {
   assertEquals(
-    Object.fromEntries(plan.remap),
-    { u2: "starter:ode-to-joy", u1: "starter:ode-to-joy", u3: "starter:minuet-in-g" },
+    staleStarterIds([
+      { id: "u1", fileName: "ode-to-joy.musicxml" },
+      { id: "starter:ode-to-joy", fileName: "ode-to-joy.musicxml" },
+      { id: "mine", fileName: "my-song.musicxml" },
+    ]),
+    ["u1"],
   );
-  assertEquals(
-    Object.fromEntries(plan.keep),
-    { "starter:ode-to-joy": "u1", "starter:minuet-in-g": "u3" },
-  );
-});
-
-Deno.test("migration plan: merges into an existing stable entry, and is idempotent", () => {
-  const plan = planStarterMigration([
-    e("starter:ode-to-joy", "ode-to-joy.musicxml", 30),
-    e("u1", "ode-to-joy.musicxml", 10),
-  ]);
-  assertEquals([...plan.remap], [["u1", "starter:ode-to-joy"]]);
-  assertEquals(plan.keep.size, 0);
-  const done = planStarterMigration([e("starter:ode-to-joy", "ode-to-joy.musicxml", 30)]);
-  assertEquals(done.remap.size, 0);
-  assertEquals(done.keep.size, 0);
 });

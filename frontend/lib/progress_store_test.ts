@@ -1,4 +1,6 @@
 import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert";
+import { findProblems } from "./data_repair.ts";
+import type { SongLibrary } from "./song_library.ts";
 import {
   exerciseKey,
   MAX_SESSIONS,
@@ -399,56 +401,98 @@ Deno.test("learn is a valid mode on both pages", () => {
   assertEquals(store.settings().songMode, "learn");
 });
 
-Deno.test("starter migration: song and Learn sessions and the remembered song follow the new id", () => {
-  const store = new ProgressStore(new FakeStorage());
-  store.addSong(songRun({ songId: "uuid-a" }));
-  store.addSong(songRun({ songId: "uuid-b", ts: 1_790_000_000_001 }));
-  store.addSong(songRun({ songId: "mine" }));
-  store.addLearn(learnRun({ subject: "uuid-a" }));
-  store.addLearn(learnRun({ kind: "scale", subject: "uuid-a" })); // not a song: untouched
-  store.saveSettings({ lastSong: "uuid-b" });
-  const remap = new Map([["uuid-a", "starter:minuet-in-g"], ["uuid-b", "starter:minuet-in-g"]]);
-  assert(store.remapSongIds(remap));
+Deno.test("corrupt data is skipped in memory and left alone until repair", () => {
+  const fs = new FakeStorage();
+  const store = new ProgressStore(fs);
+  store.addSong(songRun());
+  store.addSong(songRun({ ts: 1_790_000_000_005 }));
+  const good = JSON.parse(fs.data.get(SONG_SESSIONS_KEY)!);
+  fs.data.set(SONG_SESSIONS_KEY, JSON.stringify([...good, { nope: 1 }, "x", null]));
+  fs.data.set(SESSIONS_KEY, "{not json");
+  fs.data.set(LEARN_KEY, JSON.stringify({ not: "a list" }));
+  fs.data.set(SETTINGS_KEY, JSON.stringify({ bpm: 9999, tonic: "C", theme: "dark", future: 1 }));
+  const before = new Map(fs.data);
+
+  assertEquals(store.songSessions().length, 2); // the page still works
+  assertEquals(store.sessions(), []);
+  assertEquals(store.settings(), { theme: "dark" });
+  const scans = store.scan();
   assertEquals(
-    store.songSessions().map((s) => s.songId).sort(),
-    ["mine", "starter:minuet-in-g", "starter:minuet-in-g"],
+    scans.map((s) => [s.key, s.corrupt, s.dropped]).sort(),
+    [
+      [LEARN_KEY, true, 0],
+      [SESSIONS_KEY, true, 0],
+      [SETTINGS_KEY, false, 2], // bpm and tonic; "future" is a newer version's field
+      [SONG_SESSIONS_KEY, false, 3],
+    ].sort(),
   );
-  assertEquals(
-    store.learnSessions().map((s) => `${s.kind}:${s.subject}`).sort(),
-    ["scale:uuid-a", "song:starter:minuet-in-g"],
-  );
-  assertEquals(store.settings().lastSong, "starter:minuet-in-g");
-  // Idempotent.
-  const before = store.exportJSON(new Date(0));
-  assert(store.remapSongIds(remap));
-  assertEquals(store.exportJSON(new Date(0)), before);
-  // removeSong works with the colon id.
-  store.removeSong("starter:minuet-in-g");
-  assertEquals(store.songSessions().map((s) => s.songId), ["mine"]);
-  assertEquals(store.learnSessions().map((s) => s.kind), ["scale"]);
+  assertEquals(fs.data, before); // scanning and reading change nothing
 });
 
-Deno.test("importing an older export moves random-id starter sessions to starter ids", () => {
-  const src = new ProgressStore(new FakeStorage());
-  src.addSong(songRun({ songId: crypto.randomUUID(), title: "Minuet in G major" }));
-  src.addSong(songRun({ songId: crypto.randomUUID(), title: "Minuet in G major", ts: 5 }));
-  src.addSong(songRun({ songId: "own-upload", title: "My piece" }));
-  src.addLearn(learnRun({ subject: crypto.randomUUID(), title: "Ode to Joy" }));
-  src.addLearn(learnRun({ subject: "starter:ode-to-joy", title: "Ode to Joy", ts: 7 }));
-  const file = src.exportJSON();
+Deno.test("repair deletes corrupt keys and writes cleaned values back", () => {
+  const fs = new FakeStorage();
+  const store = new ProgressStore(fs);
+  store.addSong(songRun());
+  const good = JSON.parse(fs.data.get(SONG_SESSIONS_KEY)!);
+  fs.data.set(SONG_SESSIONS_KEY, JSON.stringify([...good, { nope: 1 }]));
+  fs.data.set(SESSIONS_KEY, "{not json");
+  fs.data.set(SETTINGS_KEY, JSON.stringify({ bpm: 9999, theme: "dark" }));
+  assert(store.repair());
+  assertFalse(fs.data.has(SESSIONS_KEY));
+  assertEquals(JSON.parse(fs.data.get(SONG_SESSIONS_KEY)!), good);
+  assertEquals(JSON.parse(fs.data.get(SETTINGS_KEY)!), { theme: "dark" });
+  assertEquals(store.scan(), []);
+});
 
+Deno.test("clean or absent storage has nothing to scan, and an unavailable store never throws", () => {
+  assertEquals(new ProgressStore(new FakeStorage()).scan(), []);
+  const store = new ProgressStore(null);
+  assertEquals(store.scan(), []);
+  assertEquals(store.repair(), true);
+});
+
+Deno.test("import skips invalid records and counts them, without rejecting the file", () => {
+  const src = new ProgressStore(new FakeStorage());
+  src.addSong(songRun());
+  const file = JSON.parse(src.exportJSON());
+  file.sessions.push({ bad: true });
+  file.songSessions.push(42);
+  file.learnSessions = [{ bad: true }];
   const dst = new ProgressStore(new FakeStorage());
-  assertEquals(dst.importJSON(file).added, 5);
-  assertEquals(
-    dst.songSessions().map((s) => s.songId).sort(),
-    ["own-upload", "starter:minuet-in-g", "starter:minuet-in-g"],
-  );
-  assertEquals(dst.learnSessions().map((s) => s.subject), [
-    "starter:ode-to-joy",
-    "starter:ode-to-joy",
+  const r = dst.importJSON(JSON.stringify(file));
+  assertEquals([r.added, r.invalid], [1, 3]);
+});
+
+Deno.test("findProblems describes what's bad and only deletes when asked", async () => {
+  const fs = new FakeStorage();
+  fs.data.set(SESSIONS_KEY, "{not json");
+  fs.data.set(SETTINGS_KEY, JSON.stringify({ bpm: 9999 }));
+  const store = new ProgressStore(fs);
+  const removed: string[] = [];
+  const library = {
+    unreadable: () => Promise.resolve([1, 2]),
+    removeUnreadable: () => {
+      removed.push("lib");
+      return Promise.resolve();
+    },
+  } as unknown as SongLibrary;
+  const warn = console.warn;
+  console.warn = () => {};
+  const { problems, remove } = await findProblems(store, library).finally(() => {
+    console.warn = warn;
+  });
+  assertEquals(problems.map((p) => p.label), [
+    "Scale practice history",
+    "Settings",
+    "Song library",
   ]);
-  // Importing again changes nothing, and the same file from a migrated store matches.
-  const r = dst.importJSON(file);
-  assertEquals([r.added, r.duplicate], [0, 5]);
-  assertEquals(dst.songSessions().length, 3);
+  assertEquals(problems[1].detail, "1 setting can't be read and will be removed");
+  // "Not now": nothing was touched.
+  assertEquals(fs.data.size, 2);
+  assertEquals(removed, []);
+  // "Delete it".
+  await remove();
+  assertFalse(fs.data.has(SESSIONS_KEY));
+  assertEquals(JSON.parse(fs.data.get(SETTINGS_KEY)!), {});
+  assertEquals(removed, ["lib"]);
 });

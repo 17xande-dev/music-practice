@@ -1,5 +1,11 @@
 import { assert, assertEquals } from "@std/assert";
-import { MAX_SONG_BYTES, songFormat, titleFromFileName, uploadProblem } from "./song_library.ts";
+import {
+  MAX_SONG_BYTES,
+  songFormat,
+  titleFromFileName,
+  uploadProblem,
+  validSongRecord,
+} from "./song_library.ts";
 
 const text = (s: string) => new TextEncoder().encode(s);
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -24,4 +30,25 @@ Deno.test("titles from file names", () => {
   assertEquals(titleFromFileName("bach_minuet-in-g.mxl"), "bach minuet in g");
   assertEquals(titleFromFileName("Für Elise.musicxml"), "Für Elise");
   assertEquals(titleFromFileName(".xml"), "Untitled");
+});
+
+Deno.test("a library entry needs an id, file name and file data to be readable", () => {
+  const ok = {
+    id: "a",
+    title: "T",
+    composer: "",
+    fileName: "a.musicxml",
+    format: "musicxml",
+    size: 3,
+    added: 1,
+    lastPractised: null,
+    data: new ArrayBuffer(3),
+  };
+  assert(validSongRecord(ok));
+  assert(!validSongRecord({ ...ok, data: undefined }));
+  assert(!validSongRecord({ ...ok, data: new ArrayBuffer(0) }));
+  assert(!validSongRecord({ ...ok, id: "" }));
+  assert(!validSongRecord({ ...ok, id: 7 }));
+  assert(!validSongRecord({ ...ok, fileName: undefined }));
+  assert(!validSongRecord(null));
 });

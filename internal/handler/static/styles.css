@@ -1287,3 +1287,20 @@ body.song-big { overflow: hidden; }
 /* Rubato's leeway slider, with its value beside the label. */
 #song-rubato { width: 100%; min-height: 0; padding: 0; accent-color: var(--accent); }
 #song-rubato-value { margin-left: 0.4em; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ---- Unreadable saved data (lib/data_repair.ts) -------------------------- */
+
+.repair {
+  width: min(30rem, calc(100vw - 2rem));
+  margin: 12vh auto auto;
+  padding: var(--gap);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+
+  &::backdrop { background: rgb(0 0 0 / 0.45); }
+  h2 { margin-top: 0; }
+}
+.repair-actions { display: flex; gap: var(--gap-sm); flex-wrap: wrap; }

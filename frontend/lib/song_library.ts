@@ -4,7 +4,7 @@
 // reported rather than thrown at the page: a blocked or private-mode
 // IndexedDB means songs can still be opened, just not kept.
 
-import { planStarterMigration } from "./starters.ts";
+import { staleStarterIds } from "./starters.ts";
 
 const DB_NAME = "mp.v1";
 const STORE = "songs";
@@ -56,6 +56,16 @@ export function titleFromFileName(name: string): string {
   return name.replace(/\.(musicxml|mxl|xml)$/i, "").replace(/[_-]+/g, " ").trim() || "Untitled";
 }
 
+/** A stored entry the library can use: an id, a file name and the file's bytes. */
+export function validSongRecord(x: unknown): x is SongRecord {
+  const r = x as Partial<SongRecord> | null;
+  return typeof r === "object" && r !== null &&
+    typeof r.id === "string" && r.id.length > 0 && r.id.length <= 64 &&
+    typeof r.fileName === "string" && typeof r.title === "string" &&
+    (r.format === "musicxml" || r.format === "mxl") &&
+    r.data instanceof ArrayBuffer && r.data.byteLength > 0;
+}
+
 function newId(): string {
   return globalThis.crypto?.randomUUID?.() ??
     `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -93,14 +103,16 @@ export class SongLibrary {
 
   /** Every song, without its file, most recently practised (or added) first. */
   async list(): Promise<SongMeta[]> {
-    const all = await request(this.store("readonly").getAll()) as SongRecord[];
+    const all = (await request(this.store("readonly").getAll()) as unknown[])
+      .filter(validSongRecord);
     return all
       .map(({ data: _data, ...meta }) => meta)
       .sort((a, b) => (b.lastPractised ?? b.added) - (a.lastPractised ?? a.added));
   }
 
   async get(id: string): Promise<SongRecord | null> {
-    return (await request(this.store("readonly").get(id)) as SongRecord | undefined) ?? null;
+    const rec = await request(this.store("readonly").get(id)) as unknown;
+    return validSongRecord(rec) ? rec : null;
   }
 
   async add(
@@ -130,40 +142,20 @@ export class SongLibrary {
     await request(this.store("readwrite").delete(id));
   }
 
-  /**
-   * Which starter copies sit under random ids, and where they go; changes
-   * nothing. Pass the result to `applyStarterMigration` once the history that
-   * refers to the old ids has been rewritten.
-   */
-  async planStarterMigration() {
-    return planStarterMigration(await this.list());
+  /** Keys of entries that can't be read (bad or missing id, file name or data). */
+  async unreadable(): Promise<IDBValidKey[]> {
+    const keys = await request(this.store("readonly").getAllKeys());
+    const all = await request(this.store("readonly").getAll()) as unknown[];
+    return keys.filter((_, i) => !validSongRecord(all[i]));
   }
 
-  /** Rename each kept copy to its starter id and delete the other copies. */
-  async applyStarterMigration(plan: ReturnType<typeof planStarterMigration>) {
-    const copies = new Map<string, SongRecord>();
-    for (const [target, oldId] of plan.keep) {
-      const rec = await this.get(oldId);
-      if (rec) copies.set(target, rec);
-    }
-    const lastPractised = new Map<string, number | null>();
-    for (const [oldId, target] of plan.remap) {
-      const m = (await this.get(oldId))?.lastPractised ?? null;
-      const prev = lastPractised.get(target) ?? null;
-      lastPractised.set(target, m === null ? prev : Math.max(prev ?? 0, m));
-    }
-    for (const [target, rec] of copies) {
-      await request(
-        this.store("readwrite").put({
-          ...rec,
-          id: target,
-          lastPractised: lastPractised.get(target) ?? rec.lastPractised,
-        }),
-      );
-    }
-    for (const [target, last] of lastPractised) {
-      if (!copies.has(target) && last !== null) await this.update(target, { lastPractised: last });
-    }
-    for (const oldId of plan.remap.keys()) await this.remove(oldId);
+  /** Delete the entries `unreadable` finds. */
+  async removeUnreadable() {
+    for (const k of await this.unreadable()) await request(this.store("readwrite").delete(k));
+  }
+
+  /** Delete starter copies from before starters had stable ids. Not corruption: no prompt. */
+  async removeStaleStarters() {
+    for (const id of staleStarterIds(await this.list())) await this.remove(id);
   }
 }

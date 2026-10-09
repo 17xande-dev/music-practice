@@ -8,6 +8,7 @@ import { betterSong, type SongSession } from "./lib/song_session.ts";
 import { formatDuration, type LearnSession, summarizeLearning } from "./lib/learn_log.ts";
 import { compareByCircle, scaleTitle } from "./lib/theory.ts";
 
+import { checkStoredData } from "./lib/data_repair.ts";
 import { installCommands } from "./lib/palette.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
@@ -317,5 +318,8 @@ new ResizeObserver(() => {
 }).observe(ui.trendChart);
 
 render();
+void checkStoredData(store).then((deleted) => {
+  if (deleted) render();
+});
 
 installCommands(siteCommands());

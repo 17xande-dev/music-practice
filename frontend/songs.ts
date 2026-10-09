@@ -57,6 +57,7 @@ import { betterSong, type SongSession } from "./lib/song_session.ts";
 import type { StepMark } from "./lib/staff_view.ts";
 
 import { installCommands } from "./lib/palette.ts";
+import { checkStoredData } from "./lib/data_repair.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
@@ -1589,14 +1590,17 @@ void SongLibrary.open().then(async (lib) => {
       "This browser isn't letting the site keep files, so songs open but aren't saved.",
       true,
     );
+    void checkStoredData(store);
     return;
   }
-  // Starter copies from before they had stable ids: rewrite the history that
-  // refers to them first, and only then rename them, so a failed write is
-  // retried on the next visit.
-  const plan = await lib.planStarterMigration();
-  if (plan.remap.size && store.remapSongIds(plan.remap)) await lib.applyStarterMigration(plan);
+  // Copies of starters from before they had stable ids are dropped (not corruption: no prompt).
+  try {
+    await lib.removeStaleStarters();
+  } catch { /* the library still works with them */ }
   await renderLibrary();
+  void checkStoredData(store, lib).then((deleted) => {
+    if (deleted) void renderLibrary();
+  });
   const last = store.settings().lastSong;
   if (last && (await lib.get(last))) await openSong(last);
 });

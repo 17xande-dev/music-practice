@@ -19,7 +19,6 @@ import {
   type SongSession,
   validSongSession,
 } from "./song_session.ts";
-import { isStarterId, starterId, starterSlugForTitle } from "./starters.ts";
 import { cleanLearnSession, LEARN_KEY, type LearnSession, validLearnSession } from "./learn_log.ts";
 
 export const SESSIONS_KEY = "mp.v1.sessions";
@@ -287,23 +286,93 @@ export function validSettings(x: unknown): Partial<Settings> {
   return out;
 }
 
-/**
- * Exports from before starters had stable ids carry random-UUID song ids.
- * Their title says which starter they were (the file name isn't exported),
- * so such sessions are moved to the starter id.
- */
-function starterIdFor(songId: string, title: string): string {
-  if (isStarterId(songId)) return songId;
-  const slug = starterSlugForTitle(title);
-  return slug ? starterId(slug) : songId;
+// ---- Corrupt data -------------------------------------------------------
+//
+// Reads never throw: a bad record or key is skipped in memory so the page
+// works. Nothing is deleted until the person agrees (see data_repair.ts):
+// `scan` finds what is unreadable, `repair` removes exactly that.
+
+type Raw = { state: "missing" } | { state: "corrupt" } | { state: "ok"; value: unknown };
+
+/** One stored key that holds something unreadable, and what it would be cleaned to. */
+export interface Scan {
+  key: string;
+  label: string;
+  /** The whole key is unusable (not JSON, or the wrong shape): remove it. */
+  corrupt: boolean;
+  /** Records (or settings fields) that fail validation. */
+  dropped: number;
+  /** The value to write back when not `corrupt`. */
+  cleaned: unknown;
 }
 
-function starterSongSession(s: SongSession): SongSession {
-  return { ...s, songId: starterIdFor(s.songId, s.title) };
+export const STORE_LABELS: Record<string, string> = {
+  [SESSIONS_KEY]: "Scale practice history",
+  [SONG_SESSIONS_KEY]: "Song practice history",
+  [LEARN_KEY]: "Learn log",
+  [SETTINGS_KEY]: "Settings",
+};
+
+/** Null when the list is fine (or absent). Pure. */
+export function scanList<T>(
+  key: string,
+  raw: Raw,
+  valid: (x: unknown) => boolean,
+  clean: (x: T) => T,
+): Scan | null {
+  const label = STORE_LABELS[key] ?? key;
+  if (raw.state === "missing") return null;
+  if (raw.state === "corrupt" || !Array.isArray(raw.value)) {
+    return { key, label, corrupt: true, dropped: 0, cleaned: null };
+  }
+  const good = raw.value.filter(valid) as T[];
+  const dropped = raw.value.length - good.length;
+  return dropped ? { key, label, corrupt: false, dropped, cleaned: good.map(clean) } : null;
 }
 
-function starterLearnSession(s: LearnSession): LearnSession {
-  return s.kind === "song" ? { ...s, subject: starterIdFor(s.subject, s.title) } : s;
+/** Fields of Settings that validSettings knows; others (a newer version's) are left alone. */
+const SETTING_KEYS: readonly (keyof Settings)[] = [
+  "tonic",
+  "type",
+  "hands",
+  "octaves",
+  "direction",
+  "mode",
+  "bpm",
+  "notesPerBeat",
+  "latencyMs",
+  "device",
+  "instrument",
+  "position",
+  "audioDevice",
+  "a4",
+  "fingering",
+  "songMode",
+  "songRubato",
+  "songGuide",
+  "songHands",
+  "songTempo",
+  "songMetronome",
+  "songAccompany",
+  "songLoop",
+  "lastSong",
+  "sheetTheme",
+  "theme",
+  "songView",
+  "songZoom",
+  "songCursor",
+];
+
+/** Null when every known field is valid (or the key is absent). Bad fields fall back to defaults. */
+export function scanSettings(raw: Raw): Scan | null {
+  const key = SETTINGS_KEY, label = STORE_LABELS[key];
+  if (raw.state === "missing") return null;
+  if (raw.state === "corrupt" || !isObj(raw.value)) {
+    return { key, label, corrupt: true, dropped: 0, cleaned: null };
+  }
+  const cleaned = validSettings(raw.value);
+  const dropped = SETTING_KEYS.filter((k) => k in (raw.value as object) && !(k in cleaned)).length;
+  return dropped ? { key, label, corrupt: false, dropped, cleaned } : null;
 }
 
 function newId(): string {
@@ -363,6 +432,51 @@ export class ProgressStore {
     } catch {
       return false; // quota exceeded, or storage revoked mid-session
     }
+  }
+
+  private readRaw(key: string): Raw {
+    if (!this.available) return { state: "missing" };
+    try {
+      const raw = this.storage!.getItem(key);
+      return raw === null ? { state: "missing" } : { state: "ok", value: JSON.parse(raw) };
+    } catch {
+      return { state: "corrupt" };
+    }
+  }
+
+  /** Every stored key that holds something unreadable. Changes nothing, never throws. */
+  scan(): Scan[] {
+    return [
+      scanList<Session>(SESSIONS_KEY, this.readRaw(SESSIONS_KEY), validSession, cleanSession),
+      scanList<SongSession>(
+        SONG_SESSIONS_KEY,
+        this.readRaw(SONG_SESSIONS_KEY),
+        validSongSession,
+        cleanSongSession,
+      ),
+      scanList<LearnSession>(
+        LEARN_KEY,
+        this.readRaw(LEARN_KEY),
+        validLearnSession,
+        cleanLearnSession,
+      ),
+      scanSettings(this.readRaw(SETTINGS_KEY)),
+    ].filter((x): x is Scan => x !== null);
+  }
+
+  /** Delete the unreadable keys and records `scan` finds, writing the rest back. */
+  repair(): boolean {
+    let ok = true;
+    for (const sc of this.scan()) {
+      if (sc.corrupt) {
+        try {
+          this.storage!.removeItem(sc.key);
+        } catch {
+          ok = false;
+        }
+      } else ok = this.write(sc.key, sc.cleaned) && ok;
+    }
+    return ok;
   }
 
   /** Every valid stored session, oldest first. */
@@ -442,35 +556,6 @@ export class ProgressStore {
     return a && b;
   }
 
-  /**
-   * Point song and Learn sessions (and the remembered song) at new ids, as
-   * when starter copies move to their stable ids. Returns false when a write
-   * failed. Idempotent: ids that aren't keys of the map are left alone.
-   */
-  remapSongIds(remap: ReadonlyMap<string, string>): boolean {
-    if (!remap.size) return true;
-    let ok = true;
-    const songs = this.songSessions();
-    if (songs.some((s) => remap.has(s.songId))) {
-      ok = this.write(
-        SONG_SESSIONS_KEY,
-        songs.map((s) => ({ ...s, songId: remap.get(s.songId) ?? s.songId })),
-      ) && ok;
-    }
-    const learn = this.learnSessions();
-    if (learn.some((s) => s.kind === "song" && remap.has(s.subject))) {
-      ok = this.write(
-        LEARN_KEY,
-        learn.map((s) =>
-          s.kind === "song" ? { ...s, subject: remap.get(s.subject) ?? s.subject } : s
-        ),
-      ) && ok;
-    }
-    const last = this.settings().lastSong;
-    if (last && remap.has(last)) this.saveSettings({ lastSong: remap.get(last)! });
-    return ok;
-  }
-
   clear(): boolean {
     const a = this.write(SESSIONS_KEY, []);
     const b = this.write(SONG_SESSIONS_KEY, []);
@@ -540,7 +625,7 @@ export class ProgressStore {
         if (!validSongSession(s)) invalid++;
         else if (songIds.has(s.id)) duplicate++;
         else {
-          songs.push(starterSongSession(cleanSongSession(s)));
+          songs.push(cleanSongSession(s));
           songIds.add(s.id);
           songsAdded++;
         }
@@ -559,7 +644,7 @@ export class ProgressStore {
         if (!validLearnSession(s)) invalid++;
         else if (learnIds.has(s.id)) duplicate++;
         else {
-          learn.push(starterLearnSession(cleanLearnSession(s)));
+          learn.push(cleanLearnSession(s));
           learnIds.add(s.id);
           learnAdded++;
         }
