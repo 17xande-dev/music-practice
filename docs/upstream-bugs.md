@@ -1,7 +1,7 @@
 # Upstream bugs: OSMD and VexFlow
 
 These are bugs in the libraries the web app draws scores with:
-- OpenSheetMusicDisplay (`npm:opensheetmusicdisplay@2.1.3`)
+- OpenSheetMusicDisplay (`npm:opensheetmusicdisplay@2.2.0`; most entries below were found on 2.1.3)
 - VexFlow (`npm:vexflow@5.0.0`)
 
 They were found while porting the app to iPad and while fixing the web app. Each entry
@@ -86,7 +86,7 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 
 
 ### OSMD 2.1.3: a tempo direction's `<offset>` only applies at a measure start
-- Status: fixed in 2.2.0 (observed by re-run; no changelog line names it)
+- Status: fixed in 2.2.0 (observed by re-run; no changelog line names it). The web is on 2.2.0 since 2026-10-09 and its fixtures now agree with ScoreKit for `tempo-offset` and `tempo-offset-mid-measure`: with no `sound="yes"` the offset is ignored and the tempo applies at the direction's own position.
 - Repro: fixtures `tempo-offset` and `tempo-offset-mid-measure`. A mid-measure tempo with
   an offset never takes effect in 2.1.3. On 2.2.0 both now change tempo at the offset position
   (e.g. `tempo-offset-mid-measure`: 120 then 60 mid-measure 2 then 90 mid-measure 3).
@@ -99,19 +99,21 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
   https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1734. On `develop`, merged
   after 2.2.0 (dynamics and wedges only):
   https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1806
-- Workaround: ScoreKit follows the spec. The web matches only after an upgrade to OSMD 2.2.0.
+- Workaround: none needed. ScoreKit follows the spec, and the web (OSMD 2.2.0) now matches.
 - Note: 2.2.0 also changed `sound-and-metronome-differ` (metronome 80 vs `sound tempo=120`): 2.1.3
-  played 80, 2.2.0 plays 120, the `<sound>` value. Check the web fixtures when upgrading.
+  played 80, 2.2.0 plays 120, the `<sound>` value. The web fixtures changed accordingly (2026-10-09), so the web now
+  differs from ScoreKit, which still lets the metronome win (80). Not a clear OSMD bug (arguably `<sound>` is
+  the playback value); the Swift side needs a decision.
 
 ### OSMD 2.1.3: an invalid `tempo="fast"` resets to 100, and `tempo="0"` gives 60
-- Status: confirmed on latest (re-run on 2.2.0), and worse for zero
+- Status: regressed in 2.2.0 for zero (2.1.3 gave 60, 2.2.0 gives 0); `fast` unchanged
 - Repro: fixture `sound-decimal-tempo`. 2.1.3: `tempo="fast"` gives 100 and `tempo="0"` gives 60.
   2.2.0: `fast` still gives 100, and `tempo="0"` now gives a tempo of 0 (a zero BPM reaches
   the walk; a player dividing by it would break).
 - Fix: ignore invalid or zero values and keep the current tempo.
 - Upstream: none found. Related: https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1756
   (2.2.0, "Keep the current tempo at metronome marks without a BPM").
-- Workaround: none known; check how the web player handles a zero tempo before upgrading to 2.2.0.
+- Workaround: `buildScore` (`frontend/lib/score.ts`) ignores a zero BPM and keeps the tempo in force (100 if none), so the web never plays at 0 BPM; `sound-decimal-tempo` m4 plays at 92, like ScoreKit. The raw walk still says 0. `fast` still gives 100 in the walk and cannot be told from a real 100.
 
 ### OSMD 2.1.3: ties are resolved in score order, not playback order
 - Status: found (not re-run on 2.2.0; no 2.2.0 changelog item or tracker issue about it)
@@ -135,7 +137,7 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 
 
 ### OSMD 2.1.3: `render()` throws "start index of line is greater than the end index" on a trill whose `wavy-line` starts and stops on the same note
-- Status: confirmed on latest (2.2.0 throws the same error); probably fixed on `develop`, not run
+- Status: still present in 2.2.0 (re-checked 2026-10-09 with the fixture generator: same error); probably fixed on `develop`, not run
 - Repro: OpenScore Lieder file Grandval, "Les clochettes" (CC0,
   `ScoreKit/Tests/ScoreKitTests/Fixtures/complex/openscore/grandval-les-clochettes.mxl`). The
   voice part has four trills (measures 4, 9, 80, 85) written as a whole note with
@@ -161,10 +163,10 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
   2.2.0: "draw one over a single note up to the next note"; says Dolet for Sibelius and MuseScore
   write a trill over one note exactly like this). Not run against `develop`, so unconfirmed. Earlier,
   related, in 2.2.0: https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/pull/1733.
-- Workaround: none in the web app; the score fails to render. ScoreKit does not use OSMD.
+- Workaround: none in the web app; the score fails to render. ScoreKit does not use OSMD. The fixture generator records the failure as an expected error (`openscore-grandval-les-clochettes.walk.json` has `error`, no score).
 
 ### OSMD 2.1.3: Satie "Je te veux" plays endings 2 and 3 of the first group on the first pass
-- Status: found (cause unknown; needs a minimal repro). Same walk in 2.2.0.
+- Status: found (cause unknown; needs a minimal repro). Still present in 2.2.0: same walk (fixture `openscore-satie-je-te-veux`, pinned by `complex_fixtures_test.ts`).
 - Repro: OpenScore Lieder `ScoreKit/Tests/ScoreKitTests/Fixtures/complex/openscore/satie-je-te-veux.mxl`.
   OSMD walks measures 1-78, 6-35, 38-110. The intended order, worked out from the segno glyphs
   (m6, m78, m110), the verse lyrics in the endings and the "Pour finir" and Fine, is
@@ -189,7 +191,16 @@ The evidence for the playback entries is in `frontend/lib/testdata/fixtures/READ
 ## VexFlow 5.0.0
 
 Both entries below are open upstream issues from other reporters, read with `gh` on
-2026-10-09. We have no fixture of our own for them yet.
+2026-10-09. Candidate repro scores (not yet rendered through OSMD/VexFlow; the web is not a target
+for these, ScoreKit engraves its own layout): the OpenScore fixtures in ScoreKit
+`Tests/ScoreKitTests/Fixtures/complex/openscore/`, found while doing S6b. Layouts with three voices on
+one staff and the rests of the extra voices: satie-je-te-veux m20-21 left hand (voices 1, 2 and 5, the
+voice 2 chords have stems down and the voice 5 rests must sit below them), schumann-widmung m4-13 and
+m26-32 (voice 5 changes staff), boulanger-parfois-je-suis-triste m31-34 (a rest under a chord of two
+interleaved voices, five tie arcs and a cautionary natural before a chord). ScoreKit before S6b
+reproduced the same classes of collision (rests floating at stem height, a stem-up voice's stem
+running through the heads of a lower voice, a rest overlapping a flipped head), so these are good
+test inputs for the upstream issues.
 
 ### VexFlow 5.0.0: rests collide with notes of other voices
 - Status: reported vf#203 (open)
