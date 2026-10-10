@@ -24,6 +24,7 @@ import { type Fingers, guitarFingering, pianoFingering } from "./lib/fingering.t
 import { FretboardView } from "./lib/fretboard_view.ts";
 import { boxFor, layout, positionLabel, POSITIONS, tonicMidiFor } from "./lib/guitar.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
+import { nextKeys, restartsOnNote } from "./lib/practice_flow.ts";
 import { pluck, pluckSequence } from "./lib/pluck.ts";
 import {
   againstString,
@@ -409,12 +410,14 @@ function applyFingering() {
 function showTargets(step: Step | undefined) {
   if (!step) {
     view.setTargets([]);
+    keyboard.setNext([]);
     return;
   }
   view.setTargets(
     step.notes.map((n) => n.midi),
     showingFingers() ? fingers[step.index] : undefined,
   );
+  keyboard.setNext(nextKeys(steps, step.index));
 }
 
 function reset() {
@@ -452,6 +455,7 @@ function finishTempo(e: TempoEngine) {
   phase = "done";
   setPlaying(ui.start, false);
   view.setTargets([]);
+  keyboard.setNext([]);
   ui.status.textContent = "Done — press Start or Space to go again.";
   finishRun(e.summary());
 }
@@ -511,8 +515,13 @@ function currentStep(): Step | undefined {
   return steps[0]; // tempo, not started: show where it begins
 }
 
+/** A Notes or Learn run that has finished: a note restarts it (Tempo needs its count-in). */
+const finishedRun = () => engine instanceof NotesEngine && engine.done;
+
 function currentTargets(): number[] {
-  return currentStep()?.notes.map((n) => n.midi) ?? [];
+  // After a finished run the next note is step 0 of the new one.
+  const step = finishedRun() ? steps[0] : currentStep();
+  return step?.notes.map((n) => n.midi) ?? [];
 }
 
 /** Status line and highlights between notes (notes-only), or before Start. */
@@ -557,6 +566,9 @@ function handleNote(ev: NoteEvent) {
     view.release(ev.midi);
     return;
   }
+  // A note after a finished run starts the next one, and is its first input.
+  // The finished run was saved when it ended; reset() starts a fresh engine.
+  if (restartsOnNote(ev.type, finishedRun(), true)) reset();
   const grading = engine && !engine.done &&
     (mode !== "tempo" || phase === "countin" || phase === "playing");
   if (!grading) {

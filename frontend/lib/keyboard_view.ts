@@ -136,6 +136,11 @@ export class KeyboardView {
     });
   }
 
+  /** Preview the keys of the step after the current one (a lighter tint). */
+  setNext(midis: Iterable<number>) {
+    this.toggleAll("next", midis);
+  }
+
   press(midi: number, mark: KeyMark) {
     const r = this.keys.get(midi);
     if (!r) return;

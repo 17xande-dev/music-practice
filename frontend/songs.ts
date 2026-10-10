@@ -53,6 +53,7 @@ import {
   titleFromFileName,
   uploadProblem,
 } from "./lib/song_library.ts";
+import { nextKeys, restartsOnNote } from "./lib/practice_flow.ts";
 import { runFinished, soundOptionReplays, tempoChange, tempoRunOver } from "./lib/song_rules.ts";
 import { starterId, starterSlugForFile } from "./lib/starters.ts";
 import { accompanyNotes, playPlan, SongPlayer } from "./lib/song_player.ts";
@@ -556,12 +557,18 @@ function fingersFor(i: number): (number | null)[] | undefined {
   });
 }
 
+function clearTargets() {
+  keyboard.setTargets([]);
+  keyboard.setNext([]);
+}
+
 function showTargets(i: number) {
   if (!practice || i < 0) {
-    keyboard.setTargets([]);
+    clearTargets();
     return;
   }
   keyboard.setTargets(practice.steps[i].notes.map((n) => n.midi), fingersFor(i));
+  keyboard.setNext(nextKeys(practice.steps, i));
 }
 
 /** The written measure (its position in the file) of step i; stats and history use it. */
@@ -580,7 +587,7 @@ function showProgress() {
   showTransport();
   if (!practice.steps.length) {
     ui.status.textContent = "Nothing to play for this hand in these measures.";
-    keyboard.setTargets([]);
+    clearTargets();
     return;
   }
   if (playingNow()) return; // the frame owns the view
@@ -842,7 +849,7 @@ function finishTempo() {
   keepSegment();
   phase = "done";
   engine = null;
-  keyboard.setTargets([]);
+  clearTargets();
   view.hideCursor();
   showTransport();
   ui.status.textContent = "Done. Press Play (or Space) to go again.";
@@ -854,7 +861,7 @@ function finishListen() {
   player.stop();
   phase = "done";
   if (shownCurrent >= 0) view.mark(stepRefs[shownCurrent], null);
-  keyboard.setTargets([]);
+  clearTargets();
   view.hideCursor();
   showTransport();
   ui.status.textContent = "Done. Press Play (or Space) to listen again.";
@@ -884,6 +891,10 @@ function handleNote(ev: NoteEvent) {
     keyboard.release(ev.midi);
     return;
   }
+  // A note after a finished wait-mode run starts the next one from the start
+  // of the selection, and is its first input. Tempo and Listen keep their
+  // explicit restart (Tempo needs its count-in).
+  if (restartsOnNote(ev.type, finishedWait(), true)) reset();
   const grading = engine && !engine.done &&
     (engine instanceof NotesEngine || phase === "countin" || phase === "playing");
   if (!grading) {
@@ -931,6 +942,10 @@ function accompanyStep(i: number) {
   void player.playNow(accompanyNotes(song.score, practice, i, ratio));
 }
 
+/** A Learn, Notes or Rubato run that has finished. */
+const finishedWait = () =>
+  waiting() && !!practice?.steps.length && engine instanceof NotesEngine && engine.done;
+
 const qwertyHeld = new Map<string, number[]>();
 listenQwerty((p) => {
   if (!p.down) {
@@ -941,7 +956,7 @@ listenQwerty((p) => {
     qwertyHeld.delete(p.code);
     return;
   }
-  const i = currentStep();
+  const i = finishedWait() ? 0 : currentStep();
   const targets = practice && i >= 0 ? practice.steps[i].notes.map((n) => n.midi) : [];
   let midis = resolveOctave(p.pc, targets);
   if (targets.length > 1 && !targets.some((t) => ((t % 12) + 12) % 12 === p.pc)) {
