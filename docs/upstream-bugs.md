@@ -202,7 +202,7 @@ probes"), with fixtures under `frontend/lib/testdata/fixtures/`.
 - Cause: `InstantaneousTempoExpression.setTempoAndTempoType` tests lists in order with `isStringInStringList`, which matches `word + " "` or `" " + word` anywhere in the text.
 - Fix: test the longest/most specific phrases first (Andante moderato, Allegro moderato, Allegro assai, very fast...).
 - Upstream: none searched.
-- Workaround: ScoreKit's `TempoWords` copies the table and order (parity with the web), so it has the same results.
+- Workaround: ScoreKit's `TempoWords` copies the table but matches on word boundaries with the longest phrase winning (Allegro moderato 118, Allegro assai 140, very fast 170) and skips relative phrases (più, meno...). It differs from OSMD for those compound words.
 
 ### OSMD 2.1.3: the metronome beat unit and dots are ignored (questionable, not a clear bug)
 
