@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/config"
 	"github.com/17xande-dev/music-practice/internal/db"
 	"github.com/17xande-dev/music-practice/internal/handler"
@@ -25,6 +26,8 @@ func main() {
 	dev := flag.Bool("dev", false, "read templates and static files from the source tree on every request")
 	healthcheck := flag.Bool("healthcheck", false, "probe the running server's /healthz and exit 0 if healthy (see healthcheck.go)")
 	migrateStatus := flag.Bool("migrate-status", false, "list each database migration as applied or pending, and exit")
+	addAdminEmail := flag.String("add-admin", "", "create an admin `EMAIL` with a generated password, print it, and exit")
+	resetEmail := flag.String("reset-password", "", "give `EMAIL` a new generated password, print it, end their sessions, and exit")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -35,6 +38,19 @@ func main() {
 		}
 		if err != nil {
 			log.Error("unhealthy", "err", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if *addAdminEmail != "" || *resetEmail != "" {
+		err := withStore(func(ctx context.Context, store *account.Store) error {
+			if *addAdminEmail != "" {
+				return addAdmin(ctx, store, *addAdminEmail, os.Stdout)
+			}
+			return resetPassword(ctx, store, *resetEmail, os.Stdout)
+		})
+		if err != nil {
+			log.Error("account command", "err", err)
 			os.Exit(1)
 		}
 		return
@@ -138,4 +154,23 @@ func printMigrateStatus() error {
 		fmt.Println(l)
 	}
 	return nil
+}
+
+// withStore opens and migrates the database for a one-off command. Migrating
+// here lets -add-admin run against a brand-new volume before the server's
+// first start.
+func withStore(fn func(context.Context, *account.Store) error) error {
+	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return err
+	}
+	database, err := openDB(cfg)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	if _, err := db.Migrate(database); err != nil {
+		return err
+	}
+	return fn(context.Background(), account.NewStore(database))
 }

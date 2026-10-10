@@ -159,6 +159,15 @@ only:
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
 applies pending ones itself on startup, each in its own transaction.
 
+Accounts are created by an admin in the admin pages; there is no self-service sign-up. Two commands
+cover what the pages cannot: creating the first admin, and getting back in when every admin is
+locked out. Each prints a generated password once:
+
+```sh
+docker exec <container> /music-practice -add-admin you@example.com
+docker exec <container> /music-practice -reset-password someone@example.com
+```
+
 ## How it fits together
 
 Go serves the pages and the static files. Everything a visitor does happens in the browser, in
@@ -227,6 +236,7 @@ The server is stdlib apart from:
 | Dependency                    | Why                                                                                                                                                                                                                                                                                                                                               |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `github.com/mattn/go-sqlite3` | The SQLite driver for accounts and synced history. It is cgo, so the Docker build compiles it with musl and links statically, which keeps the runtime image `distroless/static`. Chosen over `modernc.org/sqlite` (pure Go but a much larger machine-translated codebase) as the long-established, widely reviewed wrapper around SQLite's own C. |
+| `golang.org/x/crypto`         | argon2id password hashing (`x/crypto/argon2`). Security-sensitive, so a widely reviewed implementation from the Go team rather than anything hand-rolled; it brings `golang.org/x/sys` with it.                                                                                                                                                   |
 
 One SQLite file holds every user, not a file per user: the sign-in lookup needs a shared table
 anyway, and one file means one migration run and one backup. Postgres would be the choice the day a
