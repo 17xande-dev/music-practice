@@ -167,6 +167,18 @@ Deno.test("the fingering switch is remembered, and only as a boolean", () => {
   assertEquals(store.settings(), {});
 });
 
+Deno.test("keyboardHints is remembered, only as a boolean, and scanned", () => {
+  const storage = new FakeStorage();
+  const store = new ProgressStore(storage);
+  store.saveSettings({ keyboardHints: false });
+  assertEquals(store.settings().keyboardHints, false);
+  store.saveSettings({ keyboardHints: true });
+  assertEquals(store.settings().keyboardHints, true);
+  storage.setItem(SETTINGS_KEY, JSON.stringify({ keyboardHints: "off" }));
+  assertEquals(store.settings(), {});
+  assertEquals(store.scan().some((s) => s.key === SETTINGS_KEY), true);
+});
+
 Deno.test("export then import into a fresh store restores everything; re-import adds nothing", () => {
   const a = new ProgressStore(new FakeStorage());
   a.add(run());

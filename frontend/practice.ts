@@ -113,6 +113,7 @@ const ui = {
   calibrate: el<HTMLButtonElement>("calibrate"),
   calibrateStatus: el("calibrate-status"),
   fingering: el<HTMLInputElement>("fingering"),
+  keyboardHints: el<HTMLInputElement>("keyboard-hints"),
   device: el<HTMLSelectElement>("midi-input"),
   midiStatus: el("midi-status"),
   activity: el("midi-activity"),
@@ -291,6 +292,8 @@ function restoreSettings() {
   if (saved.latencyMs !== undefined) ui.latency.value = String(saved.latencyMs);
   if (saved.position !== undefined) ui.position.value = String(saved.position);
   if (saved.fingering !== undefined) ui.fingering.checked = saved.fingering;
+  ui.keyboardHints.checked = saved.keyboardHints ?? true;
+  keyboard.setHints(ui.keyboardHints.checked);
   setReference(saved.a4 ?? DEFAULT_A4);
   ui.instrument.value = saved.instrument ?? "piano";
 }
@@ -312,6 +315,7 @@ function persistSettings() {
     position: Number(ui.position.value),
     a4,
     fingering: ui.fingering.checked,
+    keyboardHints: ui.keyboardHints.checked,
   });
   syncUrl();
 }
@@ -1109,6 +1113,10 @@ for (const s of [ui.hands, ui.octaves, ui.direction, ui.mode, ui.subdivision, ui
 // but it does end a run in progress, whose timing no longer matches.
 for (const s of [ui.bpm, ui.latency]) s.addEventListener("change", reset);
 ui.fingering.addEventListener("change", applyFingering);
+ui.keyboardHints.addEventListener("change", () => {
+  keyboard.setHints(ui.keyboardHints.checked);
+  persistSettings();
+});
 // Leaving part way through still counts the time spent learning.
 addEventListener("pagehide", () => logLearn(false));
 ui.form.addEventListener("change", persistSettings);

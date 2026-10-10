@@ -109,6 +109,7 @@ const ui = {
   metronome: el<HTMLInputElement>("song-metronome"),
   accompany: el<HTMLInputElement>("song-accompany"),
   fingering: el<HTMLInputElement>("fingering"),
+  keyboardHints: el<HTMLInputElement>("keyboard-hints"),
   latency: el<HTMLInputElement>("latency"),
   calibrate: el<HTMLButtonElement>("calibrate"),
   calibrateStatus: el("calibrate-status"),
@@ -1256,6 +1257,8 @@ function restore() {
   if (s.songAccompany !== undefined) ui.accompany.checked = s.songAccompany;
   if (s.songLoop !== undefined) ui.loop.checked = s.songLoop;
   if (s.fingering !== undefined) ui.fingering.checked = s.fingering;
+  ui.keyboardHints.checked = s.keyboardHints ?? true;
+  keyboard.setHints(ui.keyboardHints.checked);
   if (s.latencyMs !== undefined) ui.latency.value = String(s.latencyMs);
   if (s.songCursor) ui.cursorMode.value = s.songCursor;
 }
@@ -1271,6 +1274,7 @@ function persist() {
     songAccompany: ui.accompany.checked,
     songLoop: ui.loop.checked,
     fingering: ui.fingering.checked,
+    keyboardHints: ui.keyboardHints.checked,
     latencyMs: Math.min(300, Math.max(0, Number(ui.latency.value) || 0)),
     songCursor: ui.cursorMode.value as "flow" | "jump",
   });
@@ -1305,6 +1309,7 @@ ui.form.addEventListener("change", (e) => {
   persist();
   const t = e.target as HTMLElement;
   if (t === ui.fingering) return applyFingering();
+  if (t === ui.keyboardHints) return keyboard.setHints(ui.keyboardHints.checked);
   if (t === ui.tempo) return tempoChanged();
   // Read at Start, or as it plays: no rebuild needed.
   if (t === ui.guide && guideOn) void toggleGuide(); // stops; Play starts the new kind

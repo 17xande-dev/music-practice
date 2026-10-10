@@ -103,6 +103,8 @@ export interface Settings {
   a4: number;
   /** Show finger numbers on the staff, keyboard and fretboard. */
   fingering: boolean;
+  /** Keyboard hints (targets, next key, scale tint); off = a plain keyboard. Default on. */
+  keyboardHints: boolean;
   /** Songs page: how the last song was practised, and which song it was. */
   songMode: "learn" | "notes" | "tempo" | "rubato" | "listen";
   /** Rubato's on-time window, as % of each note's length. */
@@ -284,6 +286,7 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
   if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.fingering === "boolean") out.fingering = x.fingering;
+  if (typeof x.keyboardHints === "boolean") out.keyboardHints = x.keyboardHints;
   if (x.songGuide === "follow" || x.songGuide === "steady") out.songGuide = x.songGuide;
   if (isNum(x.songRubato) && x.songRubato >= 10 && x.songRubato <= 50) {
     out.songRubato = x.songRubato;
@@ -382,6 +385,7 @@ const SETTING_KEYS: readonly (keyof Settings)[] = [
   "audioDevice",
   "a4",
   "fingering",
+  "keyboardHints",
   "songMode",
   "songRubato",
   "songGuide",

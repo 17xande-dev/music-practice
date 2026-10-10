@@ -22,6 +22,12 @@ export class KeyboardView {
   private fingerLayer: SVGGElement = document.createElementNS(SVG, "g");
   private lo = 60;
   private hi = 72;
+  /** Off: a plain black and white keyboard; only pressed keys show feedback. */
+  private hints = true;
+  private scale: number[] = [];
+  private targets: number[] = [];
+  private fingers?: readonly (number | null)[];
+  private next: number[] = [];
 
   constructor(private container: HTMLElement) {
     this.svg = document.createElementNS(SVG, "svg");
@@ -80,6 +86,36 @@ export class KeyboardView {
     this.fingerLayer = document.createElementNS(SVG, "g");
     this.fingerLayer.classList.add("fingers");
     this.svg.append(whiteLayer, blackLayer, labels, this.fingerLayer);
+    this.paint();
+  }
+
+  /** Show or hide every hint (scale tint, targets, next, fingers) at once. */
+  setHints(on: boolean) {
+    this.hints = on;
+    this.paint();
+  }
+
+  private paint() {
+    const on = this.hints;
+    this.toggleAll("in-scale", on ? this.scale : []);
+    this.toggleAll("target", on ? this.targets : []);
+    this.toggleAll("next", on ? this.next : []);
+    this.fingerLayer.replaceChildren();
+    if (!on || !this.fingers) return;
+    this.targets.forEach((m, i) => {
+      const f = this.fingers?.[i];
+      const key = this.keys.get(m);
+      if (key === undefined || f === undefined || f === null) return;
+      const black = isBlack(m);
+      const t = document.createElementNS(SVG, "text");
+      t.setAttribute(
+        "x",
+        String(Number(key.getAttribute("x")) + Number(key.getAttribute("width")) / 2),
+      );
+      t.setAttribute("y", String(black ? BLACK_H - 10 : WHITE_H - 26));
+      t.textContent = String(f);
+      this.fingerLayer.append(t);
+    });
   }
 
   private rect(
@@ -109,7 +145,8 @@ export class KeyboardView {
 
   /** Faintly tint every note of the scale. */
   setScale(midis: Iterable<number>) {
-    this.toggleAll("in-scale", midis);
+    this.scale = [...midis];
+    this.paint();
   }
 
   /**
@@ -117,28 +154,15 @@ export class KeyboardView {
    * the key when `fingers` is given (parallel to `midis`).
    */
   setTargets(midis: Iterable<number>, fingers?: readonly (number | null)[]) {
-    const list = [...midis];
-    this.toggleAll("target", list);
-    this.fingerLayer.replaceChildren();
-    if (!fingers) return;
-    list.forEach((m, i) => {
-      const key = this.keys.get(m);
-      if (key === undefined || fingers[i] === undefined || fingers[i] === null) return;
-      const black = isBlack(m);
-      const t = document.createElementNS(SVG, "text");
-      t.setAttribute(
-        "x",
-        String(Number(key.getAttribute("x")) + Number(key.getAttribute("width")) / 2),
-      );
-      t.setAttribute("y", String(black ? BLACK_H - 10 : WHITE_H - 26));
-      t.textContent = String(fingers[i]);
-      this.fingerLayer.append(t);
-    });
+    this.targets = [...midis];
+    this.fingers = fingers;
+    this.paint();
   }
 
   /** Preview the keys of the step after the current one (a lighter tint). */
   setNext(midis: Iterable<number>) {
-    this.toggleAll("next", midis);
+    this.next = [...midis];
+    this.paint();
   }
 
   press(midi: number, mark: KeyMark) {
