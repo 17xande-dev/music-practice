@@ -170,14 +170,20 @@ docker exec <container> /music-practice -reset-password someone@example.com
 
 ## How it fits together
 
-Go serves the pages and the static files. Everything a visitor does happens in the browser, in
-TypeScript that Deno bundles.
+Go serves the pages and the static files, and holds accounts and synced history in SQLite.
+Everything a visitor does while practising happens in the browser, in TypeScript that Deno bundles.
 
 ```
-main.go                     server wiring, graceful shutdown, -dev flag
+main.go                     server wiring, graceful shutdown, -dev / -migrate-status flags
+usercmd.go                  -add-admin and -reset-password (bootstrap and lockout recovery)
+cleanup.go                  daily backup, backup pruning, expired-session sweep
 internal/config/            environment → one Config struct
-internal/middleware/        security headers (CSP, Permissions-Policy: midi=(self)), access log
-internal/handler/           page templates + static assets, all go:embed'ed
+internal/db/                SQLite open, embedded migrations (user_version), VACUUM INTO backups
+internal/auth/              argon2id passwords, generated passwords, session tokens
+internal/account/           users and their signed-in sessions; the last-admin guard
+internal/history/           synced practice runs: push, pull by cursor, tombstones
+internal/middleware/        security headers (CSP, Permissions-Policy: midi=(self)), rate limits, access log
+internal/handler/           pages, account + admin pages, the sync API, static assets (go:embed'ed)
   templates/                layout + one template set per page
   static/styles.css         the theme (custom properties, light and dark)
   static/dist/              Deno output — build artefact, not committed
@@ -210,15 +216,16 @@ frontend/
   lib/staff_view.ts         VexFlow staff / grand staff
   lib/timing_chart.ts       per-note timing chart (tempo results)
   lib/accuracy_chart.ts     accuracy trend (progress page)
-  lib/progress_store.ts     localStorage history + settings, export/import
+  lib/progress_store.ts     localStorage history + settings, export/import, sync queue
+  lib/sync.ts               history sync with the server (docs/sync-api.md)
   lib/*_test.ts             Deno tests
 ```
 
-Deno bundles only the TypeScript entry points, not HTML, because the pages are Go templates. Stage 2
-needs server-rendered pages for signed-in users. Without code-splitting the bundle names stay fixed
-(`dist/practice.js`, `dist/progress.js`), and Go's `{{asset}}` adds a content hash to each URL, so
-assets are cached `immutable` and a rebuild invalidates them. A binary built without the bundle
-refuses to start instead of serving pages whose scripts 404.
+Deno bundles only the TypeScript entry points, not HTML, because the pages are Go templates. Without
+code-splitting the bundle names stay fixed (`dist/practice.js`, `dist/progress.js`), and Go's
+`{{asset}}` adds a content hash to each URL, so assets are cached `immutable` and a rebuild
+invalidates them. A binary built without the bundle refuses to start instead of serving pages whose
+scripts 404.
 
 **Timing.** MIDI events carry `performance.now()` timestamps from when they arrived. Metronome
 clicks are scheduled on the Web Audio clock, and `getOutputTimestamp()` maps them to the same
@@ -228,6 +235,24 @@ left, mainly the instrument's own delay.
 
 **Why no framework.** The UI is a handful of forms and two SVG views driven by one state machine per
 page. Plain DOM code keeps the bundle to VexFlow plus a few kilobytes and keeps the CSP simple.
+
+### Accounts and sync
+
+Accounts exist only to sync practice history between a person's browsers and the iPad app; every
+page works without one. There is no sign-up: an admin creates each account at `/admin/users`, which
+generates a password and shows it once, and the person changes it at `/account`. The first admin
+comes from `-add-admin` (see Develop).
+
+Both apps stay local-first: the device's own history is the source of truth and works offline. The
+server stores each run as the app's JSON and swaps runs between a user's devices through
+`POST /api/sync`: a union by id, deletions as tombstones, and a cursor so each sync asks only for
+what is new. [`docs/sync-api.md`](docs/sync-api.md) is the contract; the iPad side is not built yet
+([`docs/ipad-sync-handoff.md`](docs/ipad-sync-handoff.md)). Settings and uploaded scores are not
+synced.
+
+Browsers authenticate with a session cookie (90 days, sliding), the app with a bearer token from
+`POST /api/token` that lasts until it is revoked. Both are opaque random tokens stored only as their
+sha256, and every signed-in device is listed, and can be signed out, on the account page.
 
 ### Dependencies
 
@@ -264,8 +289,17 @@ and no Node toolchain.
   enforce this, because the CSP would silently refuse them and handler tests never run JavaScript.
 - `Permissions-Policy` grants `midi` and `microphone` (for guitar) to this origin only.
 - The static route serves only listed file extensions.
-- Nothing about a visitor reaches the server. History stays in their browser, and imported files are
-  validated and rebuilt field by field before storage.
+- Nothing about a signed-out visitor reaches the server. History stays in their browser, and
+  imported files are validated and rebuilt field by field before storage.
+- Signed in, practice runs are stored on the server per account. Passwords are argon2id. A failed
+  sign-in looks the same and costs the same whether the email exists or not. Sign-in, the app's
+  token endpoint and the change-password form are rate-limited. The session cookie is HttpOnly,
+  Secure and SameSite=Lax, and every state-changing request passes the stdlib's cross-origin check,
+  which is the CSRF defence for the forms and the API alike.
+- The page shells never contain who is signed in: the service worker caches them, and a cached page
+  must not show the last person's email. Only `/account`, `/admin` and `/api` look up the session,
+  and they are `no-store`. Everything under `/admin` is also `noindex`, and answers a signed-in
+  non-admin with a plain 404.
 
 There are no `STATIC_DIR` or `TEMPLATE_DIR` overrides: this is a single deployment, not a project
 for others to reskin.
@@ -314,6 +348,14 @@ Live at **https://music.17xande.dev**, set up like the teleprompter app:
 - **Cloudflare** DNS: a proxied `A` record to the VM. The zone runs SSL in Full (strict) mode, so
   the origin certificate has to be real, and it is. `HSTS=1` is safe for that reason.
 
+The database lives on the `data` named volume at `/data/music-practice.db`. The image creates
+`/data` owned by the nonroot user it runs as, which Docker copies into a fresh volume, so the server
+can write it without root. At startup and daily after that, it writes a `VACUUM INTO` backup to
+`/data/backups/` and keeps seven. That covers a bad migration or a mistaken delete, not losing the
+volume (see "Decisions still open"). After the first deploy, create the first admin with
+`docker exec <container> /music-practice -add-admin you@example.com`, and everyone else at
+`/admin/users`.
+
 Traefik only routes to a container whose Docker healthcheck is `healthy`. The runtime image is
 distroless (no shell, no `wget`), so the healthcheck runs `music-practice -healthcheck`, which
 probes `/healthz` itself. A test stops it from ever shelling out again. If the site returns 503 at
@@ -356,10 +398,20 @@ without re-deriving the design.
 
 **Stage 2: accounts**
 
-- Accounts and server-side history (SQLite). The localStorage export (`version: 1`, with
-  `songSessions`) is the import path.
+- ~~Accounts and server-side history (SQLite).~~ Done for the web, see "Accounts and sync". Next:
+  **sync in the iPad app**, briefed in `docs/ipad-sync-handoff.md`.
 - **Sharing songs by link,** which needs scores stored on the server, and history across devices.
 - **Teacher view:** assign exercises and passages, see students' results and heat maps.
+
+**Decisions still open**
+
+| Decision                    | Current choice                                      | What would change it                                                                                                                                               |
+| --------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Off-box backups             | None: daily `VACUUM INTO` copies on the same volume | Any data someone would miss. Options: Litestream to object storage (another process in the image), or a Coolify scheduled task copying `/data/backups` off the VM. |
+| Self-service sign-up        | None; the admin creates accounts                    | More users than an admin wants to type in. Needs email verification, so an email provider.                                                                         |
+| Password reset by email     | None; an admin resets it and passes it on           | Same trigger and same email provider as sign-up.                                                                                                                   |
+| Syncing settings and scores | Not synced                                          | People practising the same song on two devices. Scores need blob storage and size limits; settings need last-writer-wins per field.                                |
+| SQLite → Postgres           | SQLite, one file for every user                     | A second app instance, or overlapping (blue/green) deploys: two processes cannot share the file.                                                                   |
 
 **Guitar and audio research**
 
