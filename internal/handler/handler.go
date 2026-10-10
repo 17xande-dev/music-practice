@@ -82,7 +82,8 @@ type limits struct {
 // layout. One set per page, because every page defines "content": in a single
 // flat set the last file parsed would silently win and pages would render as
 // each other.
-var pageFiles = []string{"practice.html", "songs.html", "progress.html", "about.html", "account.html"}
+var pageFiles = []string{"practice.html", "songs.html", "progress.html", "about.html", "account.html",
+	"admin_users.html", "admin_password.html", "admin_delete.html"}
 
 // Bundles are the Deno outputs the pages load. Checked at boot so a binary
 // built without `make bundle` refuses to start instead of serving dead pages.
@@ -160,7 +161,8 @@ func (h *Handler) parsePages() (map[string]*template.Template, error) {
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
 	h.register(mux)
-	return http.NewCrossOriginProtection().Handler(mux)
+	h.registerAdmin(func(pattern string, f http.HandlerFunc) { mux.HandleFunc(pattern, f) })
+	return adminHeaders(http.NewCrossOriginProtection().Handler(mux))
 }
 
 func (h *Handler) register(mux *http.ServeMux) {

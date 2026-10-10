@@ -1338,3 +1338,31 @@ body.song-big { overflow: hidden; }
 .actions form { display: contents; }
 section.account-narrow { display: flex; flex-direction: column; gap: var(--gap-md); }
 section.account-narrow > * { margin: 0; }
+.admin-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gap-md); flex-wrap: wrap; }
+.admin-head h1 { margin: 0; }
+.row-actions { display: flex; flex-wrap: wrap; gap: var(--gap-xs); }
+.row-actions form { display: contents; }
+.status-off { color: var(--bad); font-weight: 600; }
+a.danger-link { color: var(--bad); }
+.secret {
+  margin: 0;
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+
+  code { font-family: var(--font-mono); user-select: all; }
+}
+
+/* Phones: each account becomes a card, so its actions are on screen
+   rather than at the far end of a sideways-scrolling table. */
+@media (max-width: 40rem) {
+  table.admin-users {
+    thead { display: none; }
+    tbody, tr, td { display: block; }
+    tr { padding: var(--gap-sm) 0; border-bottom: 1px solid var(--rule); }
+    tbody tr:hover { background: none; }
+    td, td.num { border: 0; padding: 0.15rem 0; white-space: normal; text-align: left; }
+    td[data-label]::before { content: attr(data-label) ": "; color: var(--ink-soft); }
+    .cell-email { font-weight: 600; overflow-wrap: anywhere; }
+    .cell-actions { padding-top: var(--gap-xs); }
+  }
+}
