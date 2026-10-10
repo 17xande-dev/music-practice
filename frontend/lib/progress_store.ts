@@ -23,10 +23,27 @@ import { cleanLearnSession, LEARN_KEY, type LearnSession, validLearnSession } fr
 
 export const SESSIONS_KEY = "mp.v1.sessions";
 export const SETTINGS_KEY = "mp.v1.settings";
+/** Sync state (docs/sync-api.md); absent means sync is off. */
+export const SYNC_KEY = "mp.v1.sync";
 /** Oldest sessions are dropped beyond this, to stay well inside the quota. */
 export const MAX_SESSIONS = 2000;
 export const EXPORT_APP = "music-practice";
 export const EXPORT_VERSION = 1;
+
+/** The three synced kinds, named as the server names them. */
+export type Kind = "scale" | "song" | "learn";
+export interface SyncEntry {
+  kind: Kind;
+  id: string;
+}
+export interface SyncState {
+  email: string;
+  cursor: number;
+  pendingAdds: SyncEntry[];
+  pendingDeletes: SyncEntry[];
+  lastSyncAt: number | null;
+}
+export const entryKey = (e: SyncEntry) => `${e.kind}:${e.id}`;
 
 export interface SessionTiming {
   bpm: number;
@@ -400,6 +417,25 @@ function newId(): string {
     `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+interface KindSpec {
+  key: string;
+  valid: (x: unknown) => boolean;
+  clean: (x: unknown) => { id: string; ts: number };
+}
+const KINDS: Record<Kind, KindSpec> = {
+  scale: { key: SESSIONS_KEY, valid: validSession, clean: (x) => cleanSession(x as Session) },
+  song: {
+    key: SONG_SESSIONS_KEY,
+    valid: validSongSession,
+    clean: (x) => cleanSongSession(x as SongSession),
+  },
+  learn: {
+    key: LEARN_KEY,
+    valid: validLearnSession,
+    clean: (x) => cleanLearnSession(x as LearnSession),
+  },
+};
+
 // ---- The store ----------------------------------------------------------
 
 export class ProgressStore {
@@ -521,6 +557,7 @@ export class ProgressStore {
       .reduce<Session | null>((best, s) => (!best || better(s, best) ? s : best), null);
     all.push(session);
     const saved = this.write(SESSIONS_KEY, all.slice(-MAX_SESSIONS));
+    if (saved) this.queueAdds([{ kind: "scale", id: session.id }]);
     return { session, saved, previousBest };
   }
 
@@ -543,6 +580,7 @@ export class ProgressStore {
       .reduce<SongSession | null>((best, s) => (!best || betterSong(s, best) ? s : best), null);
     all.push(session);
     const saved = this.write(SONG_SESSIONS_KEY, all.slice(-MAX_SESSIONS));
+    if (saved) this.queueAdds([{ kind: "song", id: session.id }]);
     return { session, saved, previousBest };
   }
 
@@ -559,28 +597,161 @@ export class ProgressStore {
     const session: LearnSession = { ...run, id: newId() };
     const all = this.learnSessions();
     all.push(session);
-    return { session, saved: this.write(LEARN_KEY, all.slice(-MAX_SESSIONS)) };
+    const saved = this.write(LEARN_KEY, all.slice(-MAX_SESSIONS));
+    if (saved) this.queueAdds([{ kind: "learn", id: session.id }]);
+    return { session, saved };
   }
 
   /** Forget a song's history (when the song itself is deleted). */
   removeSong(songId: string): boolean {
     this.setSongRange(songId, null);
-    const a = this.write(
-      SONG_SESSIONS_KEY,
-      this.songSessions().filter((s) => s.songId !== songId),
-    );
+    const songs = this.songSessions();
+    const learn = this.learnSessions();
+    const gone = songs.filter((s) => s.songId === songId);
+    const goneLearn = learn.filter((s) => s.kind === "song" && s.subject === songId);
+    const a = this.write(SONG_SESSIONS_KEY, songs.filter((s) => s.songId !== songId));
     const b = this.write(
       LEARN_KEY,
-      this.learnSessions().filter((s) => !(s.kind === "song" && s.subject === songId)),
+      learn.filter((s) => !(s.kind === "song" && s.subject === songId)),
     );
+    this.queueDeletes([
+      ...(a ? gone.map((s) => ({ kind: "song" as const, id: s.id })) : []),
+      ...(b ? goneLearn.map((s) => ({ kind: "learn" as const, id: s.id })) : []),
+    ]);
     return a && b;
   }
 
   clear(): boolean {
-    const a = this.write(SESSIONS_KEY, []);
-    const b = this.write(SONG_SESSIONS_KEY, []);
-    const c = this.write(LEARN_KEY, []);
+    const gone: SyncEntry[] = [];
+    const ok = (kind: Kind, ids: string[], saved: boolean) => {
+      if (saved) gone.push(...ids.map((id) => ({ kind, id })));
+      return saved;
+    };
+    const a = ok("scale", this.sessions().map((s) => s.id), this.write(SESSIONS_KEY, []));
+    const b = ok("song", this.songSessions().map((s) => s.id), this.write(SONG_SESSIONS_KEY, []));
+    const c = ok("learn", this.learnSessions().map((s) => s.id), this.write(LEARN_KEY, []));
+    this.queueDeletes(gone);
     return a && b && c;
+  }
+
+  // ---- Sync support -------------------------------------------------------
+  // The store only keeps the sync state and the queues; talking to the
+  // server is lib/sync.ts. See docs/sync-api.md.
+
+  /** The stored runs of one kind, oldest first. */
+  list(kind: Kind): { id: string; ts: number }[] {
+    return kind === "scale"
+      ? this.sessions()
+      : kind === "song"
+      ? this.songSessions()
+      : this.learnSessions();
+  }
+
+  /**
+   * Union records into one kind by id (what is already here wins), oldest
+   * first, capped. Used for imports and for runs pulled from the server;
+   * merging the same records again changes nothing. The cap drops the
+   * oldest quietly: it is never a deletion to sync.
+   */
+  mergeRecords(
+    kind: Kind,
+    records: unknown[],
+  ): { addedIds: string[]; duplicate: number; invalid: number; saved: boolean } {
+    const spec = KINDS[kind];
+    const all = this.list(kind);
+    const ids = new Set(all.map((s) => s.id));
+    const addedIds: string[] = [];
+    let duplicate = 0, invalid = 0;
+    for (const r of records) {
+      if (!spec.valid(r)) invalid++;
+      else if (ids.has((r as { id: string }).id)) duplicate++;
+      else {
+        const clean = spec.clean(r);
+        all.push(clean);
+        ids.add(clean.id);
+        addedIds.push(clean.id);
+      }
+    }
+    if (!addedIds.length) return { addedIds, duplicate, invalid, saved: true };
+    all.sort((a, b) => a.ts - b.ts);
+    const saved = this.write(spec.key, all.slice(-MAX_SESSIONS));
+    return { addedIds: saved ? addedIds : [], duplicate, invalid, saved };
+  }
+
+  /** Delete runs by id; returns the ids that were actually here. */
+  removeIds(kind: Kind, ids: string[]): string[] {
+    const drop = new Set(ids);
+    const all = this.list(kind);
+    const gone = all.filter((s) => drop.has(s.id)).map((s) => s.id);
+    if (gone.length && !this.write(KINDS[kind].key, all.filter((s) => !drop.has(s.id)))) return [];
+    return gone;
+  }
+
+  /** Sync state, or null when sync is off (signed out, or never signed in here). */
+  syncState(): SyncState | null {
+    const raw = this.read(SYNC_KEY);
+    if (!isObj(raw) || typeof raw.email !== "string" || !isNum(raw.cursor)) return null;
+    const entries = (v: unknown): SyncEntry[] =>
+      Array.isArray(v)
+        ? v.filter((e): e is SyncEntry =>
+          isObj(e) && typeof e.id === "string" && (e.kind === "scale" || e.kind === "song" ||
+            e.kind === "learn")
+        ).map((e) => ({ kind: e.kind, id: e.id }))
+        : [];
+    return {
+      email: raw.email,
+      cursor: raw.cursor,
+      pendingAdds: entries(raw.pendingAdds),
+      pendingDeletes: entries(raw.pendingDeletes),
+      lastSyncAt: isNum(raw.lastSyncAt) ? raw.lastSyncAt : null,
+    };
+  }
+
+  saveSyncState(state: SyncState): boolean {
+    return this.write(SYNC_KEY, state);
+  }
+
+  /** Sync off. Local history stays. */
+  clearSyncState(): void {
+    if (!this.available) return;
+    try {
+      this.storage!.removeItem(SYNC_KEY);
+    } catch { /* nothing more to do */ }
+  }
+
+  /** Change the sync state in place; does nothing while sync is off. */
+  updateSync(change: (s: SyncState) => void): void {
+    const s = this.syncState();
+    if (!s) return;
+    change(s);
+    this.saveSyncState(s);
+  }
+
+  /** Queue new runs for the next sync (no-op while sync is off). */
+  queueAdds(entries: SyncEntry[]): void {
+    if (!entries.length) return;
+    this.updateSync((s) => {
+      const have = new Set(s.pendingAdds.map(entryKey));
+      for (const e of entries) if (!have.has(entryKey(e))) s.pendingAdds.push(e);
+    });
+  }
+
+  /** Queue deletions, and forget any not-yet-sent adds of the same runs. */
+  queueDeletes(entries: SyncEntry[]): void {
+    if (!entries.length) return;
+    this.updateSync((s) => {
+      const gone = new Set(entries.map(entryKey));
+      s.pendingAdds = s.pendingAdds.filter((e) => !gone.has(entryKey(e)));
+      const have = new Set(s.pendingDeletes.map(entryKey));
+      for (const e of entries) if (!have.has(entryKey(e))) s.pendingDeletes.push(e);
+    });
+  }
+
+  /** Every local run, as sync entries (the "add this browser's runs" offer). */
+  allEntries(): SyncEntry[] {
+    return (["scale", "song", "learn"] as const).flatMap((kind) =>
+      this.list(kind).map((r) => ({ kind, id: r.id }))
+    );
   }
 
   settings(): Partial<Settings> {
@@ -636,58 +807,24 @@ export class ProgressStore {
     if (!isNum(parsed.version) || parsed.version > EXPORT_VERSION) {
       throw new Error("That export is from a newer version of Music Practice.");
     }
-    const all = this.sessions();
-    const ids = new Set(all.map((s) => s.id));
-    let added = 0, duplicate = 0, invalid = 0;
-    for (const s of parsed.sessions) {
-      if (!validSession(s)) invalid++;
-      else if (ids.has(s.id)) duplicate++;
-      else {
-        all.push(cleanSession(s));
-        ids.add(s.id);
-        added++;
-      }
+    let added = 0, duplicate = 0, invalid = 0, saved = true;
+    const queued: SyncEntry[] = [];
+    // Song runs and Learn time only exist in newer exports.
+    const parts: [Kind, unknown][] = [
+      ["scale", parsed.sessions],
+      ["song", parsed.songSessions],
+      ["learn", parsed.learnSessions],
+    ];
+    for (const [kind, records] of parts) {
+      if (!Array.isArray(records)) continue;
+      const r = this.mergeRecords(kind, records);
+      added += r.addedIds.length;
+      duplicate += r.duplicate;
+      invalid += r.invalid;
+      saved = r.saved && saved;
+      if (r.saved) queued.push(...r.addedIds.map((id) => ({ kind, id })));
     }
-    all.sort((a, b) => a.ts - b.ts);
-    let saved = added === 0 || this.write(SESSIONS_KEY, all.slice(-MAX_SESSIONS));
-
-    // Song runs, in exports that have them.
-    if (Array.isArray(parsed.songSessions)) {
-      const songs = this.songSessions();
-      const songIds = new Set(songs.map((s) => s.id));
-      let songsAdded = 0;
-      for (const s of parsed.songSessions) {
-        if (!validSongSession(s)) invalid++;
-        else if (songIds.has(s.id)) duplicate++;
-        else {
-          songs.push(cleanSongSession(s));
-          songIds.add(s.id);
-          songsAdded++;
-        }
-      }
-      songs.sort((a, b) => a.ts - b.ts);
-      if (songsAdded) saved = this.write(SONG_SESSIONS_KEY, songs.slice(-MAX_SESSIONS)) && saved;
-      added += songsAdded;
-    }
-
-    // Learn-mode time, in exports that have it.
-    if (Array.isArray(parsed.learnSessions)) {
-      const learn = this.learnSessions();
-      const learnIds = new Set(learn.map((s) => s.id));
-      let learnAdded = 0;
-      for (const s of parsed.learnSessions) {
-        if (!validLearnSession(s)) invalid++;
-        else if (learnIds.has(s.id)) duplicate++;
-        else {
-          learn.push(cleanLearnSession(s));
-          learnIds.add(s.id);
-          learnAdded++;
-        }
-      }
-      learn.sort((a, b) => a.ts - b.ts);
-      if (learnAdded) saved = this.write(LEARN_KEY, learn.slice(-MAX_SESSIONS)) && saved;
-      added += learnAdded;
-    }
+    this.queueAdds(queued);
     return { added, duplicate, invalid, saved };
   }
 }
