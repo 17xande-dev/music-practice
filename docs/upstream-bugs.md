@@ -196,6 +196,14 @@ probes"), with fixtures under `frontend/lib/testdata/fixtures/`.
 - Workaround: none on the web. ScoreKit gets 45.0 and keeps the tie (known divergence, played
   measure order only).
 
+### OSMD 2.2.0: tempo-word table matches in list order, so compound words get the wrong tempo
+- Status: found (read from source at 2.2.0-60-g7df1c7bb; not run)
+- Repro: a `<words>` direction with no `<sound tempo>`/metronome: "Allegro moderato" plays 106 (Moderato list is tried before the "Allegro moderato" list); "Allegro assai" plays 130 (Allegro before Vivace's "Allegro Assai"); "very fast" plays 112 ("fast" is in Allegretto, tried before Allegrissimo).
+- Cause: `InstantaneousTempoExpression.setTempoAndTempoType` tests lists in order with `isStringInStringList`, which matches `word + " "` or `" " + word` anywhere in the text.
+- Fix: test the longest/most specific phrases first (Andante moderato, Allegro moderato, Allegro assai, very fast...).
+- Upstream: none searched.
+- Workaround: ScoreKit's `TempoWords` copies the table and order (parity with the web), so it has the same results.
+
 ### OSMD 2.1.3: the metronome beat unit and dots are ignored (questionable, not a clear bug)
 
 - Status: confirmed on latest (re-run on 2.2.0: `metronome-half-note` unchanged, half = 60 plays 60)
