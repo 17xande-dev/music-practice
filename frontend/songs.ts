@@ -24,7 +24,7 @@ import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
-import { inputOf, type InputSource, RunInput } from "./lib/input_source.ts";
+import { forInput, inputOf, type InputSource, RunInput } from "./lib/input_source.ts";
 import { formatDuration, LearnClock } from "./lib/learn_log.ts";
 import { ProgressStore } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
@@ -199,7 +199,9 @@ const day = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 async function renderLibrary() {
   const songs = library ? await library.list() : [];
   const bests = new Map<string, number>();
-  for (const s of store.songSessions()) {
+  // The best of the Progress page's chosen input (default: the instrument).
+  const input = store.settings().progressInput ?? "midi";
+  for (const s of forInput(store.songSessions(), input)) {
     bests.set(s.songId, Math.max(bests.get(s.songId) ?? 0, s.accuracy));
   }
   ui.songList.replaceChildren(...songs.map((s) => {
