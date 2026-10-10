@@ -75,6 +75,7 @@ import { setPlaying } from "./lib/transport.ts";
 import { checkStoredData } from "./lib/data_repair.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
+import { installSync } from "./lib/sync_triggers.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
@@ -143,6 +144,7 @@ const metronome = new Metronome();
 const calibration = new Calibration(metronome);
 const store = ProgressStore.fromWindow();
 void checkStoredData(store);
+const syncer = installSync(store);
 
 /** Learn waits like notes-only, with hints, and keeps out of the graded history. */
 type Mode = "notes" | "tempo" | "learn";
@@ -686,6 +688,7 @@ function logLearn(complete: boolean): number {
     wrongNotes: engine.summary().wrongNotes,
     complete,
   });
+  syncer.schedule();
   return ms;
 }
 
@@ -745,6 +748,7 @@ function finishRun(s: Summary) {
       meanSignedMs: s.timing.meanSignedMs,
     },
   });
+  syncer.schedule();
   if (saved) showBest(session, previousBest);
 }
 

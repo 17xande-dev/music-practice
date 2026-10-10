@@ -75,7 +75,17 @@
 
 <section class="panel" aria-labelledby="data-title">
   <h2 id="data-title">Your data</h2>
-  <p>History lives only in this browser. Export it to keep a copy or move it to another browser; importing merges and skips sessions you already have.</p>
+  <p>Your history is saved in this browser. Export it to keep a copy or move it elsewhere; importing merges and skips sessions you already have.</p>
+  <p id="sync-out" class="sync-line" hidden>History is kept in this browser only. <a href="/account">Sign in</a> to sync it with your other devices.</p>
+  <div id="sync-in" class="sync-line" hidden>
+    <span id="sync-line"></span>
+    <button id="sync-now" type="button" class="secondary">Sync now</button>
+  </div>
+  <div id="sync-offer" class="sync-line" hidden>
+    <span id="sync-offer-text"></span>
+    <button id="sync-offer-yes" type="button">Yes</button>
+    <button id="sync-offer-no" type="button" class="secondary">Not now</button>
+  </div>
   <div class="actions">
     <button id="export" type="button" class="secondary">Export JSON</button>
     <label class="button secondary file-button">Import JSON<input id="import" type="file" accept="application/json,.json"></label>

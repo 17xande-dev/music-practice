@@ -12,6 +12,8 @@ import { checkStoredData } from "./lib/data_repair.ts";
 import { installCommands } from "./lib/palette.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
+import { ago, checkSignedIn, type SyncResult } from "./lib/sync.ts";
+import { installSync } from "./lib/sync_triggers.ts";
 
 registerServiceWorker();
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -35,6 +37,14 @@ const ui = {
   songRecentBody: el("song-recent-body"),
   learning: el("learning"),
   learningBody: el("learning-body"),
+  syncOut: el("sync-out"),
+  syncIn: el("sync-in"),
+  syncLine: el("sync-line"),
+  syncNow: el<HTMLButtonElement>("sync-now"),
+  offer: el("sync-offer"),
+  offerText: el("sync-offer-text"),
+  offerYes: el<HTMLButtonElement>("sync-offer-yes"),
+  offerNo: el<HTMLButtonElement>("sync-offer-no"),
 };
 
 const store = ProgressStore.fromWindow();
@@ -285,6 +295,7 @@ ui.importInput.addEventListener("change", async () => {
     ui.status.textContent = r.saved
       ? `${parts.join(", ")}.`
       : "Could not save: this browser's storage is full or blocked.";
+    syncer.schedule();
   } catch (e) {
     ui.status.textContent = e instanceof Error ? e.message : "Import failed.";
   }
@@ -295,7 +306,11 @@ ui.importInput.addEventListener("change", async () => {
 ui.clear.addEventListener("click", () => {
   ui.clearConfirm.hidden = false;
   ui.clearConfirm.focus();
-  ui.status.textContent = "This cannot be undone. Export first if you want a copy.";
+  ui.status.textContent = store.syncState()
+    ? `This clears it from your account (${
+      store.syncState()!.email
+    }) and your other devices too, and cannot be undone. Export first if you want a copy.`
+    : "This cannot be undone. Export first if you want a copy.";
 });
 ui.clearConfirm.addEventListener("click", () => {
   ui.clearConfirm.hidden = true;
@@ -303,6 +318,7 @@ ui.clearConfirm.addEventListener("click", () => {
     ? "History cleared."
     : "Could not clear: storage is blocked.";
   render();
+  void syncer.now(); // the deletions go up straight away, not after the debounce
 });
 ui.clearConfirm.addEventListener("blur", () => {
   setTimeout(() => (ui.clearConfirm.hidden = true), 200);
@@ -317,7 +333,101 @@ new ResizeObserver(() => {
   }
 }).observe(ui.trendChart);
 
+// ---- Sync ---------------------------------------------------------------------
+// Signing in happens on /account (the session cookie is HttpOnly), so this page
+// asks /api/me and, the first time it sees a signed-in browser, turns sync on.
+
+let lastResult: SyncResult | null = null;
+
+function renderSync() {
+  const state = store.syncState();
+  const offering = !ui.offer.hidden;
+  ui.syncOut.hidden = state !== null || offering || signedIn !== "out";
+  ui.syncIn.hidden = state === null;
+  ui.syncNow.disabled = syncing;
+  if (!state) return;
+  const r = lastResult;
+  ui.syncLine.replaceChildren(
+    r?.status === "error"
+      ? `Could not sync: ${r.message}`
+      : r?.status === "offline"
+      ? "Offline: your changes will sync when you are back online."
+      : state.lastSyncAt
+      ? `Synced with ${state.email} · ${ago(state.lastSyncAt)}`
+      : `Signed in as ${state.email}`,
+  );
+}
+
+let signedIn: "unknown" | "in" | "out" = "unknown";
+let syncing = false;
+
+const syncer = installSync(store, {
+  onLoad: false,
+  onResult(r) {
+    lastResult = r;
+    if (r.status === "signed-out") {
+      signedIn = "out";
+      ui.status.textContent = "Signed out — sign in again to sync.";
+    }
+    if (r.status === "ok" && r.changed) render();
+    renderSync();
+  },
+});
+
+async function syncNow() {
+  syncing = true;
+  renderSync();
+  await syncer.now();
+  syncing = false;
+  renderSync();
+}
+
+ui.syncNow.addEventListener("click", () => void syncNow());
+
+/** Sync is on from here: an empty cursor pulls everything, and a first push follows. */
+function turnOn(email: string, queueLocal: boolean) {
+  store.saveSyncState({
+    email,
+    cursor: 0,
+    pendingAdds: queueLocal ? store.allEntries() : [],
+    pendingDeletes: [],
+    lastSyncAt: null,
+  });
+  ui.offer.hidden = true;
+  void syncNow();
+}
+
+async function startSync() {
+  const me = await checkSignedIn();
+  const state = store.syncState();
+  if (me.state === "unknown") {
+    renderSync(); // offline: show what we know, the triggers retry later
+    return;
+  }
+  if (me.state === "out") {
+    signedIn = "out";
+    if (state) store.clearSyncState();
+    renderSync();
+    return;
+  }
+  signedIn = "in";
+  if (state && state.email === me.email) {
+    void syncNow();
+    return;
+  }
+  // First sign-in on this device (or a different account): offer to add what is here.
+  const n = store.allEntries().length;
+  if (n === 0) return turnOn(me.email, false);
+  ui.offerText.textContent = `Add this browser's ${n} run${n === 1 ? "" : "s"} to ${me.email}?`;
+  ui.offer.hidden = false;
+  renderSync();
+  ui.offerYes.addEventListener("click", () => turnOn(me.email, true), { once: true });
+  ui.offerNo.addEventListener("click", () => turnOn(me.email, false), { once: true });
+}
+
 render();
+renderSync();
+if (store.available) void startSync();
 void checkStoredData(store).then((deleted) => {
   if (deleted) render();
 });

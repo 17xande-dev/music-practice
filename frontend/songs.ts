@@ -63,6 +63,7 @@ import { installCommands } from "./lib/palette.ts";
 import { checkStoredData } from "./lib/data_repair.ts";
 import { registerServiceWorker } from "./lib/pwa.ts";
 import { siteCommands } from "./lib/site_commands.ts";
+import { installSync } from "./lib/sync_triggers.ts";
 import { sheetThemeToggle } from "./lib/sheet_theme.ts";
 
 registerServiceWorker();
@@ -130,6 +131,7 @@ const noPlay = () => mode === "learn" || mode === "notes";
 type Phase = "idle" | "countin" | "playing" | "paused" | "done";
 
 const store = ProgressStore.fromWindow();
+const syncer = installSync(store);
 const view = new ScoreView(ui.score);
 const keyboard = new KeyboardView(ui.keyboard);
 const player = new SongPlayer();
@@ -228,6 +230,7 @@ async function renderLibrary() {
       }
       await library?.remove(s.id);
       store.removeSong(s.id);
+      syncer.schedule();
       if (song?.meta?.id === s.id) closeSong();
       setLibraryStatus(`Deleted ${s.title}, and its history.`);
       void renderLibrary();
@@ -1054,6 +1057,7 @@ function finishRun() {
   };
   if (!song.meta) return; // not in the library: nothing to attach history to
   const { session, saved, previousBest } = store.addSong(run);
+  syncer.schedule();
   void library?.update(song.meta.id, { lastPractised: run.ts }).then(renderLibrary);
   if (!saved) return;
   if (!previousBest) {
@@ -1098,6 +1102,7 @@ function logLearn(complete: boolean): number {
     complete,
     measures: stats.map((m) => ({ measure: m.measure, steps: m.steps, clean: m.clean })),
   });
+  syncer.schedule();
   return ms;
 }
 
