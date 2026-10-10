@@ -4,6 +4,7 @@
 
 import { renderAccuracyChart } from "./lib/accuracy_chart.ts";
 import { better, ProgressStore, scaleKey, type Session } from "./lib/progress_store.ts";
+import { forInput, type InputSource } from "./lib/input_source.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
 import { formatDuration, type LearnSession, summarizeLearning } from "./lib/learn_log.ts";
 import { compareByCircle, scaleTitle } from "./lib/theory.ts";
@@ -21,6 +22,9 @@ const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElem
 const ui = {
   warning: el("storage-warning"),
   empty: el("empty"),
+  inputSwitch: el("input-switch"),
+  inputFilter: el<HTMLSelectElement>("input-filter"),
+  inputEmpty: el("input-empty"),
   history: el("history"),
   summary: el("summary"),
   trendScale: el<HTMLSelectElement>("trend-scale"),
@@ -101,13 +105,27 @@ function byScale(sessions: Session[]): Session[][] {
   return [...groups.values()].sort((a, b) => compareByCircle(a[0], b[0]));
 }
 
+/** Which input's stats are shown: remembered in settings.progressInput, default the instrument. */
+let input: InputSource = store.settings().progressInput ?? "midi";
+ui.inputFilter.value = input;
+ui.inputFilter.addEventListener("change", () => {
+  input = ui.inputFilter.value === "screen" ? "screen" : "midi";
+  store.saveSettings({ progressInput: input });
+  render();
+});
+
 function render() {
-  const sessions = store.sessions();
-  const songSessions = store.songSessions();
-  const learnSessions = store.learnSessions();
-  const any = sessions.length + songSessions.length + learnSessions.length > 0;
+  // Export and clear act on everything; the tables show the chosen input only.
+  const everything = store.sessions().length + store.songSessions().length +
+    store.learnSessions().length;
+  const sessions = forInput(store.sessions(), input);
+  const songSessions = forInput(store.songSessions(), input);
+  const learnSessions = forInput(store.learnSessions(), input);
+  const any = everything > 0;
   ui.warning.hidden = store.available;
   ui.empty.hidden = any || !store.available;
+  ui.inputSwitch.hidden = !any;
+  ui.inputEmpty.hidden = !any || sessions.length + songSessions.length + learnSessions.length > 0;
   ui.history.hidden = sessions.length === 0;
   ui.exportBtn.disabled = !any;
   ui.clear.disabled = !any;
@@ -264,7 +282,7 @@ function renderLearning(all: LearnSession[]) {
   );
 }
 
-function drawTrend(groups = byScale(store.sessions())) {
+function drawTrend(groups = byScale(forInput(store.sessions(), input))) {
   const g = groups.find((x) => scaleKey(x[0]) === ui.trendScale.value) ?? groups[0];
   if (g) renderAccuracyChart(ui.trendChart, g);
 }

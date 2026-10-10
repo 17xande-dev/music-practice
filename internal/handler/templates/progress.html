@@ -9,6 +9,16 @@
   <p>No practice recorded yet. Finish a run of a <a href="/">scale</a> or a <a href="/songs">song</a> and it will appear here.</p>
 </section>
 
+<div id="input-switch" class="field" hidden>
+  <label for="input-filter">Played on</label>
+  <select id="input-filter">
+    <option value="midi">Instrument (MIDI)</option>
+    <option value="screen">On-screen (piano or typing keys)</option>
+  </select>
+</div>
+
+<p id="input-empty" class="notice" hidden>Nothing recorded for this input yet. Use the switch above to see the other.</p>
+
 <div id="history" hidden>
   <dl id="summary" class="summary-tiles"></dl>
 

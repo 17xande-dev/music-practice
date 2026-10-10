@@ -216,6 +216,7 @@ frontend/
   lib/staff_view.ts         VexFlow staff / grand staff
   lib/timing_chart.ts       per-note timing chart (tempo results)
   lib/accuracy_chart.ts     accuracy trend (progress page)
+  lib/input_source.ts       midi vs on-screen input of a run (the `input` field)
   lib/progress_store.ts     localStorage history + settings, export/import, sync queue
   lib/sync.ts               history sync with the server (docs/sync-api.md)
   lib/*_test.ts             Deno tests

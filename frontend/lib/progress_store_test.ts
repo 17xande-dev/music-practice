@@ -17,7 +17,8 @@ import {
   type SongSession,
   validSongSession,
 } from "./song_session.ts";
-import { LEARN_KEY, type LearnSession } from "./learn_log.ts";
+import { LEARN_KEY, type LearnSession, validLearnSession } from "./learn_log.ts";
+import { forInput, inputOf } from "./input_source.ts";
 
 /** An in-memory Storage, optionally refusing writes (a full quota). */
 class FakeStorage implements Storage {
@@ -445,7 +446,7 @@ Deno.test("corrupt data is skipped in memory and left alone until repair", () =>
 Deno.test("repair deletes corrupt keys and writes cleaned values back", () => {
   const fs = new FakeStorage();
   const store = new ProgressStore(fs);
-  store.addSong(songRun());
+  store.addSong(songRun({ input: "midi" }));
   const good = JSON.parse(fs.data.get(SONG_SESSIONS_KEY)!);
   fs.data.set(SONG_SESSIONS_KEY, JSON.stringify([...good, { nope: 1 }]));
   fs.data.set(SESSIONS_KEY, "{not json");
@@ -539,4 +540,105 @@ Deno.test("song ranges: remembered per song, validated, forgotten with the song,
     }),
     { songRanges: { ok: { from: 1, to: 3 } } },
   );
+});
+
+Deno.test("input: personal bests never cross between midi and screen", () => {
+  const store = new ProgressStore(new FakeStorage());
+  store.add(run({ accuracy: 0.9, input: "midi" }));
+  // The first on-screen run has no previous best, however good the MIDI one was.
+  assertEquals(store.add(run({ accuracy: 0.5, input: "screen" })).previousBest, null);
+  assertEquals(store.add(run({ accuracy: 0.6, input: "screen" })).previousBest?.accuracy, 0.5);
+  // Records from before the field are midi.
+  assertEquals(store.add(run({ accuracy: 0.95 })).previousBest?.accuracy, 0.9);
+  assertFalse(exerciseKey(run({ input: "screen" })) === exerciseKey(run({ input: "midi" })));
+  assertEquals(exerciseKey(run()), exerciseKey(run({ input: "midi" })));
+
+  assertEquals(
+    store.addSong(songRun({ accuracy: 0.9, input: "midi" })).previousBest?.accuracy,
+    undefined,
+  );
+  assertEquals(store.addSong(songRun({ accuracy: 0.4, input: "screen" })).previousBest, null);
+  assertEquals(
+    store.addSong(songRun({ accuracy: 0.5, input: "screen" })).previousBest?.accuracy,
+    0.4,
+  );
+  assertEquals(store.addSong(songRun({ accuracy: 0.95 })).previousBest?.accuracy, 0.9);
+});
+
+Deno.test("input: validators accept the two values and reject the rest", () => {
+  const scale = { ...run(), id: "a" };
+  const song = { ...songRun(), id: "b" };
+  const learn = { ...learnRun(), id: "c" };
+  for (
+    const [valid, rec] of [[validSession, scale], [validSongSession, song], [
+      validLearnSession,
+      learn,
+    ]] as const
+  ) {
+    assert(valid(rec)); // no field: an older record
+    assert(valid({ ...rec, input: "midi" }));
+    assert(valid({ ...rec, input: "screen" }));
+    assertFalse(valid({ ...rec, input: "keys" }));
+    assertFalse(valid({ ...rec, input: null }));
+    assertFalse(valid({ ...rec, input: 1 }));
+  }
+});
+
+Deno.test("input: stored records always carry it, and old ones are read as midi", () => {
+  const storage = new FakeStorage();
+  const store = new ProgressStore(storage);
+  store.add(run());
+  store.addSong(songRun());
+  store.addLearn(learnRun({ input: "screen" }));
+  assertEquals(store.sessions()[0].input, "midi");
+  assertEquals(store.songSessions()[0].input, "midi");
+  assertEquals(store.learnSessions()[0].input, "screen");
+});
+
+Deno.test("input: importing old records (no field) keeps them as midi; new ones round-trip", () => {
+  const old = new ProgressStore(new FakeStorage());
+  const file = JSON.stringify({
+    app: "music-practice",
+    version: 1,
+    exportedAt: "2026-01-01T00:00:00Z",
+    sessions: [{ ...run(), id: "s-old" }, { ...run({ input: "screen" }), id: "s-new" }],
+    songSessions: [{ ...songRun(), id: "g-old" }],
+    learnSessions: [{ ...learnRun(), id: "l-old" }, {
+      ...learnRun({ input: "bogus" as never }),
+      id: "l-bad",
+    }],
+  });
+  const r = old.importJSON(file);
+  assertEquals([r.added, r.invalid], [4, 1]);
+  assertEquals(old.sessions().map((s) => [s.id, inputOf(s)]), [["s-old", "midi"], [
+    "s-new",
+    "screen",
+  ]]);
+  assertEquals(old.songSessions()[0].input, "midi");
+  // Export and import carry it as-is.
+  const again = new ProgressStore(new FakeStorage());
+  again.importJSON(old.exportJSON());
+  assertEquals(again.sessions().map((s) => s.input), ["midi", "screen"]);
+});
+
+Deno.test("input: the Progress filter shows one input at a time", () => {
+  const store = new ProgressStore(new FakeStorage());
+  store.add(run());
+  store.add(run({ input: "screen" }));
+  store.addSong(songRun({ input: "screen" }));
+  store.addLearn(learnRun());
+  assertEquals(forInput(store.sessions(), "midi").length, 1);
+  assertEquals(forInput(store.sessions(), "screen").length, 1);
+  assertEquals(forInput(store.songSessions(), "midi").length, 0);
+  assertEquals(forInput(store.songSessions(), "screen").length, 1);
+  assertEquals(forInput(store.learnSessions(), "midi").length, 1);
+  assertEquals(forInput(store.learnSessions(), "screen").length, 0);
+});
+
+Deno.test("input: the Progress setting is validated and remembered", () => {
+  const store = new ProgressStore(new FakeStorage());
+  assertEquals(store.settings().progressInput, undefined); // the page defaults to midi
+  store.saveSettings({ progressInput: "screen" });
+  assertEquals(store.settings().progressInput, "screen");
+  assertEquals(validSettings({ progressInput: "nope" }), {});
 });

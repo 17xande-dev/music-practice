@@ -11,6 +11,7 @@
 
 import type { ExerciseOptions, PitchName, ScaleType } from "./theory.ts";
 import { SCALES } from "./theory.ts";
+import { cleanInput, inputOf, type InputSource, validInput } from "./input_source.ts";
 import {
   betterSong,
   cleanSongSession,
@@ -62,6 +63,8 @@ export interface Session {
   id: string;
   /** Absent on sessions recorded before guitar support: those are piano. */
   instrument?: Instrument;
+  /** How it was played; absent (older records) reads as "midi". See input_source.ts. */
+  input?: InputSource;
   /** Epoch milliseconds when the run finished. */
   ts: number;
   tonic: PitchName;
@@ -105,6 +108,8 @@ export interface Settings {
   fingering: boolean;
   /** Keyboard hints (targets, next key, scale tint); off = a plain keyboard. Default on. */
   keyboardHints: boolean;
+  /** Progress page: which input's stats are shown. Default "midi". */
+  progressInput: InputSource;
   /** Songs page: how the last song was practised, and which song it was. */
   songMode: "learn" | "notes" | "tempo" | "rubato" | "listen";
   /** Rubato's on-time window, as % of each note's length. */
@@ -150,7 +155,10 @@ export interface ExportFile {
 
 /** Sessions of the same exercise: comparable for personal bests and trends. */
 export function exerciseKey(
-  s: Pick<Session, "tonic" | "type" | "hands" | "octaves" | "direction" | "mode" | "instrument">,
+  s: Pick<
+    Session,
+    "tonic" | "type" | "hands" | "octaves" | "direction" | "mode" | "instrument" | "input"
+  >,
 ) {
   const key: (string | number)[] = [
     s.tonic.letter,
@@ -164,6 +172,8 @@ export function exerciseKey(
   // Guitar and piano bests are separate exercises. Piano keys are unchanged,
   // so bests recorded before guitar support still match.
   if (s.instrument === "guitar") key.push("guitar");
+  // Instrument and on-screen runs are separate exercises too; MIDI keys are unchanged.
+  if (inputOf(s) === "screen") key.push("screen");
   return key.join("|");
 }
 
@@ -224,6 +234,7 @@ export function validSession(x: unknown): x is Session {
     isCount(x.total) && x.total > 0 && isCount(x.correct) && x.correct <= x.total &&
     isNum(x.accuracy) && x.accuracy >= 0 && x.accuracy <= 1 &&
     isCount(x.wrongNotes) && isNum(x.durationMs) && x.durationMs >= 0 &&
+    validInput(x.input) &&
     isNumOrNull(x.unevenness) && isNumOrNull(x.velocityStd) && isCount(x.notTogether) &&
     validTiming(x.timing) && (x.mode === "tempo") === (x.timing !== null) &&
     (x.instrument === undefined || x.instrument === "piano" || x.instrument === "guitar");
@@ -239,6 +250,7 @@ export function cleanSession(s: Session): Session {
     id: s.id,
     ts: s.ts,
     ...(s.instrument ? { instrument: s.instrument } : {}),
+    ...cleanInput(s),
     tonic: { letter: s.tonic.letter, acc: s.tonic.acc },
     type: s.type,
     hands: s.hands,
@@ -283,6 +295,9 @@ export function validSettings(x: unknown): Partial<Settings> {
   if (isNum(x.latencyMs) && x.latencyMs >= 0 && x.latencyMs <= 300) out.latencyMs = x.latencyMs;
   if (typeof x.device === "string" && x.device.length <= 200) out.device = x.device;
   if (x.instrument === "piano" || x.instrument === "guitar") out.instrument = x.instrument;
+  if (x.progressInput === "midi" || x.progressInput === "screen") {
+    out.progressInput = x.progressInput;
+  }
   if (isCount(x.position) && x.position <= 12) out.position = x.position;
   if (isNum(x.a4) && x.a4 >= 415 && x.a4 <= 466) out.a4 = x.a4;
   if (typeof x.fingering === "boolean") out.fingering = x.fingering;
@@ -386,6 +401,7 @@ const SETTING_KEYS: readonly (keyof Settings)[] = [
   "a4",
   "fingering",
   "keyboardHints",
+  "progressInput",
   "songMode",
   "songRubato",
   "songGuide",

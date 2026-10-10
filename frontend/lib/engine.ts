@@ -12,6 +12,8 @@ export interface NoteEvent {
   midi: number;
   velocity: number;
   t: number;
+  /** Where it came from; absent means a MIDI instrument (see input_source.ts). */
+  src?: "midi" | "screen";
 }
 
 export type Feedback =

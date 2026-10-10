@@ -2,6 +2,8 @@
 // Stored beside the scale sessions, under its own key, and validated the
 // same way: anything read back is checked field by field and rebuilt.
 
+import { cleanInput, inputOf, type InputSource, validInput } from "./input_source.ts";
+
 export const SONG_SESSIONS_KEY = "mp.v1.songSessions";
 /** Measures kept per session for the heat-map history. */
 export const MAX_MEASURES = 1000;
@@ -18,6 +20,8 @@ export interface SongSession {
   songId: string;
   /** The title when played, so history still reads if the song is deleted. */
   title: string;
+  /** How it was played; absent (older records) reads as "midi". See input_source.ts. */
+  input?: InputSource;
   hands: "both" | "rh" | "lh";
   /** Written measure range practised, inclusive. */
   from: number;
@@ -64,7 +68,7 @@ export function validSongSession(x: unknown): x is SongSession {
     (isObj(t) && isCount(t.onTime) && isCount(t.early) && isCount(t.late) &&
       isCount(t.missed) && isNumOrNull(t.meanAbsMs) && isNumOrNull(t.meanSignedMs));
   return isStr(x.id, 64) && isNum(x.ts) && x.ts > 0 &&
-    isStr(x.songId, 64) && isStr(x.title, 300) &&
+    isStr(x.songId, 64) && isStr(x.title, 300) && validInput(x.input) &&
     ["both", "rh", "lh"].includes(x.hands as string) &&
     isCount(x.from) && isCount(x.to) && x.from >= 1 && x.to >= x.from &&
     ["notes", "tempo", "rubato"].includes(x.mode as string) &&
@@ -86,6 +90,7 @@ export function cleanSongSession(s: SongSession): SongSession {
     ts: s.ts,
     songId: s.songId,
     title: s.title,
+    ...cleanInput(s),
     hands: s.hands,
     from: s.from,
     to: s.to,
@@ -113,8 +118,11 @@ export function cleanSongSession(s: SongSession): SongSession {
  * Runs of the same practice: same song, hands, range and mode. Tempo % is
  * left out so a best at 80% is still the one to beat at 90%.
  */
-export function songKey(s: Pick<SongSession, "songId" | "hands" | "from" | "to" | "mode">) {
-  return [s.songId, s.hands, s.from, s.to, s.mode].join("|");
+export function songKey(
+  s: Pick<SongSession, "songId" | "hands" | "from" | "to" | "mode" | "input">,
+) {
+  // The input is part of the key: on-screen runs never compete with MIDI ones.
+  return [s.songId, s.hands, s.from, s.to, s.mode, inputOf(s)].join("|");
 }
 
 /** Higher accuracy wins; then faster tempo; then closer timing (or quicker, waiting). */

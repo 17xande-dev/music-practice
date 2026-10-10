@@ -39,6 +39,7 @@ import {
 import { Metronome } from "./lib/metronome.ts";
 import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
+import { inputOf, RunInput } from "./lib/input_source.ts";
 import { formatDuration, LearnClock } from "./lib/learn_log.ts";
 import {
   better,
@@ -168,6 +169,8 @@ let frame = 0;
 let shownCurrent = -1;
 /** Learn mode: active time on the pass in progress. */
 let clock = new LearnClock();
+/** Where the graded notes of the run in progress came from ("screen" if any was typed). */
+const runInput = new RunInput();
 
 // ---- Scale picker -------------------------------------------------------
 
@@ -426,6 +429,7 @@ function showTargets(step: Step | undefined) {
 
 function reset() {
   logLearn(false);
+  runInput.reset();
   metronome.stop();
   cancelAnimationFrame(frame);
   engine = mode === "tempo" ? null : new NotesEngine(steps);
@@ -593,6 +597,7 @@ function handleNote(ev: NoteEvent) {
     view.press(ev.midi, "neutral");
     return;
   }
+  runInput.note(ev);
   if (mode === "learn") clock.note(ev.t);
   const fb = engine!.input(ev);
   view.press(ev.midi, fb.kind === "correct" ? "ok" : fb.kind === "wrong" ? "bad" : "neutral");
@@ -616,7 +621,7 @@ listenQwerty((p) => {
   if (!p.down) {
     for (const m of qwertyHeld.get(p.code) ?? []) {
       synth.noteOff(m);
-      handleNote({ type: "off", midi: m, velocity: 0, t: p.t });
+      handleNote({ type: "off", midi: m, velocity: 0, t: p.t, src: "screen" });
     }
     qwertyHeld.delete(p.code);
     return;
@@ -630,7 +635,7 @@ listenQwerty((p) => {
   qwertyHeld.set(p.code, midis);
   for (const m of midis) {
     synth.noteOn(m);
-    handleNote({ type: "on", midi: m, velocity: 90, t: p.t });
+    handleNote({ type: "on", midi: m, velocity: 90, t: p.t, src: "screen" });
   }
 });
 
@@ -705,12 +710,15 @@ function logLearn(complete: boolean): number {
   if (!clock.worthLogging || !(engine instanceof NotesEngine)) return 0;
   const ms = clock.ms;
   clock = new LearnClock();
+  const input = runInput.value;
+  runInput.reset();
   store.addLearn({
     ts: Date.now(),
     kind: "scale",
     subject: scaleKey(options),
     title: scaleTitle(options.tonic, options.type),
     ...(instrument === "guitar" ? { instrument } : {}),
+    input,
     hands: options.hands,
     durationMs: ms,
     steps: engine.cursor,
@@ -724,11 +732,13 @@ function logLearn(complete: boolean): number {
 
 /** Learn mode: no grades, just how long the pass took and the time put in so far. */
 function finishLearn() {
+  const input = runInput.value;
   const ms = logLearn(true);
   const key = scaleKey(options);
   const total = store.learnSessions()
     .filter((l) =>
-      l.kind === "scale" && l.subject === key && (l.instrument ?? "piano") === instrument
+      l.kind === "scale" && l.subject === key && (l.instrument ?? "piano") === instrument &&
+      inputOf(l) === input
     )
     .reduce((sum, l) => sum + l.durationMs, 0);
   ui.resultsTitle.textContent = "Pass complete";
@@ -756,6 +766,7 @@ function finishRun(s: Summary) {
     type: options.type,
     hands: options.hands,
     instrument,
+    input: runInput.value,
     octaves: options.octaves,
     direction: options.direction,
     mode,

@@ -24,6 +24,7 @@ import { Calibration, describeLatency } from "./lib/calibration.ts";
 import { KeyboardView } from "./lib/keyboard_view.ts";
 import { Metronome } from "./lib/metronome.ts";
 import { ALL_DEVICES, Midi, type MidiDevice, type MidiState } from "./lib/midi.ts";
+import { inputOf, type InputSource, RunInput } from "./lib/input_source.ts";
 import { formatDuration, LearnClock } from "./lib/learn_log.ts";
 import { ProgressStore } from "./lib/progress_store.ts";
 import { listenQwerty, resolveOctave, Synth } from "./lib/qwerty.ts";
@@ -159,6 +160,8 @@ let segment: Practice | null = null;
 let attempted = new Map<number, StepResult>();
 /** Learn mode: active time on the pass in progress, and the hands it's in. */
 let clock = new LearnClock();
+/** Where the graded notes of the run in progress came from ("screen" if any was typed). */
+const runInput = new RunInput();
 let learnHands: Selection["hands"] = "both";
 /** Whether the score is drawn with fingers (redrawing it is slow, so only on change). */
 let fingersShown = false;
@@ -410,6 +413,7 @@ function keepSegment(upto = Infinity) {
 /** Drop the run so far: nothing played, ready at step k of the selection. */
 function clearRun(k = 0, keepResults = false) {
   logLearn(false);
+  runInput.reset();
   stop();
   attempted = new Map();
   position = k;
@@ -919,6 +923,7 @@ function handleNote(ev: NoteEvent) {
     keyboard.press(ev.midi, "neutral");
     return;
   }
+  runInput.note(ev);
   if (mode === "learn") {
     if (!clock.started) learnHands = ui.hands.value as Selection["hands"];
     clock.note(ev.t);
@@ -970,7 +975,7 @@ listenQwerty((p) => {
   if (!p.down) {
     for (const m of qwertyHeld.get(p.code) ?? []) {
       synth.noteOff(m);
-      handleNote({ type: "off", midi: m, velocity: 0, t: p.t });
+      handleNote({ type: "off", midi: m, velocity: 0, t: p.t, src: "screen" });
     }
     qwertyHeld.delete(p.code);
     return;
@@ -984,7 +989,7 @@ listenQwerty((p) => {
   qwertyHeld.set(p.code, midis);
   for (const m of midis) {
     synth.noteOn(m);
-    handleNote({ type: "on", midi: m, velocity: 90, t: p.t });
+    handleNote({ type: "on", midi: m, velocity: 90, t: p.t, src: "screen" });
   }
 });
 
@@ -1057,7 +1062,10 @@ function finishRun() {
     { ...practice, events: steps.map((k) => practice!.events[k]) },
     results,
   );
-  if (mode === "learn") return showLearned(logLearn(true), stats);
+  if (mode === "learn") {
+    const input = runInput.value; // logLearn resets it
+    return showLearned(logLearn(true), stats, input);
+  }
   showResults(s, stats);
   ui.best.hidden = true;
   if (s.correct === 0 && s.wrongNotes === 0) return; // nothing was played
@@ -1067,6 +1075,7 @@ function finishRun() {
     ts: Date.now(),
     songId: song.meta?.id ?? "unsaved",
     title: ui.title.value || "Untitled",
+    input: runInput.value,
     hands: sel.hands,
     // A run started part way in counts from the measure it started in.
     from: Math.max(sel.from!, measureOf(steps[0])),
@@ -1114,6 +1123,8 @@ function logLearn(complete: boolean): number {
   const ms = clock.ms;
   const worth = clock.worthLogging;
   clock = new LearnClock();
+  const input = runInput.value;
+  runInput.reset();
   if (!worth || !song?.meta || !practice?.steps.length) return ms;
   // Every step played since the reset, with the segment in progress.
   const played = new Map(attempted);
@@ -1128,6 +1139,7 @@ function logLearn(complete: boolean): number {
     kind: "song",
     subject: song.meta.id,
     title: ui.title.value || "Untitled",
+    input,
     hands: learnHands,
     durationMs: ms,
     steps: ks.length,
@@ -1141,12 +1153,12 @@ function logLearn(complete: boolean): number {
 }
 
 /** Learn mode: no grades, just the time and where it was hard. */
-function showLearned(ms: number, stats: MeasureStat[]) {
+function showLearned(ms: number, stats: MeasureStat[], input: InputSource) {
   ui.resultsTitle.textContent = "Pass complete";
   ui.best.hidden = true;
   const id = song?.meta?.id;
   const total = store.learnSessions()
-    .filter((l) => l.kind === "song" && l.subject === id)
+    .filter((l) => l.kind === "song" && l.subject === id && inputOf(l) === input)
     .reduce((sum, l) => sum + l.durationMs, 0);
   ui.stats.replaceChildren(
     stat("This pass", formatDuration(ms)),

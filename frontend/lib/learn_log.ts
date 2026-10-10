@@ -4,6 +4,7 @@
 // records under its own key, and validated the same way: anything read
 // back is checked field by field and rebuilt.
 
+import { cleanInput, type InputSource, validInput } from "./input_source.ts";
 import type { Instrument } from "./progress_store.ts";
 import type { SongMeasure } from "./song_session.ts";
 import { MAX_MEASURES } from "./song_session.ts";
@@ -25,6 +26,8 @@ export interface LearnSession {
   title: string;
   /** Scales only; absent means piano. */
   instrument?: Instrument;
+  /** How it was played; absent (older records) reads as "midi". See input_source.ts. */
+  input?: InputSource;
   hands: "both" | "rh" | "lh";
   /** Active time: gaps between notes are capped at IDLE_CAP_MS. */
   durationMs: number;
@@ -56,6 +59,7 @@ export function validLearnSession(x: unknown): x is LearnSession {
     (x.kind === "scale" || x.kind === "song") &&
     isStr(x.subject, 64) && isStr(x.title, 300) &&
     (x.instrument === undefined || x.instrument === "piano" || x.instrument === "guitar") &&
+    validInput(x.input) &&
     ["both", "rh", "lh"].includes(x.hands as string) &&
     isNum(x.durationMs) && x.durationMs >= 0 &&
     isCount(x.steps) && isCount(x.total) && x.total > 0 && x.steps <= x.total &&
@@ -74,6 +78,7 @@ export function cleanLearnSession(s: LearnSession): LearnSession {
     subject: s.subject,
     title: s.title,
     ...(s.instrument ? { instrument: s.instrument } : {}),
+    ...cleanInput(s),
     hands: s.hands,
     durationMs: s.durationMs,
     steps: s.steps,

@@ -18,6 +18,18 @@ at the end of this page.
   | `song`  | `mp.v1.songSessions` | `SongSession` (lib/song_session.ts) |
   | `learn` | `mp.v1.learn`        | `LearnSession` (lib/learn_log.ts)   |
 
+- **`input` on every record.** All three record types carry `input: "midi" | "screen"`: how the run
+  was played. `"midi"` means every graded note came from a MIDI instrument (the guitar's microphone
+  counts as `"midi"`, a real instrument). `"screen"` means at least one graded note came from the
+  screen: the drawn piano (mouse or touch) or the computer's typing keys. A Learn pass follows the
+  same rule over its notes. A record **without** the field (made before it existed) reads as
+  `"midi"`; new records always write it. The server stores it as-is, and import and sync carry it
+  untouched. Anything other than those two strings makes the record invalid on the client.
+  Stats are kept apart by input: personal bests ("up from X%", "your best") only compare runs of
+  the same input (`input` is part of `exerciseKey` and `songKey`), and Progress trends, heat strips
+  and Learn time show one input at a time (setting `mp.v1.settings` `progressInput`, default
+  `"midi"`, validated as exactly those two values; the web page labels them "Instrument" and
+  "On-screen").
 - **Deletions are tombstones.** Removing a song's history or clearing all history on one device
   sends the removed ids. The server keeps a tombstone, so every other device deletes them too, and a
   device that hasn't heard yet can't resurrect them by pushing them again: a tombstoned id stays
