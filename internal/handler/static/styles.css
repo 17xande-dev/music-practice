@@ -781,7 +781,8 @@ button.danger { background: var(--bad); color: #fff; }
 button.secondary.danger { background: transparent; color: var(--bad); border-color: color-mix(in oklab, var(--bad), transparent 50%); }
 
 .data-status { margin: var(--gap-sm) 0 0; min-height: 1.55em; color: var(--ink-soft); font-size: var(--small); }
-.sync-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-sm); margin: 0 0 var(--gap-sm); }
+div.sync-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap-sm); margin: 0 0 var(--gap-sm); }
+.sync-line { margin: 0 0 var(--gap-sm); }
 .sync-line[hidden] { display: none; }
 .empty p { margin: 0; }
 
