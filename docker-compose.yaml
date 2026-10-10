@@ -9,6 +9,11 @@ services:
       # Traefik's own cert makes the connection genuinely HTTPS end to end —
       # HSTS is safe to send. See internal/config for what else is read.
       - HSTS=1
+      # Accounts and synced history. On the named volume below, so a redeploy
+      # keeps it; the image's /data is owned by the nonroot user it runs as.
+      - DB_PATH=/data/music-practice.db
+    volumes:
+      - data:/data
     healthcheck:
       # The runtime image is distroless (no shell, no wget), so the binary
       # probes itself. Traefik ignores containers that are not healthy, so a
@@ -17,3 +22,6 @@ services:
       interval: 30s
       timeout: 3s
       retries: 3
+
+volumes:
+  data:

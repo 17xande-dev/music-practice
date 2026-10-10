@@ -15,17 +15,21 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.Addr != ":8080" || c.HSTS || c.ShutdownTimeout != 10*time.Second {
+	if c.Addr != ":8080" || c.HSTS || c.ShutdownTimeout != 10*time.Second || c.DBPath != "" || c.ClientIPHeader != "" {
 		t.Errorf("unexpected defaults: %+v", c)
 	}
 }
 
 func TestLoadOverrides(t *testing.T) {
-	c, err := Load(env(map[string]string{"ADDR": ":9000", "HSTS": "1", "SHUTDOWN_TIMEOUT": "3s"}))
+	c, err := Load(env(map[string]string{
+		"ADDR": ":9000", "HSTS": "1", "SHUTDOWN_TIMEOUT": "3s",
+		"DB_PATH": "/data/x.db", "CLIENT_IP_HEADER": "CF-Connecting-IP",
+	}))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.Addr != ":9000" || !c.HSTS || c.ShutdownTimeout != 3*time.Second {
+	if c.Addr != ":9000" || !c.HSTS || c.ShutdownTimeout != 3*time.Second ||
+		c.DBPath != "/data/x.db" || c.ClientIPHeader != "CF-Connecting-IP" {
 		t.Errorf("overrides not applied: %+v", c)
 	}
 }

@@ -21,9 +21,9 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   latency offset compensates for the delay in your setup.
 - **Learn mode:** for something new, on both pages. The cursor waits for each note, the next keys
   are highlighted with their fingers, and a pass ends with the time it took rather than a grade.
-  Learn passes never go into the graded history, so early stumbles don't pull down trends or
-  bests. They go into a separate learning log instead: time spent, passes, and the measures you
-  stumbled in.
+  Learn passes never go into the graded history, so early stumbles don't pull down trends or bests.
+  They go into a separate learning log instead: time spent, passes, and the measures you stumbled
+  in.
 - **Progress:** stage 1 has no accounts. Every run is saved in your browser's localStorage, and the
   Progress page shows trends, per-scale bests and recent sessions, and, in its own section, time
   spent in Learn mode. History can be exported and imported as JSON.
@@ -42,15 +42,16 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   the hand has to shift.
 - **Songs:** add a MusicXML score (`.musicxml` or zipped `.mxl`, as MuseScore, Sibelius, Finale and
   Dorico export it) and practise it on the Songs page. The score is rendered in the page and kept in
-  your browser (IndexedDB), never uploaded. Modes: _learn_ (see above), _wait for each note_ (the cursor holds
-  until you play the right notes), _play in time_ (a count-in and a metronome that follows the
-  score's tempo marks; wrong, missed, early and late notes are graded), and _listen_ (the app plays
-  it). Each mode covers both hands or one, with the other hand optionally played for you, a range of
-  measures, and a tempo as a percentage of the marked one, and can repeat the selection. Repeats in
-  the score are played out. After a run, a heat map shows each measure from clean to troubled;
-  clicking a measure, or "practise the weakest measures", sets up that passage. Fingering printed in
-  the file shows with "Show fingers". A piano written as one two-staff part or as separate
-  right/left-hand parts is graded as two hands; in a voice-and-piano song, the piano part is graded.
+  your browser (IndexedDB), never uploaded. Modes: _learn_ (see above), _wait for each note_ (the
+  cursor holds until you play the right notes), _play in time_ (a count-in and a metronome that
+  follows the score's tempo marks; wrong, missed, early and late notes are graded), and _listen_
+  (the app plays it). Each mode covers both hands or one, with the other hand optionally played for
+  you, a range of measures, and a tempo as a percentage of the marked one, and can repeat the
+  selection. Repeats in the score are played out. After a run, a heat map shows each measure from
+  clean to troubled; clicking a measure, or "practise the weakest measures", sets up that passage.
+  Fingering printed in the file shows with "Show fingers". A piano written as one two-staff part or
+  as separate right/left-hand parts is graded as two hands; in a voice-and-piano song, the piano
+  part is graded.
 - **Shareable links:** the scales page keeps its address in step with the exercise on screen, e.g.
   `/?instrument=piano&key=F%23&scale=harmonic-minor&hands=both&octaves=2&dir=updown&mode=tempo&bpm=90&beat=2`,
   and "Copy link" copies it. Opening a link sets that exercise up; anything it leaves out keeps your
@@ -58,8 +59,8 @@ shows your playing live on the music and an on-screen keyboard, and grades it.
   shared. Parameters: `instrument` (piano, guitar), `key` (C, F#, Bb…), `scale` (major,
   natural-minor, harmonic-minor, melodic-minor, dorian, phrygian, lydian, mixolydian, locrian,
   major-pentatonic, minor-pentatonic, blues, chromatic), `hands` (rh, lh, both), `position` (guitar,
-  0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo, learn), `bpm` (40–200), `beat` (notes
-  per beat: 1, 2, 4), `fingers` (1 or 0).
+  0–12), `octaves` (1–4), `dir` (up, updown), `mode` (notes, tempo, learn), `bpm` (40–200), `beat`
+  (notes per beat: 1, 2, 4), `fingers` (1 or 0).
 - **Song cursor:** a soft vertical band follows the current step across the whole system, in every
   mode, like OpenSheetMusicDisplay's own cursor (which is an image the CSP won't load, so the page
   draws an equivalent band from OSMD's layout).
@@ -147,11 +148,16 @@ make docker  # multi-stage image: Deno bundle → Go build → distroless
 The tools are Go 1.27 and Deno 2.9, pinned in `mise.toml`. Configuration comes from the environment
 only:
 
-| Variable           | Default | Meaning                                                                             |
-| ------------------ | ------- | ----------------------------------------------------------------------------------- |
-| `ADDR`             | `:8080` | Listen address                                                                      |
-| `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost |
-| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                      |
+| Variable           | Default | Meaning                                                                              |
+| ------------------ | ------- | ------------------------------------------------------------------------------------ |
+| `ADDR`             | `:8080` | Listen address                                                                       |
+| `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost  |
+| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                       |
+| `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
+| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits                     |
+
+`music-practice -migrate-status` lists each database migration as applied or pending. The server
+applies pending ones itself on startup, each in its own transaction.
 
 ## How it fits together
 
@@ -216,7 +222,18 @@ page. Plain DOM code keeps the bundle to VexFlow plus a few kilobytes and keeps 
 
 ### Dependencies
 
-`go.mod` has none: the server is stdlib only. The frontend has two runtime dependencies:
+The server is stdlib apart from:
+
+| Dependency                    | Why                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `github.com/mattn/go-sqlite3` | The SQLite driver for accounts and synced history. It is cgo, so the Docker build compiles it with musl and links statically, which keeps the runtime image `distroless/static`. Chosen over `modernc.org/sqlite` (pure Go but a much larger machine-translated codebase) as the long-established, widely reviewed wrapper around SQLite's own C. |
+
+One SQLite file holds every user, not a file per user: the sign-in lookup needs a shared table
+anyway, and one file means one migration run and one backup. Postgres would be the choice the day a
+second instance runs (or a rolling deploy overlaps two), since two processes cannot share a SQLite
+file.
+
+The frontend has two runtime dependencies:
 
 | Dependency                        | Why                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

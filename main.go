@@ -4,8 +4,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,6 +16,7 @@ import (
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/config"
+	"github.com/17xande-dev/music-practice/internal/db"
 	"github.com/17xande-dev/music-practice/internal/handler"
 	"github.com/17xande-dev/music-practice/internal/middleware"
 )
@@ -21,6 +24,7 @@ import (
 func main() {
 	dev := flag.Bool("dev", false, "read templates and static files from the source tree on every request")
 	healthcheck := flag.Bool("healthcheck", false, "probe the running server's /healthz and exit 0 if healthy (see healthcheck.go)")
+	migrateStatus := flag.Bool("migrate-status", false, "list each database migration as applied or pending, and exit")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -35,6 +39,13 @@ func main() {
 		}
 		return
 	}
+	if *migrateStatus {
+		if err := printMigrateStatus(); err != nil {
+			log.Error("migrate-status", "err", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if err := run(log, *dev); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
@@ -43,6 +54,18 @@ func main() {
 
 func run(log *slog.Logger, dev bool) error {
 	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return err
+	}
+	database, err := openDB(cfg)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	applied, err := db.Migrate(database)
+	for _, name := range applied {
+		log.Info("migrated", "migration", name)
+	}
 	if err != nil {
 		return err
 	}
@@ -86,4 +109,33 @@ func run(log *slog.Logger, dev bool) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 	return srv.Shutdown(shutdownCtx)
+}
+
+// openDB opens the configured database. The flag commands share it with the
+// server, so each refuses a missing DB_PATH the same way.
+func openDB(cfg config.Config) (*sql.DB, error) {
+	if cfg.DBPath == "" {
+		return nil, errors.New("DB_PATH is not set: it names the SQLite file for accounts and history (e.g. /data/music-practice.db)")
+	}
+	return db.Open(cfg.DBPath)
+}
+
+func printMigrateStatus() error {
+	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return err
+	}
+	database, err := openDB(cfg)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	lines, err := db.Status(database)
+	if err != nil {
+		return err
+	}
+	for _, l := range lines {
+		fmt.Println(l)
+	}
+	return nil
 }

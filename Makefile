@@ -2,6 +2,8 @@
 # bundling command is written down once.
 
 ADDR ?= :8080
+# Local database. The container sets its own DB_PATH on the data volume.
+DB_PATH ?= data/dev.db
 
 .PHONY: build bundle run dev test test-go test-deno check fmt vet lint clean docker
 
@@ -15,12 +17,14 @@ bundle:
 
 ## run: build and run the embedded binary
 run: build
-	ADDR=$(ADDR) ./bin/music-practice
+	@mkdir -p $(dir $(DB_PATH))
+	ADDR=$(ADDR) DB_PATH=$(DB_PATH) ./bin/music-practice
 
 ## dev: rebundle on change, and serve templates/assets from disk (-dev)
 dev:
 	deno task bundle
-	deno task bundle-watch & trap 'kill $$!' EXIT; ADDR=$(ADDR) go run . -dev
+	@mkdir -p $(dir $(DB_PATH))
+	deno task bundle-watch & trap 'kill $$!' EXIT; ADDR=$(ADDR) DB_PATH=$(DB_PATH) go run . -dev
 
 ## test: every test, Go and Deno
 test: test-deno bundle test-go
