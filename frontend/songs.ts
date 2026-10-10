@@ -53,7 +53,7 @@ import {
   titleFromFileName,
   uploadProblem,
 } from "./lib/song_library.ts";
-import { runFinished, tempoChange, tempoRunOver } from "./lib/song_rules.ts";
+import { runFinished, soundOptionReplays, tempoChange, tempoRunOver } from "./lib/song_rules.ts";
 import { starterId, starterSlugForFile } from "./lib/starters.ts";
 import { accompanyNotes, playPlan, SongPlayer } from "./lib/song_player.ts";
 import { betterSong, type SongSession } from "./lib/song_session.ts";
@@ -1275,6 +1275,19 @@ ui.form.addEventListener("change", (e) => {
   if (t === ui.tempo) return tempoChanged();
   // Read at Start, or as it plays: no rebuild needed.
   if (t === ui.guide && guideOn) void toggleGuide(); // stops; Play starts the new kind
+  if (
+    (t === ui.metronome || t === ui.accompany) &&
+    soundOptionReplays(
+      mode,
+      t === ui.metronome ? "metronome" : "accompany",
+      playingNow(),
+      ui.hands.value === "both",
+    )
+  ) {
+    seek(Math.max(0, currentStep())); // replays from here with a fresh count-in; grades are kept
+    showTransport();
+    return;
+  }
   if (
     t === ui.loop || t === ui.metronome || t === ui.latency || t === ui.cursorMode ||
     t === ui.guide

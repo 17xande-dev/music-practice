@@ -77,9 +77,10 @@ below.
 
 ## Small open web item
 
-- [ ] **Tempo mode: toggling the metronome or the other hand mid-run replays from the current
-      step.** The iPad does this (with a count-in); the web applies the change at the next Play.
-      Deliberately left iPad-only for now; the web should adopt it.
+- [x] **Tempo mode: toggling the metronome or the other hand mid-run replays from the current
+      step** (fresh count-in, grades kept). Done on the web: `soundOptionReplays`
+      (`frontend/lib/song_rules.ts`) for Tempo, and Listen's metronome; wait modes and Rubato
+      unchanged, as on the iPad.
 
 ## Shared quirks to fix in both apps
 

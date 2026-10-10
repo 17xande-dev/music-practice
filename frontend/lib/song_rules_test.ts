@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { runFinished, tempoChange, tempoRunOver } from "./song_rules.ts";
+import { runFinished, soundOptionReplays, tempoChange, tempoRunOver } from "./song_rules.ts";
 
 const playing = { playing: true, finished: false };
 const paused = { playing: false, finished: false };
@@ -32,4 +32,17 @@ Deno.test("a run is finished when its phase is done or its engine is", () => {
   assert(runFinished("idle", true));
   assert(!runFinished("playing", false));
   assert(!runFinished("idle", false));
+});
+
+Deno.test("metronome and other hand: replay a playing tempo run (listen: metronome only)", () => {
+  assert(soundOptionReplays("tempo", "metronome", true, false));
+  assert(soundOptionReplays("tempo", "accompany", true, false));
+  assert(soundOptionReplays("listen", "metronome", true, true));
+  assert(!soundOptionReplays("listen", "accompany", true, false)); // listen plays all notes
+  assert(!soundOptionReplays("tempo", "accompany", true, true)); // nothing is the other hand
+  assert(!soundOptionReplays("tempo", "metronome", false, false)); // paused: read at Play
+  for (const m of ["learn", "notes", "rubato"] as const) {
+    assert(!soundOptionReplays(m, "metronome", true, false));
+    assert(!soundOptionReplays(m, "accompany", true, false));
+  }
 });

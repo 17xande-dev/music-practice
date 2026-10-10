@@ -38,3 +38,21 @@ export function tempoRunOver(windowsClosed: boolean, now: number, endTime: numbe
 export function runFinished(phase: string, engineDone: boolean): boolean {
   return phase === "done" || engineDone;
 }
+
+/**
+ * Whether toggling the metronome or "play the other hand" replays the run
+ * from the current step (a fresh count-in; the grades so far are kept). Only a
+ * Tempo or Listen run that is playing has scheduled sound to redo; the other
+ * hand is not played in Listen, nor when both hands are practised. Wait modes
+ * and Rubato read the option when they next need it.
+ */
+export function soundOptionReplays(
+  mode: SongMode,
+  option: "metronome" | "accompany",
+  playing: boolean,
+  bothHands: boolean,
+): boolean {
+  if (!playing) return false;
+  if (option === "metronome") return mode === "tempo" || mode === "listen";
+  return mode === "tempo" && !bothHands;
+}
