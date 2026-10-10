@@ -551,7 +551,10 @@ function showProgress() {
     : cursor === 0
     ? "Play the first note to begin"
     : `Note ${cursor + 1} of ${steps.length}`;
-  ui.status.textContent = `${where} · ${cursor === 0 ? "first" : "next"}: ${names.join(" + ")}`;
+  const plain = instrument === "piano" && !ui.keyboardHints.checked;
+  ui.status.textContent = plain
+    ? where
+    : `${where} · ${cursor === 0 ? "first" : "next"}: ${names.join(" + ")}`;
   view.reveal(step.notes[0].midi);
   staff.mark(step.index, "current");
   staff.reveal(step.index);
@@ -1115,7 +1118,7 @@ for (const s of [ui.bpm, ui.latency]) s.addEventListener("change", reset);
 ui.fingering.addEventListener("change", applyFingering);
 ui.keyboardHints.addEventListener("change", () => {
   keyboard.setHints(ui.keyboardHints.checked);
-  persistSettings();
+  showTargets(currentStep()); // the status line names notes only with hints
 });
 // Leaving part way through still counts the time spent learning.
 addEventListener("pagehide", () => logLearn(false));

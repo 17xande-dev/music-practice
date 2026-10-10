@@ -184,6 +184,7 @@ export class KeyboardView {
 
   /** Bring a key into view inside the scrolling container. */
   reveal(midi: number) {
+    if (!this.hints) return; // a plain keyboard does not follow the targets
     const r = this.keys.get(midi);
     if (!r || this.container.scrollWidth <= this.container.clientWidth) return;
     const box = r.getBoundingClientRect();
