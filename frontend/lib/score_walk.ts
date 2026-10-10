@@ -41,6 +41,26 @@ export function playedParts(osmd: OpenSheetMusicDisplay): Map<OsmdInstrument, nu
   return new Map(choice.map((c) => [all[c.part], c.staffOffset]));
 }
 
+/** The parts of a source measure read for its printed number. */
+interface OsmdMeasure {
+  MeasureNumberXML?: number;
+  ImplicitMeasureFromXml?: boolean;
+  getPrintedMeasureNumber?(): number;
+}
+
+/**
+ * The number printed on a measure. An implicit measure whose number attribute is not a plain
+ * integer ("X1") continues the previous measure's number (0, 1, 1, 2): OSMD would count it as a
+ * new bar, which makes the numbers run past the next real bar.
+ */
+function printedNumber(measures: OsmdMeasure[], index: number): number | undefined {
+  const m = measures[index];
+  if (m?.ImplicitMeasureFromXml && !Number.isInteger(m.MeasureNumberXML) && index > 0) {
+    return printedNumber(measures, index - 1);
+  }
+  return m?.getPrintedMeasureNumber?.();
+}
+
 /**
  * Walk the cursor through the piece, repeats played out. `onNote` is called
  * for each note kept, in order, with OSMD's own note object, and returns the
@@ -88,7 +108,7 @@ export function walkCursor(
       });
     }
     // The number printed on the score (a pickup is 0), where OSMD has one.
-    const printed = it.CurrentMeasure?.getPrintedMeasureNumber?.();
+    const printed = printedNumber(osmd.Sheet.SourceMeasures as unknown as OsmdMeasure[], mi);
     out.push({
       measure: mi + 1,
       ...(Number.isInteger(printed) ? { printed } : {}),
