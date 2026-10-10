@@ -12,6 +12,12 @@ services:
       # Accounts and synced history. On the named volume below, so a redeploy
       # keeps it; the image's /data is owned by the nonroot user it runs as.
       - DB_PATH=/data/music-practice.db
+      # Behind Traefik every connection comes from Traefik, so without this
+      # the per-IP sign-in limit would be one bucket shared by everyone.
+      # Cloudflare sets this header. A client reaching the origin directly
+      # could forge it, which only lets them pick their own per-IP bucket:
+      # the per-email limit still holds.
+      - CLIENT_IP_HEADER=CF-Connecting-IP
     volumes:
       - data:/data
     healthcheck:

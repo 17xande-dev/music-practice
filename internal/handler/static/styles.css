@@ -187,6 +187,10 @@ a { color: var(--accent); }
 @media (max-width: 30rem) {
   .site-header {
     > .inner { gap: var(--gap-sm); }
+    /* The account icon took the room. The About page links the source, and
+       the command palette is a keyboard feature (Ctrl+K) that a phone-width
+       screen rarely has a keyboard for. */
+    .repo, #palette-open { display: none; }
     nav { gap: var(--gap-sm); }
     .brand-name {
       position: absolute;
@@ -866,7 +870,8 @@ button.secondary.danger { background: transparent; color: var(--bad); border-col
 }
 
 button.small, .button.small { min-height: 2rem; padding: 0.2rem var(--gap-sm); font-size: var(--small); }
-label.button { display: inline-flex; align-items: center; }
+label.button, a.button { display: inline-flex; align-items: center; }
+a.button { text-decoration: none; }
 #upload:focus-visible + .drop-zone, label.button:focus-within { outline: 2px solid var(--ink); }
 
 .library { display: flex; flex-direction: column; gap: var(--gap-sm); }
@@ -1222,6 +1227,8 @@ button:has(> .icon) { display: inline-flex; align-items: center; gap: 0.4em; }
   &:hover { background: var(--paper-sunk); color: var(--ink); }
   .icon { width: 22px; height: 22px; }
 }
+a.icon-button { display: inline-flex; border-radius: var(--radius); }
+a.icon-button[aria-current="page"] { color: var(--accent); }
 
 /* ---- Song transport --------------------------------------------------------- */
 
@@ -1312,3 +1319,22 @@ body.song-big { overflow: hidden; }
   h2 { margin-top: 0; }
 }
 .repair-actions { display: flex; gap: var(--gap-sm); flex-wrap: wrap; }
+
+/* ---- Account pages ---------------------------------------------------- */
+
+.account-narrow { max-width: 28rem; width: 100%; }
+.stack-form { display: flex; flex-direction: column; gap: var(--gap-md); }
+.stack-form input:not([type="checkbox"]) { width: 100%; }
+.account-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+
+  h2 { overflow-wrap: anywhere; }
+  .field-note { max-width: var(--measure); }
+}
+.actions form { display: contents; }
+section.account-narrow { display: flex; flex-direction: column; gap: var(--gap-md); }
+section.account-narrow > * { margin: 0; }

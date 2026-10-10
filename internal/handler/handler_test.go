@@ -9,15 +9,31 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	"github.com/17xande-dev/music-practice/internal/account"
+	"github.com/17xande-dev/music-practice/internal/dbtest"
 )
 
 func newTestHandler(t *testing.T) http.Handler {
 	t.Helper()
-	h, err := New(Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	return newTestServer(t).routes
+}
+
+// testServer is a handler over its own fresh database.
+type testServer struct {
+	h        *Handler
+	accounts *account.Store
+	routes   http.Handler
+}
+
+func newTestServer(t *testing.T) *testServer {
+	t.Helper()
+	accounts := account.NewStore(dbtest.New(t))
+	h, err := New(Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts})
 	if err != nil {
 		t.Fatalf("New: %v (did `deno task bundle` run?)", err)
 	}
-	return h.Routes()
+	return &testServer{h: h, accounts: accounts, routes: h.Routes()}
 }
 
 func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder {
@@ -30,7 +46,7 @@ func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder
 // pagePaths are every HTML page the server renders. The inline-content test
 // walks these, so a page added to Routes must be added here too — and the
 // minimum-count check stops the list silently emptying.
-var pagePaths = []string{"/", "/songs", "/progress", "/about"}
+var pagePaths = []string{"/", "/songs", "/progress", "/about", "/account"}
 
 func TestPagesRender(t *testing.T) {
 	h := newTestHandler(t)

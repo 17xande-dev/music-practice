@@ -86,7 +86,12 @@ func run(log *slog.Logger, dev bool) error {
 		return err
 	}
 
-	h, err := handler.New(handler.Options{Log: log, Dev: dev})
+	h, err := handler.New(handler.Options{
+		Log:      log,
+		Dev:      dev,
+		Accounts: account.NewStore(database),
+		ClientIP: middleware.ClientIP(cfg.ClientIPHeader),
+	})
 	if err != nil {
 		return err
 	}

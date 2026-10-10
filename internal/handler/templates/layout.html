@@ -30,6 +30,7 @@
       <a href="/songs"{{if eq .Nav "songs"}} aria-current="page"{{end}}>Songs</a>
       <a href="/progress"{{if eq .Nav "progress"}} aria-current="page"{{end}}>Progress</a>
     </nav>
+    <a class="icon-button" href="/account" aria-label="Account" title="Account"{{if eq .Nav "account"}} aria-current="page"{{end}}>{{icon "user"}}</a>
     <button id="palette-open" type="button" class="icon-button" aria-label="Commands" title="Commands (Ctrl+K)">{{icon "command"}}</button>
     {{template "themeswitch" (switch "site-theme" "Dark theme")}}
     <a class="repo" href="https://github.com/17xande-dev/music-practice" rel="noopener" title="Source code on GitHub">
