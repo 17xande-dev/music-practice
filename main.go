@@ -19,6 +19,7 @@ import (
 	"github.com/17xande-dev/music-practice/internal/config"
 	"github.com/17xande-dev/music-practice/internal/db"
 	"github.com/17xande-dev/music-practice/internal/handler"
+	"github.com/17xande-dev/music-practice/internal/history"
 	"github.com/17xande-dev/music-practice/internal/middleware"
 )
 
@@ -90,6 +91,7 @@ func run(log *slog.Logger, dev bool) error {
 		Log:      log,
 		Dev:      dev,
 		Accounts: account.NewStore(database),
+		History:  history.NewStore(database),
 		ClientIP: middleware.ClientIP(cfg.ClientIPHeader),
 	})
 	if err != nil {

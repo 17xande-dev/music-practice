@@ -12,6 +12,7 @@ import (
 
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/dbtest"
+	"github.com/17xande-dev/music-practice/internal/history"
 )
 
 func newTestHandler(t *testing.T) http.Handler {
@@ -28,8 +29,9 @@ type testServer struct {
 
 func newTestServer(t *testing.T) *testServer {
 	t.Helper()
-	accounts := account.NewStore(dbtest.New(t))
-	h, err := New(Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts})
+	d := dbtest.New(t)
+	accounts := account.NewStore(d)
+	h, err := New(Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d)})
 	if err != nil {
 		t.Fatalf("New: %v (did `deno task bundle` run?)", err)
 	}

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/account"
+	"github.com/17xande-dev/music-practice/internal/history"
 	"github.com/17xande-dev/music-practice/internal/middleware"
 )
 
@@ -48,6 +49,9 @@ type Options struct {
 	// Accounts is the users and sessions store.
 	Accounts *account.Store
 
+	// History is the synced practice runs.
+	History *history.Store
+
 	// ClientIP returns the visitor's address for rate limiting; nil means
 	// the connection's own address.
 	ClientIP func(*http.Request) string
@@ -61,6 +65,7 @@ type Handler struct {
 	assets   *Assets
 	pages    map[string]*template.Template
 	accounts *account.Store
+	history  *history.Store
 	clientIP func(*http.Request) string
 	limits   limits
 }
@@ -95,11 +100,11 @@ var Bundles = []string{
 // New builds the handler, parsing every template up front so a template
 // error is a startup failure.
 func New(o Options) (*Handler, error) {
-	if o.Accounts == nil {
-		return nil, fmt.Errorf("handler: no account store")
+	if o.Accounts == nil || o.History == nil {
+		return nil, fmt.Errorf("handler: no account or history store")
 	}
 	h := &Handler{
-		log: o.Log, dev: o.Dev, accounts: o.Accounts, clientIP: o.ClientIP,
+		log: o.Log, dev: o.Dev, accounts: o.Accounts, history: o.History, clientIP: o.ClientIP,
 		limits: limits{
 			loginEmail: middleware.NewLimiter(5, time.Minute),
 			loginIP:    middleware.NewLimiter(30, 10*time.Second),
@@ -161,6 +166,7 @@ func (h *Handler) parsePages() (map[string]*template.Template, error) {
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
 	h.register(mux)
+	h.registerAPI(mux)
 	h.registerAdmin(func(pattern string, f http.HandlerFunc) { mux.HandleFunc(pattern, f) })
 	return adminHeaders(http.NewCrossOriginProtection().Handler(mux))
 }
