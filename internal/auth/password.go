@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"unicode/utf8"
 
 	"golang.org/x/crypto/argon2"
@@ -24,14 +25,24 @@ const MaxPasswordLength = 256
 
 // argon2id parameters. 64 MiB and three passes cost roughly 100ms here, a
 // price paid once per sign-in; every endpoint that verifies a password is
-// rate-limited because each call also holds that 64 MiB.
+// rate-limited because each call also holds that 64 MiB. The parameters are
+// written into each hash, so verifying always uses the hash's own.
+var params = struct {
+	time, memory uint32
+	threads      uint8
+}{time: 3, memory: 64 * 1024, threads: 2}
+
 const (
-	argonTime    = 3
-	argonMemory  = 64 * 1024
-	argonThreads = 2
 	argonKeyLen  = 32
 	argonSaltLen = 16
 )
+
+// UseFastHashesForTests drops the cost to the minimum, for test binaries
+// only: a suite that signs in hundreds of times would otherwise spend most
+// of its time, and gigabytes, in argon2.
+func UseFastHashesForTests() {
+	params.time, params.memory, params.threads = 1, 64, 1
+}
 
 var ErrPasswordTooShort = fmt.Errorf("the password must be at least %d characters", MinPasswordLength)
 var ErrPasswordTooLong = fmt.Errorf("the password must be at most %d characters", MaxPasswordLength)
@@ -56,10 +67,10 @@ func HashPassword(pw string) (string, error) {
 	if _, err := rand.Read(salt); err != nil {
 		return "", err
 	}
-	key := argon2.IDKey([]byte(pw), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
+	key := argon2.IDKey([]byte(pw), salt, params.time, params.memory, params.threads, argonKeyLen)
 	b64 := base64.RawStdEncoding
 	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
-		argon2.Version, argonMemory, argonTime, argonThreads, b64.EncodeToString(salt), b64.EncodeToString(key)), nil
+		argon2.Version, params.memory, params.time, params.threads, b64.EncodeToString(salt), b64.EncodeToString(key)), nil
 }
 
 var errBadHash = errors.New("auth: malformed password hash")
@@ -99,17 +110,17 @@ func VerifyPassword(pw, hash string) (bool, error) {
 // dummyHash is verified against when the email is unknown, so a sign-in
 // for a missing account costs the same as one for a real account: otherwise
 // the response time says which emails have accounts.
-var dummyHash = func() string {
+var dummyHash = sync.OnceValue(func() string {
 	h, err := HashPassword("not a real password, only spends time")
 	if err != nil {
 		panic(err)
 	}
 	return h
-}()
+})
 
 // SpendVerifyTime does the work of one VerifyPassword and discards it.
 func SpendVerifyTime(pw string) {
-	VerifyPassword(pw, dummyHash)
+	VerifyPassword(pw, dummyHash())
 }
 
 // passwordAlphabet leaves out characters that read alike (0/O, 1/l/I), since

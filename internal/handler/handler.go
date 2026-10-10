@@ -165,29 +165,38 @@ func (h *Handler) parsePages() (map[string]*template.Template, error) {
 // browser would never attach on its own.
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
-	h.register(mux)
-	h.registerAPI(mux)
-	h.registerAdmin(func(pattern string, f http.HandlerFunc) { mux.HandleFunc(pattern, f) })
+	h.routes(func(pattern string, f http.Handler) { mux.Handle(pattern, f) })
 	return adminHeaders(http.NewCrossOriginProtection().Handler(mux))
 }
 
-func (h *Handler) register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /{$}", h.page("practice.html", "Scales"))
-	mux.HandleFunc("GET /songs", h.page("songs.html", "Songs"))
-	mux.HandleFunc("GET /progress", h.page("progress.html", "Progress"))
-	mux.HandleFunc("GET /about", h.page("about.html", "About"))
-	mux.Handle("GET /static/", h.assets)
-	mux.HandleFunc("GET /sw.js", h.assets.ServiceWorker)
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+// handleFunc registers one route. Every route goes through one, so a test
+// can collect the complete list (see TestEveryRouteIsPublicOrProtected)
+// instead of trusting a second, hand-kept list to stay in step.
+type handleFunc func(pattern string, f http.Handler)
+
+func (h *Handler) routes(handle handleFunc) {
+	h.register(handle)
+	h.registerAPI(handle)
+	h.registerAdmin(handle)
+}
+
+func (h *Handler) register(handle handleFunc) {
+	handle("GET /{$}", h.page("practice.html", "Scales"))
+	handle("GET /songs", h.page("songs.html", "Songs"))
+	handle("GET /progress", h.page("progress.html", "Progress"))
+	handle("GET /about", h.page("about.html", "About"))
+	handle("GET /static/", h.assets)
+	handle("GET /sw.js", http.HandlerFunc(h.assets.ServiceWorker))
+	handle("GET /healthz", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("ok\n"))
-	})
+	}))
 
-	mux.HandleFunc("GET /account", h.accountGet)
-	mux.HandleFunc("POST /account/login", h.login)
-	mux.HandleFunc("POST /account/logout", h.logout)
-	mux.HandleFunc("POST /account/password", h.requireUser(h.changePassword))
-	mux.HandleFunc("POST /account/sessions/{id}/revoke", h.requireUser(h.revokeSession))
+	handle("GET /account", http.HandlerFunc(h.accountGet))
+	handle("POST /account/login", http.HandlerFunc(h.login))
+	handle("POST /account/logout", http.HandlerFunc(h.logout))
+	handle("POST /account/password", h.requireUser(h.changePassword))
+	handle("POST /account/sessions/{id}/revoke", h.requireUser(h.revokeSession))
 }
 
 // pageData is what every page template receives.

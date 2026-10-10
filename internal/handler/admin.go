@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -55,7 +56,7 @@ func (h *Handler) requireAdmin(next func(http.ResponseWriter, *http.Request, acc
 		if !ok {
 			target := "/account"
 			if r.Method == http.MethodGet {
-				target = "/account?next=" + r.URL.Path
+				target = "/account?next=" + url.QueryEscape(r.URL.Path)
 			}
 			http.Redirect(w, r, target, http.StatusSeeOther)
 			return
@@ -207,11 +208,9 @@ func (h *Handler) adminDeleteConfirm(w http.ResponseWriter, r *http.Request, me 
 	h.render(w, http.StatusOK, "admin_delete.html", "Delete account", adminDeletePage{User: u})
 }
 
-// registerAdmin registers every admin route through handle. It takes the
-// function rather than the mux so a test can collect the patterns: the
-// "every admin route refuses non-admins" test is derived from this list and
-// cannot miss a route added later.
-func (h *Handler) registerAdmin(handle func(pattern string, f http.HandlerFunc)) {
+// registerAdmin registers every admin route. TestAdminRoutesRefuseOthers
+// collects them from here, so a route added later is checked too.
+func (h *Handler) registerAdmin(handle handleFunc) {
 	handle("GET /admin/users", h.requireAdmin(h.adminUsers))
 	handle("POST /admin/users", h.requireAdmin(h.adminCreate))
 	handle("POST /admin/users/{id}/reset", h.requireAdmin(h.adminReset))

@@ -200,9 +200,9 @@ func (h *Handler) apiSync(w http.ResponseWriter, r *http.Request, u account.User
 	writeJSON(w, http.StatusOK, resp)
 }
 
-func (h *Handler) registerAPI(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/me", h.requireAPIUser(h.apiMe))
-	mux.HandleFunc("POST /api/token", h.apiToken)
-	mux.HandleFunc("DELETE /api/token", h.requireAPIUser(h.apiTokenDelete))
-	mux.HandleFunc("POST /api/sync", h.requireAPIUser(h.apiSync))
+func (h *Handler) registerAPI(handle handleFunc) {
+	handle("GET /api/me", h.requireAPIUser(h.apiMe))
+	handle("POST /api/token", http.HandlerFunc(h.apiToken))
+	handle("DELETE /api/token", h.requireAPIUser(h.apiTokenDelete))
+	handle("POST /api/sync", h.requireAPIUser(h.apiSync))
 }

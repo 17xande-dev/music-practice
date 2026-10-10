@@ -211,22 +211,48 @@ func TestRevokeOtherSession(t *testing.T) {
 	}
 }
 
-// protectedPosts are every account route that acts for a signed-in user.
-// Each is checked by method: a GET sweep would only meet 405s and prove
-// nothing about the POST.
-var protectedPosts = []string{"/account/password", "/account/sessions/1/revoke"}
+// publicRoutes are the only routes that answer someone not signed in. The
+// list is short and deliberate: adding a route anywhere means either adding
+// it here, with a reason, or protecting it.
+var publicRoutes = map[string]bool{
+	"GET /{$}": true, "GET /songs": true, "GET /progress": true, "GET /about": true,
+	"GET /static/": true, "GET /sw.js": true, "GET /healthz": true,
+	"GET /account":         true, // the sign-in form
+	"POST /account/login":  true,
+	"POST /account/logout": true, // signing out with no session is a no-op
+	"POST /api/token":      true, // the app's sign-in
+}
 
-func TestProtectedRoutesRefuseAnonymous(t *testing.T) {
+// Every route is collected from routes() itself, so a route added later is
+// checked without anyone remembering to list it. Each is sent its own
+// method: a GET would meet a 405 at a POST route and prove nothing.
+func TestEveryRouteIsPublicOrProtected(t *testing.T) {
 	s := newTestServer(t)
-	for _, p := range protectedPosts {
-		rec := s.do(t, "POST", p, url.Values{"current": {"x"}, "new": {"y"}, "confirm": {"y"}}, "")
-		if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/account" {
-			t.Errorf("%s: %d %s", p, rec.Code, rec.Header().Get("Location"))
+	var all []string
+	s.h.routes(func(pattern string, _ http.Handler) { all = append(all, pattern) })
+	if len(all) < 20 {
+		t.Fatalf("collected only %d routes", len(all))
+	}
+	checked := 0
+	for _, pattern := range all {
+		if publicRoutes[pattern] {
+			continue
 		}
-		rec = s.do(t, "POST", p, url.Values{}, "made-up-token")
-		if rec.Header().Get("Location") != "/account" {
-			t.Errorf("%s with a bad token: %d", p, rec.Code)
+		method, path, _ := strings.Cut(pattern, " ")
+		path = strings.NewReplacer("{id}", "1", "{$}", "").Replace(path)
+		for _, cookie := range []string{"", "made-up-token"} {
+			rec := s.do(t, method, path, url.Values{"current": {"x"}, "new": {"y"}, "confirm": {"y"}}, cookie)
+			loc := rec.Header().Get("Location")
+			refused := rec.Code == http.StatusUnauthorized ||
+				(rec.Code == http.StatusSeeOther && strings.HasPrefix(loc, "/account"))
+			if !refused {
+				t.Errorf("%s (cookie %q): %d %s", pattern, cookie, rec.Code, loc)
+			}
 		}
+		checked++
+	}
+	if checked < 10 {
+		t.Fatalf("checked only %d protected routes", checked)
 	}
 }
 

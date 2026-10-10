@@ -15,7 +15,7 @@ import (
 func adminRoutes(t *testing.T, s *testServer, id string) []string {
 	t.Helper()
 	var routes []string
-	s.h.registerAdmin(func(pattern string, _ http.HandlerFunc) {
+	s.h.registerAdmin(func(pattern string, _ http.Handler) {
 		routes = append(routes, strings.NewReplacer("{id}", id, "{$}", "").Replace(pattern))
 	})
 	// A floor, so the sweep below cannot pass by checking nothing.

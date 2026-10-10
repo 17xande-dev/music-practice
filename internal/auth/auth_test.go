@@ -82,3 +82,13 @@ func TestTokenHashIsStable(t *testing.T) {
 		t.Error("token hash not stable and distinct")
 	}
 }
+
+// This package's tests never call UseFastHashesForTests, so this pins the
+// production cost: a change to it must be deliberate, not a test helper
+// leaking out.
+func TestProductionParameters(t *testing.T) {
+	h, _ := HashPassword("whatever password")
+	if !strings.Contains(h, "$m=65536,t=3,p=2$") {
+		t.Errorf("hash parameters changed: %s", h)
+	}
+}
