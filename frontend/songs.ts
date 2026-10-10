@@ -378,6 +378,7 @@ function rebuild() {
     const whole = sel.from! <= 1 && sel.to! >= song.score.measureCount;
     store.setSongRange(song.meta.id, whole ? null : { from: sel.from!, to: sel.to! });
   }
+  view.setPracticeRange(song.score.measureCount, sel.from!, sel.to!);
   practice = practiceSteps(song.score, sel);
   const plays = (hand: string) => sel.hands === "both" || hand === sel.hands;
   stepRefs = practice.events.map((e) =>
@@ -1369,6 +1370,14 @@ view.onSeek = (ref) => {
   if (!song || !practice?.steps.length) return;
   const at = currentStep();
   seek(stepOfRef(song.score, practice, ref, at < 0 ? practice.steps.length - 1 : at));
+};
+// Press-hold-drag over measures sets the range, as the pickers do.
+view.onSelectRange = (from, to) => {
+  if (!song) return;
+  ui.from.value = String(from);
+  ui.to.value = String(to);
+  persist();
+  rebuild(); // as the pickers' change does; no scroll, the score stays where it is
 };
 ui.device.addEventListener("change", () => {
   midi.select(ui.device.value);

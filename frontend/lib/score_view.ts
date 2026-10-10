@@ -13,6 +13,14 @@
 
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import type { RawEntry } from "./score.ts";
+import {
+  LONG_PRESS_MS,
+  measureAt,
+  type MeasureBox,
+  outsideRange,
+  spanBetween,
+  stillHolding,
+} from "./measure_select.ts";
 import { walkCursor } from "./score_walk.ts";
 import type { StepMark } from "./staff_view.ts";
 
@@ -79,6 +87,23 @@ export class ScoreView {
   onRender: () => void = () => {};
   /** A click on the score: the note nearest the click (a RawNote.ref). */
   onSeek: (ref: number) => void = () => {};
+  /** A press-hold-drag over measures was released: 1-based, from <= to. */
+  onSelectRange: (from: number, to: number) => void = () => {};
+  /** The measure range being dragged, 0-based and inclusive, while selecting. */
+  private sel: { from: number; to: number } | null = null;
+  private selecting: {
+    anchor: number;
+    pointer: number;
+    x: number;
+    y: number;
+    start: { x: number; y: number };
+    timer: number;
+    scroller: number;
+    active: boolean;
+  } | null = null;
+  private swallowClick = false;
+  /** 0-based measures faded as outside the practice range. */
+  private dimmed: number[] = [];
 
   constructor(private readonly container: HTMLElement) {
     // OSMD sizes the score to its element's outer width; an inner element
@@ -91,7 +116,12 @@ export class ScoreView {
     this.cursor.className = "score-cursor";
     this.cursor.setAttribute("aria-hidden", "true");
     this.cursor.hidden = true;
+    this.wireSelect(page);
     page.addEventListener("click", (e) => {
+      if (this.swallowClick) {
+        this.swallowClick = false;
+        return;
+      }
       const ref = this.refAt(e.clientX, e.clientY);
       if (ref !== null) this.onSeek(ref);
     });
@@ -131,6 +161,7 @@ export class ScoreView {
     this.loaded = false;
     this.marks.clear();
     this.heat.clear();
+    this.dimmed = [];
     try {
       await this.osmd.load(content);
     } catch (e) {
@@ -166,6 +197,8 @@ export class ScoreView {
     this.walk();
     for (const [ref, m] of this.marks) this.apply(ref, m);
     this.drawHeat();
+    this.drawSelection();
+    this.drawDim();
     // OSMD replaces the page's contents when it renders.
     this.page.append(this.cursor);
     if (this.cursorRefs) this.showCursor(this.cursorRefs);
@@ -374,6 +407,184 @@ export class ScoreView {
     }
     // First in the svg, so behind the staff lines and notes.
     svg.prepend(...rects);
+  }
+
+  /** Each measure's rectangle on the page (px), across all its staves. */
+  private measureBoxes(): MeasureBox[] {
+    const list = (this.osmd.GraphicSheet as unknown as { MeasureList?: OsmdMeasure[][] })
+      ?.MeasureList;
+    const zoom = UNIT * this.osmd.Zoom;
+    const out: MeasureBox[] = [];
+    list?.forEach((staves, index) => {
+      let [x0, x1, y0, y1] = [Infinity, -Infinity, Infinity, -Infinity];
+      for (const m of staves ?? []) {
+        const line = m?.ParentStaffLine;
+        if (!m || !line) continue;
+        const box = m.PositionAndShape;
+        x0 = Math.min(x0, box.AbsolutePosition.x + box.BorderLeft);
+        x1 = Math.max(x1, box.AbsolutePosition.x + box.BorderRight);
+        const top = line.PositionAndShape.AbsolutePosition.y;
+        y0 = Math.min(y0, top);
+        y1 = Math.max(y1, top + line.StaffHeight);
+      }
+      if (!Number.isFinite(x0 + x1 + y0 + y1)) return;
+      out.push({ index, x0: x0 * zoom, x1: x1 * zoom, y0: (y0 - 1) * zoom, y1: (y1 + 1) * zoom });
+    });
+    return out;
+  }
+
+  private measureUnder(clientX: number, clientY: number): number | null {
+    const box = this.page.getBoundingClientRect();
+    return measureAt(this.measureBoxes(), clientX - box.left, clientY - box.top);
+  }
+
+  private drawSelection() {
+    const svg = this.container.querySelector("svg");
+    if (!svg) return;
+    for (const r of svg.querySelectorAll(".sel-tint")) r.remove();
+    if (!this.sel) return;
+    const boxes = this.measureBoxes().filter((b) =>
+      b.index >= this.sel!.from && b.index <= this.sel!.to
+    );
+    const rects = boxes.map((b) => {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("class", "sel-tint");
+      rect.setAttribute("x", String(b.x0));
+      rect.setAttribute("y", String(b.y0));
+      rect.setAttribute("width", String(b.x1 - b.x0));
+      rect.setAttribute("height", String(b.y1 - b.y0));
+      return rect;
+    });
+    svg.prepend(...rects);
+  }
+
+  /** Fade the measures outside the practice range (1-based `from`..`to` of `count`). */
+  setPracticeRange(count: number, from: number, to: number) {
+    this.dimmed = outsideRange(count, from, to);
+    this.drawDim();
+  }
+
+  /** Paper-coloured rects over the dimmed measures, on top of the notes. */
+  private drawDim() {
+    const svg = this.container.querySelector("svg");
+    if (!svg) return;
+    for (const r of svg.querySelectorAll(".range-dim")) r.remove();
+    if (!this.dimmed.length) return;
+    const out = new Set(this.dimmed);
+    for (const b of this.measureBoxes()) {
+      if (!out.has(b.index)) continue;
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("class", "range-dim");
+      rect.setAttribute("x", String(b.x0));
+      rect.setAttribute("y", String(b.y0));
+      rect.setAttribute("width", String(b.x1 - b.x0));
+      rect.setAttribute("height", String(b.y1 - b.y0));
+      svg.append(rect);
+    }
+  }
+
+  private setSelection(sel: { from: number; to: number } | null) {
+    this.sel = sel;
+    this.drawSelection();
+  }
+
+  /**
+   * Press and hold on a measure (mouse held still, or a touch long-press),
+   * then drag: the measures from there to the pointer are highlighted, and
+   * releasing reports the span. A quick click or an ordinary drag is
+   * untouched. Escape, or a second pointer going down, cancels.
+   */
+  private wireSelect(page: HTMLElement) {
+    const stop = () => {
+      const s = this.selecting;
+      if (!s) return;
+      clearTimeout(s.timer);
+      clearInterval(s.scroller);
+      if (s.active && page.hasPointerCapture(s.pointer)) page.releasePointerCapture(s.pointer);
+      this.selecting = null;
+      this.setSelection(null);
+    };
+    const update = () => {
+      const s = this.selecting;
+      if (!s?.active) return;
+      const at = this.measureUnder(s.x, s.y);
+      if (at !== null) this.setSelection(spanBetween(s.anchor, at));
+    };
+    const autoScroll = () => {
+      const s = this.selecting;
+      if (!s?.active) return;
+      const v = this.container.getBoundingClientRect();
+      const edge = 40;
+      const step = (pos: number, lo: number, hi: number) =>
+        pos < lo + edge
+          ? -Math.ceil((lo + edge - pos) / 4)
+          : pos > hi - edge
+          ? Math.ceil((pos - (hi - edge)) / 4)
+          : 0;
+      const dx = step(s.x, v.left, v.right);
+      const dy = step(s.y, v.top, v.bottom);
+      if (dx || dy) {
+        this.container.scrollBy({ left: dx, top: dy, behavior: "instant" });
+        update();
+      }
+    };
+    page.addEventListener("pointerdown", (e) => {
+      if (this.selecting) { // a second press while selecting cancels
+        stop();
+        return;
+      }
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const anchor = this.measureUnder(e.clientX, e.clientY);
+      if (anchor === null) return;
+      const s = {
+        anchor,
+        pointer: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        start: { x: e.clientX, y: e.clientY },
+        active: false,
+        scroller: 0,
+        timer: 0,
+      };
+      s.timer = setTimeout(() => {
+        s.active = true;
+        page.setPointerCapture(s.pointer);
+        s.scroller = setInterval(autoScroll, 30);
+        this.setSelection({ from: anchor, to: anchor });
+      }, LONG_PRESS_MS);
+      this.selecting = s;
+    });
+    page.addEventListener("pointermove", (e) => {
+      const s = this.selecting;
+      if (!s || e.pointerId !== s.pointer) return;
+      s.x = e.clientX;
+      s.y = e.clientY;
+      if (s.active) return update();
+      if (!stillHolding(s.start, s)) stop(); // an ordinary drag or scroll
+    });
+    const release = (e: PointerEvent) => {
+      const s = this.selecting;
+      if (!s || e.pointerId !== s.pointer) return;
+      const sel = s.active ? this.sel : null;
+      stop();
+      if (sel) {
+        this.swallowClick = true; // the release is not a seek
+        setTimeout(() => this.swallowClick = false, 400);
+        this.onSelectRange(sel.from + 1, sel.to + 1);
+      }
+    };
+    page.addEventListener("pointerup", release);
+    page.addEventListener("pointercancel", () => stop());
+    // While selecting, the touch must not scroll the page or open a menu.
+    page.addEventListener("touchmove", (e) => {
+      if (this.selecting?.active) e.preventDefault();
+    }, { passive: false });
+    page.addEventListener("contextmenu", (e) => {
+      if (this.selecting?.active) e.preventDefault();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.selecting) stop();
+    });
   }
 
   /** Scroll so the note `ref` is in view, keeping the line above it visible. */

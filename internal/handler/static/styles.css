@@ -1301,6 +1301,10 @@ body.song-big { overflow: hidden; }
 .score-page .heat-tint.level-2 { fill: var(--warn); }
 .score-page .heat-tint.level-1 { fill: color-mix(in oklab, var(--warn), var(--bad) 55%); }
 .score-page .heat-tint.level-0 { fill: var(--bad); }
+/* The measures being dragged over to pick a range. */
+.score-page .sel-tint { fill: var(--accent); fill-opacity: 0.28; pointer-events: none; }
+.score-page .range-dim { fill: var(--paper-raised); fill-opacity: 0.7; pointer-events: none; }
+.score-page { -webkit-touch-callout: none; }
 
 .score-cursor.gliding { transition: none; }
 
