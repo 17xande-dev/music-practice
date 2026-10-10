@@ -5,11 +5,27 @@ import { spell } from "./theory.ts";
 
 const step = (...midis: number[]) => ({ notes: midis.map((midi) => ({ midi })) });
 
-Deno.test("restart: only a note-on, on a finished run, in a restartable mode", () => {
-  assertEquals(restartsOnNote("on", true, true), true);
-  assertEquals(restartsOnNote("off", true, true), false);
-  assertEquals(restartsOnNote("on", false, true), false);
-  assertEquals(restartsOnNote("on", true, false), false);
+Deno.test("restart: a note-on after a pause on a finished run", () => {
+  assertEquals(restartsOnNote("on", true, 5000, 3000), true);
+  assertEquals(restartsOnNote("on", true, 4000, 3000), true); // exactly the gap
+  assertEquals(restartsOnNote("on", false, 5000, 3000), false); // not finished
+});
+
+Deno.test("restart: a straggler right after the finish does not", () => {
+  assertEquals(restartsOnNote("on", true, 3300, 3000), false);
+});
+
+Deno.test("restart: carry-on playing keeps extending the window", () => {
+  let last = 3000; // the finishing note
+  for (const t of [3600, 4300, 5000, 5900]) {
+    assertEquals(restartsOnNote("on", true, t, last), false);
+    last = t; // each ignored note moves the window on
+  }
+  assertEquals(restartsOnNote("on", true, 7000, last), true);
+});
+
+Deno.test("restart: note-offs never do", () => {
+  assertEquals(restartsOnNote("off", true, 9000, 3000), false);
 });
 
 Deno.test("next keys: the following step, whole chord", () => {

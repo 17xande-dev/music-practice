@@ -2,18 +2,24 @@
 // new run after one finished, and which keys to preview for the step after
 // the current one.
 
+/** Silence after a finished run before a note starts the next one (ms). */
+export const RESTART_GAP_MS = 1000;
+
 /**
  * Whether an incoming note restarts the exercise: a note-on, once a run has
- * finished, in a mode where restarting needs nothing more (a wait mode;
- * Tempo needs its count-in, so it keeps an explicit restart). A note-off
+ * finished, after at least RESTART_GAP_MS of silence since the previous
+ * note-on (`lastOnT`, the finishing note or any later one; event
+ * timestamps). A straggler or carried-on playing inside that window does
+ * not restart (the caller ignores it and moves `lastOnT` on). A note-off
  * never does.
  */
 export function restartsOnNote(
   type: "on" | "off",
   finished: boolean,
-  restartable: boolean,
+  t: number,
+  lastOnT: number,
 ): boolean {
-  return type === "on" && finished && restartable;
+  return type === "on" && finished && t - lastOnT >= RESTART_GAP_MS;
 }
 
 /**

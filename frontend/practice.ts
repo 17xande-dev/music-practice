@@ -530,7 +530,7 @@ function showProgress() {
   const step = currentStep();
   showTargets(step);
   if (!step) {
-    ui.status.textContent = "Done — press Restart or Space to go again.";
+    ui.status.textContent = "Done — play a note or press Restart or Space to go again.";
     return;
   }
   // "RH E♭4 G4 B♭4 + LH E♭3 G3 B♭3": one group per hand.
@@ -555,6 +555,9 @@ function showProgress() {
 
 // ---- Input ------------------------------------------------------------------
 
+/** Timestamp of the latest note-on, for the restart pause. */
+let lastOnT = -Infinity;
+
 function handleNote(ev: NoteEvent) {
   if (calibration.active) {
     if (ev.type === "on") calibration.tap(ev.t);
@@ -566,9 +569,17 @@ function handleNote(ev: NoteEvent) {
     view.release(ev.midi);
     return;
   }
-  // A note after a finished run starts the next one, and is its first input.
-  // The finished run was saved when it ended; reset() starts a fresh engine.
-  if (restartsOnNote(ev.type, finishedRun(), true)) reset();
+  // After a finished run a note restarts it only after a pause (a straggler
+  // or carry-on playing is ignored, and extends the wait). The restarting
+  // note is the new run's first input; the old run was saved at its finish.
+  const restarts = restartsOnNote("on", finishedRun(), ev.t, lastOnT);
+  const ignored = finishedRun() && !restarts;
+  lastOnT = ev.t;
+  if (ignored) {
+    view.press(ev.midi, "neutral");
+    return;
+  }
+  if (restarts) reset();
   const grading = engine && !engine.done &&
     (mode !== "tempo" || phase === "countin" || phase === "playing");
   if (!grading) {

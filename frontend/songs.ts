@@ -175,8 +175,12 @@ let loopTimer = 0;
 
 // ---- Library ------------------------------------------------------------------
 
+/** The results card is kept through an auto-repeat until the new pass's first note. */
+let keptResults = false;
+
 /** Hide the results card, and the heat tint it put on the score. */
 function clearResults() {
+  keptResults = false;
   ui.results.hidden = true;
   view.clearHeat();
 }
@@ -402,7 +406,7 @@ function keepSegment(upto = Infinity) {
 }
 
 /** Drop the run so far: nothing played, ready at step k of the selection. */
-function clearRun(k = 0) {
+function clearRun(k = 0, keepResults = false) {
   logLearn(false);
   stop();
   attempted = new Map();
@@ -411,13 +415,13 @@ function clearRun(k = 0) {
   shownCurrent = -1;
   keyboard.releaseAll();
   view.clearMarks();
-  clearResults();
+  if (!keepResults) clearResults();
   beginWaiting(k);
 }
 
 /** Back to the start of the selection, nothing played. */
-function reset() {
-  clearRun(0);
+function reset(keepResults = false) {
+  clearRun(0, keepResults);
   showProgress();
 }
 
@@ -595,7 +599,7 @@ function showProgress() {
   showTargets(i);
   if (i < 0) {
     view.hideCursor();
-    ui.status.textContent = "Done. Press Restart (R) to go again.";
+    ui.status.textContent = "Done. Play a note or press Restart (R) to go again.";
     return;
   }
   // Move the "current" mark, leaving steps already graded as they are.
@@ -873,12 +877,16 @@ function again() {
   if (!ui.loop.checked) return;
   ui.status.textContent += " Repeating…";
   loopTimer = setTimeout(() => {
-    reset();
+    reset(waiting());
+    keptResults = waiting() && !ui.results.hidden;
     if (!waiting()) void start(0);
   }, waiting() ? 1200 : 2000);
 }
 
 // ---- Input -----------------------------------------------------------------------
+
+/** Timestamp of the latest note-on, for the restart pause. */
+let lastOnT = -Infinity;
 
 function handleNote(ev: NoteEvent) {
   if (calibration.active) {
@@ -894,7 +902,15 @@ function handleNote(ev: NoteEvent) {
   // A note after a finished wait-mode run starts the next one from the start
   // of the selection, and is its first input. Tempo and Listen keep their
   // explicit restart (Tempo needs its count-in).
-  if (restartsOnNote(ev.type, finishedWait(), true)) reset();
+  const restarts = restartsOnNote("on", finishedWait(), ev.t, lastOnT);
+  const ignored = finishedWait() && !restarts;
+  lastOnT = ev.t;
+  if (ignored) {
+    keyboard.press(ev.midi, "neutral");
+    return;
+  }
+  if (restarts) reset();
+  else if (keptResults) clearResults(); // the first note of an auto-repeated pass
   const grading = engine && !engine.done &&
     (engine instanceof NotesEngine || phase === "countin" || phase === "playing");
   if (!grading) {
@@ -925,6 +941,7 @@ function handleNote(ev: NoteEvent) {
     if (done) keepSegment();
     showProgress();
     if (done) {
+      if (guideOn) void toggleGuide(); // the Rubato guide click ends with the run
       finishRun();
       again();
     }

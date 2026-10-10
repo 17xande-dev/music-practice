@@ -588,8 +588,8 @@ kbd {
   :where(.key.black) { fill: var(--key-black); stroke: var(--key-black); }
   :where(.key.white.in-scale) { fill: color-mix(in oklab, var(--key-white), var(--target) 14%); }
   :where(.key.black.in-scale) { fill: color-mix(in oklab, var(--key-black), var(--target) 40%); }
-  .key.next { fill: color-mix(in oklab, var(--key-white), var(--target) 45%); }
-  .key.black.next { fill: color-mix(in oklab, var(--key-black), var(--target) 60%); }
+  :where(.key.next) { fill: color-mix(in oklab, var(--key-white), var(--target) 45%); }
+  :where(.key.black.next) { fill: color-mix(in oklab, var(--key-black), var(--target) 60%); }
   .key.target { fill: var(--target); }
   .key.down.ok { fill: var(--ok); }
   .key.down.bad { fill: var(--bad); }
