@@ -106,7 +106,9 @@ Response (always every key, always arrays, never `null`):
   `cursor` and nothing to push.
 - **Atomic:** the push is one transaction. If the request fails, nothing was stored, and sending the
   same push again is safe.
-- `400`: malformed JSON or a negative cursor. `401`: not signed in.
+- `400`: malformed JSON or a negative cursor. `401`: not signed in, meaning the token or cookie is
+  dead. A server fault while checking credentials is a `500`, never a `401`, so a client never drops
+  a live token because of a passing error.
 
 ## Client algorithm
 

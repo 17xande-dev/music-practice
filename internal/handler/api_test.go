@@ -248,6 +248,21 @@ func TestCreatedAccountWorksForWebAndApp(t *testing.T) {
 	s.deviceToken(t, "p@x.com", pw)
 }
 
+// A database fault while checking a token is a 500, not a 401: clients take
+// 401 to mean the token is dead and throw it away.
+func TestAuthFaultIsNotSignedOut(t *testing.T) {
+	s := newTestServer(t)
+	s.addUser(t, "a@x.com", false)
+	token := s.deviceToken(t, "a@x.com", testPassword)
+	s.db.Close()
+	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Code != http.StatusInternalServerError {
+		t.Errorf("auth fault: %d, want 500", rec.Code)
+	}
+	if rec := s.api(t, "GET", "/api/me", "", "", ""); rec.Code != http.StatusUnauthorized {
+		t.Errorf("no credentials: %d, want 401", rec.Code)
+	}
+}
+
 // A disabled account's app token stops working at once.
 func TestDisabledUserTokenRefused(t *testing.T) {
 	s := newTestServer(t)

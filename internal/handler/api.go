@@ -43,28 +43,43 @@ func bearer(r *http.Request) string {
 	return strings.TrimSpace(token)
 }
 
+// errNotSignedIn means the request has no live credentials (401). Any other
+// error from apiUser is a server fault (500): clients treat 401 as "this token
+// is dead" and throw it away, so a passing database error must not become one.
+var errNotSignedIn = errors.New("not signed in")
+
 // apiUser authenticates an API request by bearer token or, failing that,
 // the browser's cookie.
-func (h *Handler) apiUser(r *http.Request) (account.User, account.Session, bool) {
-	if tok := bearer(r); tok != "" {
-		u, s, err := h.accounts.Authenticate(r.Context(), tok)
+func (h *Handler) apiUser(r *http.Request) (account.User, account.Session, error) {
+	tok := bearer(r)
+	if tok == "" {
+		c, err := r.Cookie(sessionCookie)
 		if err != nil {
-			if !errors.Is(err, account.ErrNotFound) {
-				h.log.Error("authenticate", "err", err)
-			}
-			return account.User{}, account.Session{}, false
+			return account.User{}, account.Session{}, errNotSignedIn
 		}
-		return u, s, true
+		tok = c.Value
 	}
-	return h.currentUser(r)
+	u, s, err := h.accounts.Authenticate(r.Context(), tok)
+	if errors.Is(err, account.ErrNotFound) {
+		return account.User{}, account.Session{}, errNotSignedIn
+	}
+	if err != nil {
+		h.log.Error("authenticate", "err", err)
+		return account.User{}, account.Session{}, err
+	}
+	return u, s, nil
 }
 
 func (h *Handler) requireAPIUser(next func(http.ResponseWriter, *http.Request, account.User, account.Session)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
-		u, s, ok := h.apiUser(r)
-		if !ok {
+		u, s, err := h.apiUser(r)
+		if errors.Is(err, errNotSignedIn) {
 			apiError(w, http.StatusUnauthorized, "not signed in")
+			return
+		}
+		if err != nil {
+			apiError(w, http.StatusInternalServerError, "server error")
 			return
 		}
 		next(w, r, u, s)

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"io"
 	"log/slog"
 	"net/http"
@@ -25,6 +26,7 @@ type testServer struct {
 	h        *Handler
 	accounts *account.Store
 	routes   http.Handler
+	db       *sql.DB
 }
 
 func newTestServer(t *testing.T) *testServer {
@@ -35,7 +37,7 @@ func newTestServer(t *testing.T) *testServer {
 	if err != nil {
 		t.Fatalf("New: %v (did `deno task bundle` run?)", err)
 	}
-	return &testServer{h: h, accounts: accounts, routes: h.Routes()}
+	return &testServer{h: h, accounts: accounts, routes: h.Routes(), db: d}
 }
 
 func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder {
