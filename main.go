@@ -87,10 +87,11 @@ func run(log *slog.Logger, dev bool) error {
 		return err
 	}
 
+	accounts := account.NewStore(database)
 	h, err := handler.New(handler.Options{
 		Log:      log,
 		Dev:      dev,
-		Accounts: account.NewStore(database),
+		Accounts: accounts,
 		History:  history.NewStore(database),
 		ClientIP: middleware.ClientIP(cfg.ClientIPHeader),
 	})
@@ -112,6 +113,8 @@ func run(log *slog.Logger, dev bool) error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	go maintain(ctx, log, database, accounts, cfg.DBPath)
 
 	errc := make(chan error, 1)
 	go func() {
