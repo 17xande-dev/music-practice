@@ -2,6 +2,7 @@
 // Stored beside the scale sessions, under its own key, and validated the
 // same way: anything read back is checked field by field and rebuilt.
 
+import { validId } from "./ids.ts";
 import { cleanInput, inputOf, type InputSource, validInput } from "./input_source.ts";
 
 export const SONG_SESSIONS_KEY = "mp.v1.songSessions";
@@ -67,7 +68,7 @@ export function validSongSession(x: unknown): x is SongSession {
   const timingOk = t === null ||
     (isObj(t) && isCount(t.onTime) && isCount(t.early) && isCount(t.late) &&
       isCount(t.missed) && isNumOrNull(t.meanAbsMs) && isNumOrNull(t.meanSignedMs));
-  return isStr(x.id, 64) && isNum(x.ts) && x.ts > 0 &&
+  return validId(x.id) && isNum(x.ts) && x.ts > 0 &&
     isStr(x.songId, 64) && isStr(x.title, 300) && validInput(x.input) &&
     ["both", "rh", "lh"].includes(x.hands as string) &&
     isCount(x.from) && isCount(x.to) && x.from >= 1 && x.to >= x.from &&

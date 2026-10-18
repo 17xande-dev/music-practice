@@ -585,3 +585,12 @@ Deno.test("runs and records without a positive ts are not valid", () => {
   const bad = [{ ...scale(), id: "z", ts: 0 }, { ...scale(), id: "n", ts: -5 }];
   assertEquals(store.mergeRecords("scale", bad).invalid, 2);
 });
+
+Deno.test("song and learn runs count ids in UTF-8 bytes too", () => {
+  const store = syncedStore();
+  const long = "é".repeat(33); // 33 UTF-16 units but 66 bytes: the server refuses it
+  const r = store.mergeRecords("song", [{ ...song(), id: long }]);
+  assertEquals(r.invalid, 1);
+  assertEquals(store.mergeRecords("learn", [{ ...learn(), id: long }]).invalid, 1);
+  assertEquals(store.mergeRecords("song", [{ ...song(), id: "é".repeat(32) }]).invalid, 0);
+});

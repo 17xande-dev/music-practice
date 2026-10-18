@@ -4,6 +4,7 @@
 // records under its own key, and validated the same way: anything read
 // back is checked field by field and rebuilt.
 
+import { validId } from "./ids.ts";
 import { cleanInput, type InputSource, validInput } from "./input_source.ts";
 import type { Instrument } from "./progress_store.ts";
 import type { SongMeasure } from "./song_session.ts";
@@ -55,7 +56,7 @@ function validMeasure(x: unknown): x is SongMeasure {
 
 export function validLearnSession(x: unknown): x is LearnSession {
   return isObj(x) &&
-    isStr(x.id, 64) && isNum(x.ts) && x.ts > 0 &&
+    validId(x.id) && isNum(x.ts) && x.ts > 0 &&
     (x.kind === "scale" || x.kind === "song") &&
     isStr(x.subject, 64) && isStr(x.title, 300) &&
     (x.instrument === undefined || x.instrument === "piano" || x.instrument === "guitar") &&

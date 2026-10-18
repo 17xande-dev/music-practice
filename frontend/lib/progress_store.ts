@@ -9,6 +9,7 @@
 // whether it is working: practice must never break because history cannot
 // be saved.
 
+import { validId } from "./ids.ts";
 import type { ExerciseOptions, PitchName, ScaleType } from "./theory.ts";
 import { SCALES } from "./theory.ts";
 import { cleanInput, inputOf, type InputSource, validInput } from "./input_source.ts";
@@ -44,12 +45,7 @@ export interface SyncState {
   pendingDeletes: SyncEntry[];
   lastSyncAt: number | null;
 }
-const utf8 = new TextEncoder();
-/** An id the server will take: 1-64 bytes of UTF-8 (it counts bytes, not UTF-16 units). */
-export const validId = (id: unknown): id is string => {
-  if (typeof id !== "string" || id.length === 0 || id.length > 64) return false; // units <= bytes
-  return utf8.encode(id).length <= 64;
-};
+export { validId };
 export const entryKey = (e: SyncEntry) => `${e.kind}:${e.id}`;
 
 export interface SessionTiming {
