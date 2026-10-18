@@ -290,3 +290,33 @@ func TestCrossSiteSyncRefused(t *testing.T) {
 		t.Errorf("cross-site sync: %d", rec.Code)
 	}
 }
+
+// A refused run must come back with its id (an oversize one, a bad-ts one, an
+// empty-id one), or a client that drops rejects by id keeps resending it.
+func TestSyncRejectedCarriesIDWhateverTheReason(t *testing.T) {
+	s := newTestServer(t)
+	s.addUser(t, "a@x.com", false)
+	token := s.deviceToken(t, "a@x.com", testPassword)
+	big := `{"id":"fat","ts":1,"pad":"` + strings.Repeat("x", 70<<10) + `"}`
+	body := `{"cursor":0,"push":{"scale":[` + big + `,{"id":"badts","ts":0},{"id":"","ts":1},{"ts":1},{"id":7,"ts":1}]}}`
+	rec := s.api(t, "POST", "/api/sync", body, token, "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("sync: %d", rec.Code)
+	}
+	var res struct {
+		Rejected []map[string]any `json:"rejected"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Rejected) != 5 {
+		t.Fatalf("rejected %+v", res.Rejected)
+	}
+	want := []any{"fat", "badts", "", nil, nil} // nil: no string id, so none returned
+	for i, w := range want {
+		id, has := res.Rejected[i]["id"]
+		if w == nil && has || w != nil && id != w {
+			t.Errorf("rejected[%d] = %+v, want id %v", i, res.Rejected[i], w)
+		}
+	}
+}

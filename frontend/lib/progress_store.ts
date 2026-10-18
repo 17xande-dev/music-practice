@@ -44,6 +44,12 @@ export interface SyncState {
   pendingDeletes: SyncEntry[];
   lastSyncAt: number | null;
 }
+const utf8 = new TextEncoder();
+/** An id the server will take: 1-64 bytes of UTF-8 (it counts bytes, not UTF-16 units). */
+export const validId = (id: unknown): id is string => {
+  if (typeof id !== "string" || id.length === 0 || id.length > 64) return false; // units <= bytes
+  return utf8.encode(id).length <= 64;
+};
 export const entryKey = (e: SyncEntry) => `${e.kind}:${e.id}`;
 
 export interface SessionTiming {
@@ -223,7 +229,7 @@ function validTiming(x: unknown): x is SessionTiming | null {
 
 export function validSession(x: unknown): x is Session {
   return isObj(x) &&
-    typeof x.id === "string" && x.id.length > 0 && x.id.length <= 64 &&
+    validId(x.id) &&
     isNum(x.ts) && x.ts > 0 &&
     validPitch(x.tonic) &&
     typeof x.type === "string" && Object.hasOwn(SCALES, x.type) &&
@@ -316,14 +322,16 @@ export function validSettings(x: unknown): Partial<Settings> {
   for (const k of ["songMetronome", "songAccompany", "songLoop"] as const) {
     if (typeof x[k] === "boolean") out[k] = x[k] as boolean;
   }
-  if (typeof x.lastSong === "string" && x.lastSong.length <= 64) out.lastSong = x.lastSong;
+  if (typeof x.lastSong === "string" && (x.lastSong === "" || validId(x.lastSong))) {
+    out.lastSong = x.lastSong;
+  }
   if (x.theme === "light" || x.theme === "dark") out.theme = x.theme;
   if (x.songView === "page" || x.songView === "line") out.songView = x.songView;
   if (x.songCursor === "flow" || x.songCursor === "jump") out.songCursor = x.songCursor;
   if (isObj(x.songRanges)) {
     const ranges: Settings["songRanges"] = {};
     for (const [id, r] of Object.entries(x.songRanges).slice(0, MAX_SONG_RANGES)) {
-      if (id.length > 0 && id.length <= 64 && isObj(r) && isCount(r.from) && isCount(r.to)) {
+      if (validId(id) && isObj(r) && isCount(r.from) && isCount(r.to)) {
         if (r.from >= 1 && r.to >= r.from) ranges[id] = { from: r.from, to: r.to };
       }
     }

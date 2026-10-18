@@ -156,9 +156,11 @@ type syncResponse struct {
 }
 
 type rejected struct {
-	Kind   string `json:"kind"`
-	ID     string `json:"id,omitempty"`
-	Reason string `json:"reason"`
+	Kind string `json:"kind"`
+	// ID is present whenever the pushed record had a string id, whatever
+	// the reason it was refused (even an empty id, hence the pointer).
+	ID     *string `json:"id,omitempty"`
+	Reason string  `json:"reason"`
 }
 
 // apiSync pushes the client's new runs and deletions, then returns
@@ -186,7 +188,11 @@ func (h *Handler) apiSync(w http.ResponseWriter, r *http.Request, u account.User
 		for _, raw := range raws {
 			id, err := history.CheckRecord(kind, raw)
 			if err != nil {
-				resp.Rejected = append(resp.Rejected, rejected{Kind: kind, ID: id, Reason: err.Error()})
+				rej := rejected{Kind: kind, Reason: err.Error()}
+				if rid, ok := history.RecordID(raw); ok {
+					rej.ID = &rid
+				}
+				resp.Rejected = append(resp.Rejected, rej)
 				continue
 			}
 			records = append(records, history.Record{Kind: kind, ID: id, Data: raw})

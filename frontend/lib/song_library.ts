@@ -5,6 +5,7 @@
 // IndexedDB means songs can still be opened, just not kept.
 
 import { staleStarterIds } from "./starters.ts";
+import { validId } from "./progress_store.ts";
 
 const DB_NAME = "mp.v1";
 const STORE = "songs";
@@ -60,7 +61,7 @@ export function titleFromFileName(name: string): string {
 export function validSongRecord(x: unknown): x is SongRecord {
   const r = x as Partial<SongRecord> | null;
   return typeof r === "object" && r !== null &&
-    typeof r.id === "string" && r.id.length > 0 && r.id.length <= 64 &&
+    validId(r.id) &&
     typeof r.fileName === "string" && typeof r.title === "string" &&
     (r.format === "musicxml" || r.format === "mxl") &&
     r.data instanceof ArrayBuffer && r.data.byteLength > 0;

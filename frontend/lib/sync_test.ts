@@ -1,5 +1,11 @@
 import { assert, assertEquals, assertFalse } from "@std/assert";
-import { MAX_SESSIONS, ProgressStore, SESSIONS_KEY, type SyncState } from "./progress_store.ts";
+import {
+  MAX_SESSIONS,
+  ProgressStore,
+  SESSIONS_KEY,
+  type SyncState,
+  validId,
+} from "./progress_store.ts";
 import { SONG_SESSIONS_KEY } from "./song_session.ts";
 import { ago, BATCH, checkSignedIn, type FetchFn, sync } from "./sync.ts";
 
@@ -337,6 +343,38 @@ Deno.test("rejected runs leave the queue", async () => {
   );
   assertEquals((await sync(store, srv.f)).status, "ok");
   assertEquals(store.syncState()!.pendingAdds, []);
+});
+
+Deno.test("a rejection without an id still empties the queue (no resend loop)", async () => {
+  const store = syncedStore();
+  const a = store.add(scale()).session;
+  const srv = fakeServer(
+    () => json(answer({ rejected: [{ kind: "scale", reason: "record over 65536 bytes" }] })),
+  );
+  assertEquals((await sync(store, srv.f)).status, "ok");
+  assertEquals(store.syncState()!.pendingAdds, []);
+  assertEquals(srv.calls.length, 1);
+  assertEquals(srv.calls[0].push.scale.map((r) => r.id), [a.id]);
+});
+
+Deno.test("a round that leaves the sent entries queued and pulls nothing is an error", async () => {
+  const store = syncedStore();
+  store.add(scale());
+  // A store that loses the queue update, as a full or failing storage would.
+  store.updateSync = () => {};
+  const srv = fakeServer(() => json(answer({ cursor: 0 })), () => json(answer({ cursor: 0 })));
+  const r = await sync(store, srv.f);
+  assertEquals(r.status, "error");
+  assertEquals(srv.calls.length, 1);
+});
+
+Deno.test("validId counts UTF-8 bytes the way the server does", () => {
+  assert(validId("a".repeat(64)));
+  assertFalse(validId("a".repeat(65)));
+  assertFalse(validId(""));
+  assertFalse(validId(5));
+  assert(validId("\u20ac".repeat(21))); // 63 bytes
+  assertFalse(validId("\u20ac".repeat(22))); // 22 UTF-16 units but 66 bytes
 });
 
 Deno.test("pending adds whose runs are gone are dropped, not retried forever", async () => {

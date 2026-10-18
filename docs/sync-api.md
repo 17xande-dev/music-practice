@@ -109,7 +109,10 @@ Response (always every key, always arrays, never `null`):
 
 - **Server checks:** each pushed run must be a JSON object with a string `id` (1–64 characters), a
   positive numeric `ts`, and at most 64 KB. Anything else lands in `rejected` and the rest of the
-  push is still stored. Drop rejected runs from the pending list rather than resending them for
+  push is still stored. The id limit is 64 bytes of UTF-8 (clients must count bytes, not UTF-16
+  units or characters). Each `rejected` entry carries the record's `id` whenever the pushed record had
+  a string `id`, whatever the reason (oversize, bad `ts`, unknown kind, even an empty id); it is
+  omitted only when there is no string id at all. Drop rejected runs from the pending list rather than resending them for
   ever.
 - **Order:** the push is applied first (runs, then deletions), then changes after `cursor` are
   returned. The client's own just-pushed runs therefore come back in `records`; merging by id makes
@@ -153,7 +156,9 @@ in the Keychain, and the browser's cookie is HttpOnly.
       are gone (trimmed by the cap, or deleted).
    2. Send them with all of `pendingDeletes` and the stored `cursor`.
    3. On `200`, remove exactly what was sent from the pending lists; entries queued while the
-      request was in flight stay. Remove the `rejected` ones too.
+      request was in flight stay. Remove the `rejected` ones too. (Everything in
+      the batch leaves the queue regardless, so a rejection without an `id` cannot loop; if a round
+      pushes entries and none leave the queue and nothing was pulled, treat it as an error.)
    4. Merge `records` into the local arrays: union by id, sort by `ts`, cap at 2000.
    5. Remove the `deleted` ids from the local arrays, and from `pendingAdds`.
    6. Save `cursor` and `lastSyncAt`.

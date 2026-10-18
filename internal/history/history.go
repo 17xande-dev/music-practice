@@ -77,6 +77,18 @@ func CheckRecord(kind string, raw json.RawMessage) (string, error) {
 	return *head.ID, nil
 }
 
+// RecordID returns raw's id when raw is a JSON object with a string id,
+// whether or not the record is otherwise valid, so a rejection can name it.
+func RecordID(raw json.RawMessage) (string, bool) {
+	var head struct {
+		ID *string `json:"id"`
+	}
+	if len(raw) == 0 || raw[0] != '{' || json.Unmarshal(raw, &head) != nil || head.ID == nil {
+		return "", false
+	}
+	return *head.ID, true
+}
+
 // Push stores new runs and deletions in one transaction, so a failed sync
 // leaves nothing half-applied and the client can simply send it again.
 //

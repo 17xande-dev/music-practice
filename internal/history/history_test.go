@@ -169,3 +169,34 @@ func TestCheckRecord(t *testing.T) {
 		t.Error("unknown kind accepted")
 	}
 }
+
+// A refused record is still named when it has a string id, so a client can
+// stop resending it whatever the refusal was.
+func TestRecordID(t *testing.T) {
+	big := `{"id":"fat","ts":1,"pad":"` + strings.Repeat("x", MaxRecordBytes) + `"}`
+	for name, c := range map[string]struct {
+		raw string
+		id  string
+		ok  bool
+	}{
+		"oversize":   {big, "fat", true},
+		"bad ts":     {`{"id":"a","ts":0}`, "a", true},
+		"empty id":   {`{"id":"","ts":1}`, "", true},
+		"long id":    {`{"id":"` + strings.Repeat("a", 65) + `","ts":1}`, strings.Repeat("a", 65), true},
+		"numeric":    {`{"id":5,"ts":1}`, "", false},
+		"no id":      {`{"ts":1}`, "", false},
+		"not an obj": {`[1]`, "", false},
+	} {
+		id, ok := RecordID(json.RawMessage(c.raw))
+		if id != c.id || ok != c.ok {
+			t.Errorf("%s: got %q %v", name, id, ok)
+		}
+	}
+	if _, err := CheckRecord("song", json.RawMessage(big)); err == nil {
+		t.Error("oversize accepted")
+	}
+	// 22 three-byte characters: 66 bytes, 22 characters. Bytes are the limit.
+	if _, err := CheckRecord("song", json.RawMessage(`{"id":"`+strings.Repeat("\u20ac", 22)+`","ts":1}`)); err == nil {
+		t.Error("66-byte id accepted")
+	}
+}

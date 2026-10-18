@@ -53,13 +53,16 @@ async function rounds(store: ProgressStore, f: FetchFn): Promise<SyncResult> {
     if (!r.more && !s.pendingAdds.length && !s.pendingDeletes.length) {
       return { status: "ok", changed };
     }
+    if (r.stuck) {
+      return { status: "error", message: "The server did not take the queued runs." };
+    }
     if (r.more && !r.progress) return { status: "error", message: "The server's reply stalled." };
   }
   return { status: "error", message: "Sync could not finish." };
 }
 
 type Round =
-  | { status: "ok"; changed: boolean; more: boolean; progress: boolean }
+  | { status: "ok"; changed: boolean; more: boolean; progress: boolean; stuck: boolean }
   | Exclude<
     SyncResult,
     { status: "ok" }
@@ -124,12 +127,14 @@ async function round(store: ProgressStore, f: FetchFn): Promise<Round> {
   // Merge what came back. A run deleted here since the request went out is
   // not welcomed back; its deletion is still queued and will reach the server.
   let changed = false;
+  let pulled = false;
   const waiting = new Set((store.syncState()?.pendingDeletes ?? []).map(entryKey));
   const records = (body.records ?? {}) as Record<string, unknown>;
   for (const kind of KINDS) {
     const wanted = arr(records[kind]).filter((r) =>
       !waiting.has(entryKey({ kind, id: String((r as { id?: unknown })?.id) }))
     );
+    if (wanted.length) pulled = true;
     if (store.mergeRecords(kind, wanted).addedIds.length) changed = true;
   }
 
@@ -149,8 +154,14 @@ async function round(store: ProgressStore, f: FetchFn): Promise<Round> {
     s.lastSyncAt = Date.now();
   });
 
+  // Something we sent is still queued although nothing came back: the next
+  // round would send the same thing again, for ever.
+  const left = new Set((store.syncState()?.pendingAdds ?? []).map(entryKey));
+  const stuck = batch.length > 0 && cursor === state.cursor && !pulled &&
+    batch.some((e) => left.has(entryKey(e)));
   return {
     status: "ok",
+    stuck,
     changed,
     more: body.more === true,
     progress: cursor !== state.cursor || batch.length > 0 || deletes.length > 0,
