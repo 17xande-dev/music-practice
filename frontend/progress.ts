@@ -387,6 +387,10 @@ const syncer = installSync(store, {
       signedIn = "out";
       ui.status.textContent = "Signed out — sign in again to sync.";
     }
+    if (r.status === "account-mismatch") {
+      ui.status.textContent =
+        "This browser is signed in to a different account than it was syncing with, so sync was reset here. Reload to sync with the current account.";
+    }
     if (r.status === "ok" && r.changed) render();
     renderSync();
   },

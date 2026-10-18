@@ -36,7 +36,14 @@ From a survey of the app as it stands (line numbers are approximate):
 - **New `MusicCore` `SyncClient`.** Inject a transport protocol
   (`func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)` or similar) so the
   whole algorithm runs under `swift test` with a fake. Behaviour to copy from the web:
-  - batches of at most 500;
+  - batches of at most 500 records **and** about 4 MB of serialized JSON, at most 1000 deletions; on
+    `413` halve the batch and retry;
+  - send `account` (the stored email) in every `/api/sync` body; on `409` turn sync off, keep history,
+    drop queue and cursor (as for `401`), keep the token, and tell the user which account the iPad is
+    signed in as;
+  - treat a round that removed nothing from the queues, pulled nothing and did not move the cursor
+    as an error, never loop;
+  - on `503` from `/api/token` (with `Retry-After`) show "busy, try again"; it is not a bad password;
   - clear only what was sent;
   - drop `rejected` runs;
   - loop while `more` is true;
@@ -74,7 +81,9 @@ From a survey of the app as it stands (line numbers are approximate):
 
 - **Ids are lowercase UUIDs on both platforms** (`newId()` in Swift, `crypto.randomUUID()` on the
   web), but the web falls back to a non-UUID id when there is no secure context. Treat ids as opaque
-  strings of up to 64 characters, and never parse them.
+  strings of 1-64 **bytes of UTF-8** (count `id.utf8.count`, not characters), and never parse them.
+- **`ts` must be greater than 0**, and record member names are exactly `id` and `ts`, lower case; the
+  server rejects a record with members that differ only in case (the rejection carries its `id`).
 - **The cap is not a deletion.** A device trimming to 2000 must not send tombstones, or one device's
   trim would delete old runs from every device.
 - **Deletions win.** After a pull says an id is deleted, remove it locally _and_ from `pendingAdds`.

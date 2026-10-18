@@ -155,7 +155,7 @@ only:
 | `COOKIE_SECURE`    | `auto`  | Secure flag on the session cookie: `auto`, `1` or `0`. Auto is Secure unless the request came over plain HTTP and `HSTS` is off, so `http://192.168.x.x` sign-in works on a LAN. With `HSTS=1` it is always Secure |
 | `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                       |
 | `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
-| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits                     |
+| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits. Prefer a single-value one the proxy overwrites (`CF-Connecting-IP`); for `X-Forwarded-For` only the rightmost entry is used |
 
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
 applies pending ones itself on startup, each in its own transaction.
@@ -297,7 +297,17 @@ and no Node toolchain.
   sign-in looks the same and costs the same whether the email exists or not. Sign-in, the app's
   token endpoint and the change-password form are rate-limited. The session cookie is HttpOnly,
   Secure and SameSite=Lax, and every state-changing request passes the stdlib's cross-origin check,
-  which is the CSRF defence for the forms and the API alike.
+  which is the CSRF defence for the forms and the API alike. Hardening on top: form bodies are
+  capped (4 KB, 8 KB for the password form); a malformed or over-254-byte email is refused before
+  the limiter, which is keyed on the sha256 of the normalised email, with IPv6 clients sharing a
+  per-/64 IP bucket; at most three argon2 computations run at once process-wide (a fourth waits 2 s,
+  then gets 503 with Retry-After, and the container has a 512 MB memory limit); failed sign-ins and
+  limit hits are logged with an email hash prefix and the client IP; signing in over a live session
+  revokes it; the post-sign-in `next` must be a plain same-site path.
+- Sync: `POST /api/sync` takes an optional `account` and answers 409 on a mismatch (a shared browser
+  cannot push one person's history into another's account), caps a push at 1000 records and 1000
+  deletions, and pages pulls by bytes as well as count. The web client batches by size and halves on
+  413; the signed-out page clears the browser's sync state.
 - The page shells never contain who is signed in: the service worker caches them, and a cached page
   must not show the last person's email. Only `/account`, `/admin` and `/api` look up the session,
   and they are `no-store`. Everything under `/admin` is also `noindex`, and answers a signed-in
