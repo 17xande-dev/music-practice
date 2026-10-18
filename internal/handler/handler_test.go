@@ -57,7 +57,7 @@ func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder
 // pagePaths are every HTML page the server renders. The inline-content test
 // walks these, so a page added to Routes must be added here too — and the
 // minimum-count check stops the list silently emptying.
-var pagePaths = []string{"/", "/songs", "/progress", "/about", "/account"}
+var pagePaths = []string{"/", "/songs", "/progress", "/about", "/account", "/account?notice=signed-out"}
 
 func TestPagesRender(t *testing.T) {
 	h := newTestHandler(t)

@@ -21,7 +21,12 @@ services:
       # Cloudflare sets this header. A client reaching the origin directly
       # could forge it, which only lets them pick their own per-IP bucket:
       # the per-email limit still holds.
+      # A single-value header Cloudflare overwrites, so it is safe to trust
+      # whole. (For X-Forwarded-For only the rightmost entry is used.)
       - CLIENT_IP_HEADER=CF-Connecting-IP
+    # argon2id holds 64 MiB per sign-in, at most three at a time (see
+    # internal/auth), so this is ample and stops a runaway from taking the host.
+    mem_limit: 512m
     volumes:
       - data:/data
     healthcheck:

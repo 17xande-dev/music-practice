@@ -10,6 +10,7 @@ package handler
 import (
 	"bytes"
 	"embed"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -20,6 +21,7 @@ import (
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/account"
+	"github.com/17xande-dev/music-practice/internal/auth"
 	"github.com/17xande-dev/music-practice/internal/history"
 	"github.com/17xande-dev/music-practice/internal/middleware"
 )
@@ -104,7 +106,7 @@ var pageFiles = []string{"practice.html", "songs.html", "progress.html", "about.
 // built without `make bundle` refuses to start instead of serving dead pages.
 var Bundles = []string{
 	"dist/practice.js", "dist/songs.js", "dist/progress.js", "dist/pitch_worklet.js", "dist/sw.js",
-	"dist/theme.js",
+	"dist/theme.js", "dist/signout.js",
 }
 
 // New builds the handler, parsing every template up front so a template
@@ -118,7 +120,7 @@ func New(o Options) (*Handler, error) {
 		cookieSecure: o.CookieSecure, hsts: o.HSTS,
 		limits: limits{
 			loginEmail: middleware.NewLimiter(5, time.Minute),
-			loginIP:    middleware.NewLimiter(30, 10*time.Second),
+			loginIP:    middleware.NewLimiter(10, 10*time.Second),
 			password:   middleware.NewLimiter(5, time.Minute),
 		},
 	}
@@ -256,6 +258,41 @@ func (h *Handler) render(w http.ResponseWriter, status int, file, title string, 
 }
 
 func (h *Handler) serverError(w http.ResponseWriter, err error) {
+	if errors.Is(err, auth.ErrBusy) {
+		busy(w)
+		return
+	}
 	h.log.Error("render", "err", err)
 	http.Error(w, "internal server error", http.StatusInternalServerError)
+}
+
+// busy answers a request that could not get an argon2 slot: 503 with a
+// Retry-After, which is a fault of load, not of the request.
+func busy(w http.ResponseWriter) {
+	w.Header().Set("Retry-After", "5")
+	http.Error(w, "the server is busy; try again in a few seconds", http.StatusServiceUnavailable)
+}
+
+// Form bodies are capped before they are read: sign-in and the admin forms
+// carry a couple of short fields, the password form three of at most 256
+// characters (up to three bytes each once percent-escaped).
+const (
+	maxFormBody     = 4 << 10
+	maxPasswordForm = 8 << 10
+)
+
+// parseForm reads a POSTed form under a size cap. It answers 413 itself and
+// reports false when the body is over the cap or unreadable.
+func parseForm(w http.ResponseWriter, r *http.Request, limit int64) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
+	if err := r.ParseForm(); err != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			http.Error(w, "form too large", http.StatusRequestEntityTooLarge)
+		} else {
+			http.Error(w, "bad form", http.StatusBadRequest)
+		}
+		return false
+	}
+	return true
 }

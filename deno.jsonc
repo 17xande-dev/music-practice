@@ -5,7 +5,7 @@
   // (not HTML, as in teleprompter) and without --code-splitting, so their
   // output names stay fixed: dist/practice.js, dist/songs.js (with the score
   // renderer, so the scales page doesn't load it), dist/progress.js, and
-  // dist/pitch_worklet.js (the guitar pitch tracker, loaded by URL into an
+  // dist/signout.js (the signed-out page's sync reset), dist/pitch_worklet.js (the guitar pitch tracker, loaded by URL into an
   // AudioWorklet, so it must be a file of its own). Go's
   // {{asset}} adds the content hash to the URL, so no hashed filenames are
   // needed and old bundles never accumulate in the embed.
@@ -26,8 +26,8 @@
   "tasks": {
     // Cleans first, so a renamed entry never leaves its old output to be
     // embedded. The glob skips dotfiles, so dist/.gitkeep survives.
-    "bundle": "deno task clean && deno bundle frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts frontend/sw.ts frontend/theme.ts --platform browser --minify --sourcemap=linked --outdir internal/handler/static/dist",
-    "bundle-watch": "deno bundle --watch frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts frontend/sw.ts frontend/theme.ts --platform browser --sourcemap=linked --outdir internal/handler/static/dist",
+    "bundle": "deno task clean && deno bundle frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts frontend/sw.ts frontend/theme.ts frontend/signout.ts --platform browser --minify --sourcemap=linked --outdir internal/handler/static/dist",
+    "bundle-watch": "deno bundle --watch frontend/practice.ts frontend/songs.ts frontend/progress.ts frontend/pitch_worklet.ts frontend/sw.ts frontend/theme.ts frontend/signout.ts --platform browser --sourcemap=linked --outdir internal/handler/static/dist",
     "clean": "rm -rf internal/handler/static/dist/*",
     "check": "deno check frontend",
     // --no-check: types are covered by `deno task check`.
