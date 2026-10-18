@@ -29,11 +29,18 @@ type testServer struct {
 	db       *sql.DB
 }
 
-func newTestServer(t *testing.T) *testServer {
+func newTestServer(t *testing.T) *testServer { return newTestServerWith(t, nil) }
+
+// newTestServerWith lets a test set Options (cookie mode, HSTS) before New.
+func newTestServerWith(t *testing.T, tweak func(*Options)) *testServer {
 	t.Helper()
 	d := dbtest.New(t)
 	accounts := account.NewStore(d)
-	h, err := New(Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d)})
+	o := Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d)}
+	if tweak != nil {
+		tweak(&o)
+	}
+	h, err := New(o)
 	if err != nil {
 		t.Fatalf("New: %v (did `deno task bundle` run?)", err)
 	}

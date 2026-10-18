@@ -9,6 +9,10 @@ services:
       # Traefik's own cert makes the connection genuinely HTTPS end to end —
       # HSTS is safe to send. See internal/config for what else is read.
       - HSTS=1
+      # Session cookie Secure flag: auto (the default) is always Secure while
+      # HSTS=1, and drops it only for plain-HTTP requests with HSTS off (a
+      # LAN dev box). Set 1 to force it, 0 to never set it.
+      - COOKIE_SECURE=auto
       # Accounts and synced history. On the named volume below, so a redeploy
       # keeps it; the image's /data is owned by the nonroot user it runs as.
       - DB_PATH=/data/music-practice.db

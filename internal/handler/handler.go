@@ -52,6 +52,13 @@ type Options struct {
 	// History is the synced practice runs.
 	History *history.Store
 
+	// CookieSecure is the Secure-flag mode for the session cookie: "auto"
+	// (or empty), "1" or "0". Auto is Secure unless the request arrived over
+	// plain HTTP and HSTS is off. HSTS is the deployment's statement that it
+	// is https-only, so with it on the cookie is always Secure.
+	CookieSecure string
+	HSTS         bool
+
 	// ClientIP returns the visitor's address for rate limiting; nil means
 	// the connection's own address.
 	ClientIP func(*http.Request) string
@@ -68,6 +75,9 @@ type Handler struct {
 	history  *history.Store
 	clientIP func(*http.Request) string
 	limits   limits
+
+	cookieSecure string // "auto", "1" or "0"; see Options.CookieSecure
+	hsts         bool
 }
 
 // limits are the rate limits on everything that verifies a password. Each
@@ -105,6 +115,7 @@ func New(o Options) (*Handler, error) {
 	}
 	h := &Handler{
 		log: o.Log, dev: o.Dev, accounts: o.Accounts, history: o.History, clientIP: o.ClientIP,
+		cookieSecure: o.CookieSecure, hsts: o.HSTS,
 		limits: limits{
 			loginEmail: middleware.NewLimiter(5, time.Minute),
 			loginIP:    middleware.NewLimiter(30, 10*time.Second),

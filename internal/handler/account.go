@@ -72,15 +72,33 @@ func (h *Handler) currentUser(r *http.Request) (account.User, account.Session, b
 	return u, s, true
 }
 
-func (h *Handler) setSessionCookie(w http.ResponseWriter, token string) {
+// secureCookie reports whether the session cookie gets the Secure flag. A
+// browser drops a Secure cookie set over plain HTTP (except from localhost),
+// so web sign-in on a LAN address needs it off, but only where that is
+// honestly plain HTTP: auto drops Secure only when the request has no TLS,
+// no proxy says it was https, and HSTS (the operator's "this site is https")
+// is off. X-Forwarded-Proto can only ever raise this to Secure, never lower
+// it, so a forged header gains an attacker nothing.
+func (h *Handler) secureCookie(r *http.Request) bool {
+	switch h.cookieSecure {
+	case "1":
+		return true
+	case "0":
+		return false
+	}
+	if h.hsts || r.TLS != nil {
+		return true
+	}
+	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
+}
+
+func (h *Handler) setSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookie,
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		// Browsers accept Secure cookies from http://localhost, so this holds
-		// in development too.
-		Secure: true,
+		Secure:   h.secureCookie(r),
 		// Lax, hard-coded: the cookie signs in an account (and an admin), so it
 		// must never ride along on another site's cross-site POST.
 		SameSite: http.SameSiteLaxMode,
@@ -90,9 +108,9 @@ func (h *Handler) setSessionCookie(w http.ResponseWriter, token string) {
 	})
 }
 
-func clearSessionCookie(w http.ResponseWriter) {
+func (h *Handler) clearSessionCookie(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", HttpOnly: true,
-		Secure: true, SameSite: http.SameSiteLaxMode, MaxAge: -1})
+		Secure: h.secureCookie(r), SameSite: http.SameSiteLaxMode, MaxAge: -1})
 }
 
 // safeNext keeps a post-sign-in redirect on this site: a path, never
@@ -148,7 +166,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.accounts.RecordLogin(r.Context(), u.ID)
-	h.setSessionCookie(w, token)
+	h.setSessionCookie(w, r, token)
 	if next == "" {
 		next = "/account"
 	}
@@ -195,7 +213,7 @@ func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	clearSessionCookie(w)
+	h.clearSessionCookie(w, r)
 	http.Redirect(w, r, "/account?notice=signed-out", http.StatusSeeOther)
 }
 
@@ -267,7 +285,7 @@ func (h *Handler) revokeSession(w http.ResponseWriter, r *http.Request, u accoun
 		return
 	}
 	if id == s.ID {
-		clearSessionCookie(w)
+		h.clearSessionCookie(w, r)
 		http.Redirect(w, r, "/account?notice=signed-out", http.StatusSeeOther)
 		return
 	}

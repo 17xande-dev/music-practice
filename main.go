@@ -94,6 +94,9 @@ func run(log *slog.Logger, dev bool) error {
 		Accounts: accounts,
 		History:  history.NewStore(database),
 		ClientIP: middleware.ClientIP(cfg.ClientIPHeader),
+
+		CookieSecure: cfg.CookieSecure,
+		HSTS:         cfg.HSTS,
 	})
 	if err != nil {
 		return err

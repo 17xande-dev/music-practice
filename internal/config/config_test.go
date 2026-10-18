@@ -47,3 +47,15 @@ func TestLoadReportsAllErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestCookieSecure(t *testing.T) {
+	for in, want := range map[string]string{"": "auto", "auto": "auto", "AUTO": "auto", "1": "1", "true": "1", "0": "0", "false": "0"} {
+		c, err := Load(env(map[string]string{"COOKIE_SECURE": in}))
+		if err != nil || c.CookieSecure != want {
+			t.Errorf("%q: %q %v", in, c.CookieSecure, err)
+		}
+	}
+	if _, err := Load(env(map[string]string{"COOKIE_SECURE": "maybe"})); err == nil {
+		t.Error("bad value accepted")
+	}
+}

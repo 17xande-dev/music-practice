@@ -19,6 +19,13 @@ type Config struct {
 	// project on that port.
 	HSTS bool
 
+	// CookieSecure decides the Secure flag on the session cookie: "auto"
+	// (the default), "1" (always) or "0" (never). Auto sets Secure unless the
+	// request reached the server over plain HTTP directly and HSTS is off,
+	// which is how a LAN address like http://192.168.1.5:8080 can sign in.
+	// With HSTS on (any real deployment) auto is always Secure.
+	CookieSecure string
+
 	// ShutdownTimeout bounds how long in-flight requests get on SIGTERM.
 	ShutdownTimeout time.Duration
 
@@ -41,6 +48,7 @@ type Config struct {
 func Load(getenv func(string) string) (Config, error) {
 	c := Config{
 		Addr:            ":8080",
+		CookieSecure:    "auto",
 		ShutdownTimeout: 10 * time.Second,
 	}
 	var errs []string
@@ -55,6 +63,16 @@ func Load(getenv func(string) string) (Config, error) {
 		c.HSTS = true
 	default:
 		errs = append(errs, fmt.Sprintf("HSTS: want 1/0/true/false, got %q", v))
+	}
+
+	switch v := strings.ToLower(getenv("COOKIE_SECURE")); v {
+	case "", "auto":
+	case "1", "true":
+		c.CookieSecure = "1"
+	case "0", "false":
+		c.CookieSecure = "0"
+	default:
+		errs = append(errs, fmt.Sprintf("COOKIE_SECURE: want auto/1/0/true/false, got %q", v))
 	}
 
 	if v := getenv("SHUTDOWN_TIMEOUT"); v != "" {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	tls_ "crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -85,7 +86,8 @@ func TestSignInAndOut(t *testing.T) {
 // The cookie signs in an account, so it must be unreadable to scripts and
 // never sent on another site's cross-site POST.
 func TestSessionCookieAttributes(t *testing.T) {
-	s := newTestServer(t)
+	// As in production: HSTS on, so auto is Secure.
+	s := newTestServerWith(t, func(o *Options) { o.HSTS = true })
 	s.addUser(t, "a@x.com", false)
 	rec := s.do(t, "POST", "/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}}, "")
 	var c *http.Cookie
@@ -298,3 +300,57 @@ func TestBrowserLabel(t *testing.T) {
 }
 
 func itoa(n int64) string { return strconv.FormatInt(n, 10) }
+
+// Sign-in over plain HTTP on a LAN address needs a cookie the browser will
+// keep, so auto drops Secure there; but never when HSTS says the site is
+// https, whatever a client sends.
+func TestSessionCookieSecureModes(t *testing.T) {
+	login := func(s *testServer, hdr map[string]string, tls bool) *http.Cookie {
+		t.Helper()
+		r := httptest.NewRequest("POST", "/account/login", strings.NewReader(url.Values{"email": {"a@x.com"}, "password": {testPassword}}.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		for k, v := range hdr {
+			r.Header.Set(k, v)
+		}
+		if tls {
+			r.TLS = &tls_.ConnectionState{}
+		}
+		rec := httptest.NewRecorder()
+		s.routes.ServeHTTP(rec, r)
+		for _, c := range rec.Result().Cookies() {
+			if c.Name == sessionCookie {
+				return c
+			}
+		}
+		t.Fatalf("no session cookie: status %d", rec.Code)
+		return nil
+	}
+	mk := func(mode string, hsts bool) *testServer {
+		s := newTestServerWith(t, func(o *Options) { o.CookieSecure, o.HSTS = mode, hsts })
+		s.addUser(t, "a@x.com", false)
+		return s
+	}
+	for _, c := range []struct {
+		name string
+		mode string
+		hsts bool
+		hdr  map[string]string
+		tls  bool
+		want bool
+	}{
+		{"auto, plain http, no HSTS", "auto", false, nil, false, false},
+		{"default mode is auto", "", false, nil, false, false},
+		{"auto, direct TLS", "auto", false, nil, true, true},
+		{"auto, proxy says https", "auto", false, map[string]string{"X-Forwarded-Proto": "https"}, false, true},
+		{"auto, HSTS on, plain http", "auto", true, nil, false, true},
+		{"auto, HSTS on, forged http header", "auto", true, map[string]string{"X-Forwarded-Proto": "http"}, false, true},
+		{"always", "1", false, nil, false, true},
+		{"never", "0", false, nil, false, false},
+	} {
+		s := mk(c.mode, c.hsts)
+		got := login(s, c.hdr, c.tls)
+		if got.Secure != c.want || !got.HttpOnly || got.SameSite != http.SameSiteLaxMode {
+			t.Errorf("%s: Secure=%v want %v (cookie %+v)", c.name, got.Secure, c.want, got)
+		}
+	}
+}

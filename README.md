@@ -152,6 +152,7 @@ only:
 | ------------------ | ------- | ------------------------------------------------------------------------------------ |
 | `ADDR`             | `:8080` | Listen address                                                                       |
 | `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost  |
+| `COOKIE_SECURE`    | `auto`  | Secure flag on the session cookie: `auto`, `1` or `0`. Auto is Secure unless the request came over plain HTTP and `HSTS` is off, so `http://192.168.x.x` sign-in works on a LAN. With `HSTS=1` it is always Secure |
 | `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                       |
 | `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
 | `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits                     |
