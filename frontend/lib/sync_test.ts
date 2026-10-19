@@ -426,6 +426,69 @@ Deno.test("a network error or 5xx keeps everything pending", async () => {
   assertEquals(st.pendingDeletes, [{ kind: "song", id: "gone" }]);
 });
 
+Deno.test("a sync after a sign-out and sign-in mid-request starts its own round", async () => {
+  const store = syncedStore();
+  store.add(scale());
+  let release!: () => void;
+  const gate = new Promise<void>((r) => release = r);
+  const srv = fakeServer(
+    async () => {
+      await gate; // the first request stays out while the person signs out and in as someone else
+      return json(answer({ cursor: 99 }));
+    },
+    () => json(answer({ cursor: 2 })),
+  );
+  const first = sync(store, srv.f);
+  store.clearSyncState();
+  store.saveSyncState({
+    email: "b@example.com",
+    cursor: 0,
+    pendingAdds: [],
+    pendingDeletes: [],
+    lastSyncAt: null,
+  });
+  store.add(scale());
+  const second = sync(store, srv.f); // must not join the abandoned round
+  assertEquals(await second, { status: "ok", changed: false });
+  assertEquals(srv.calls.length, 2);
+  assertEquals(store.syncState()!.cursor, 2);
+  release();
+  assertEquals(await first, { status: "off" });
+  assertEquals(store.syncState()!.cursor, 2); // the abandoned reply changed nothing
+  // And the slot is free for the next sync.
+  const third = fakeServer(() => json(answer()));
+  store.add(scale());
+  assertEquals(await sync(store, third.f), { status: "ok", changed: false });
+  assertEquals(third.calls.length, 1);
+});
+
+Deno.test("queueAdds cancels a pending delete of the same run that was never sent", () => {
+  const store = syncedStore({
+    pendingDeletes: [{ kind: "scale", id: "a" }, { kind: "scale", id: "z" }],
+  });
+  store.queueAdds([{ kind: "scale", id: "a" }]);
+  assertEquals(store.syncState()!.pendingAdds, [{ kind: "scale", id: "a" }]);
+  assertEquals(store.syncState()!.pendingDeletes, [{ kind: "scale", id: "z" }]);
+});
+
+Deno.test("importing after a clear, before the next sync, does not send the delete", async () => {
+  const store = syncedStore();
+  const a = store.add(scale()).session;
+  store.updateSync((s) => {
+    s.pendingAdds = [];
+  }); // already synced
+  const file = store.exportJSON();
+  store.clear();
+  assertEquals(store.syncState()!.pendingDeletes, [{ kind: "scale", id: a.id }]);
+  store.importJSON(file);
+  assertEquals(store.syncState()!.pendingDeletes, []);
+  const srv = fakeServer(() => json(answer()));
+  assertEquals(await sync(store, srv.f), { status: "ok", changed: false });
+  assertEquals(srv.calls[0].deleted, []);
+  assertEquals(srv.calls[0].push.scale.map((r) => r.id), [a.id]);
+  assertEquals(ids(store.sessions()), [a.id]);
+});
+
 Deno.test("two syncs at once share one request", async () => {
   const store = syncedStore();
   store.add(scale());

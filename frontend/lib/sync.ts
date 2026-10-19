@@ -39,15 +39,26 @@ export type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
 
 const defaultFetch: FetchFn = (input, init) => globalThis.fetch(input, init);
 
-let running: Promise<SyncResult> | null = null;
+let running: { promise: Promise<SyncResult>; email: string | null } | null = null;
 
 /**
  * Sync now. Two syncs never overlap: a call while one is running gets that
  * one's result (it also picks up anything queued meanwhile, see `round`).
+ *
+ * The exception is a round that started for another account than the one
+ * syncing now (a sign-out and sign-in, here or in another tab, happened since):
+ * its result will be "off" and it writes nothing, so a call made after the
+ * sign-in must not join it. It starts a round of its own, and the old one
+ * cannot free the new one's slot.
  */
 export function sync(store: ProgressStore, f: FetchFn = defaultFetch): Promise<SyncResult> {
-  running ??= rounds(store, f).finally(() => running = null);
-  return running;
+  const email = store.syncState()?.email ?? null;
+  if (running && running.email === email) return running.promise;
+  const promise: Promise<SyncResult> = rounds(store, f).finally(() => {
+    if (running?.promise === promise) running = null;
+  });
+  running = { promise, email };
+  return promise;
 }
 
 /** How much one request may carry; a 413 halves it for the rest of the sync. */

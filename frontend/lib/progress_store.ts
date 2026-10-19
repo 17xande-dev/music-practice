@@ -751,10 +751,17 @@ export class ProgressStore {
     this.saveSyncState(s);
   }
 
-  /** Queue new runs for the next sync (no-op while sync is off). */
+  /**
+   * Queue new runs for the next sync (no-op while sync is off). A not-yet-sent
+   * deletion of the same run is dropped: the run is back (imported after Clear
+   * history, before the next sync), so the delete, which never reached the
+   * server, must not take it away again.
+   */
   queueAdds(entries: SyncEntry[]): void {
     if (!entries.length) return;
     this.updateSync((s) => {
+      const back = new Set(entries.map(entryKey));
+      s.pendingDeletes = s.pendingDeletes.filter((e) => !back.has(entryKey(e)));
       const have = new Set(s.pendingAdds.map(entryKey));
       for (const e of entries) if (!have.has(entryKey(e))) s.pendingAdds.push(e);
     });
