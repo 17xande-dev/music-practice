@@ -36,15 +36,9 @@ type Session struct {
 	ExpiresAt time.Time
 }
 
-// CreateSession signs a user in and returns the token to hand to the client.
-// Only the token's hash is stored. It trusts the caller to have checked who
-// the user is; a sign-in from a password uses SignIn.
-func (s *Store) CreateSession(ctx context.Context, userID int64, kind, label string) (string, Session, error) {
-	return s.createSession(ctx, userID, "", false, kind, label)
-}
-
-// SignIn is CreateSession for a user whose password has just been verified:
-// the session is inserted only while the stored hash is still the one that
+// SignIn signs a user in and returns the token to hand to the client; only
+// the token's hash is stored. The caller has just verified the password: the
+// session is inserted only while the stored hash is still the one that
 // was verified and the account is enabled, in the same statement, so a
 // sign-in that overlaps a password reset (which deletes the user's sessions)
 // cannot end up holding one. It returns ErrStaleCredentials otherwise.
