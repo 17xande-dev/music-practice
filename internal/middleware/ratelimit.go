@@ -129,7 +129,7 @@ func ClientIP(header string) func(*http.Request) string {
 						last = last[i+1:]
 					}
 				}
-				if ip := net.ParseIP(strings.TrimSpace(last)); ip != nil {
+				if ip := net.ParseIP(bareIP(strings.TrimSpace(last))); ip != nil {
 					return ip.String()
 				}
 			}
@@ -140,6 +140,21 @@ func ClientIP(header string) func(*http.Request) string {
 		}
 		return host
 	}
+}
+
+// bareIP reduces a header value to the address alone. Some proxies write
+// "ip:port" or "[v6]:port"; left alone that is not an address, so it would be
+// dropped for RemoteAddr and everyone behind the proxy would share one bucket.
+// A value that is neither an address nor host:port is returned unchanged.
+func bareIP(s string) string {
+	unbracket := func(v string) string { return strings.TrimSuffix(strings.TrimPrefix(v, "["), "]") }
+	if net.ParseIP(unbracket(s)) != nil {
+		return unbracket(s)
+	}
+	if host, _, err := net.SplitHostPort(s); err == nil {
+		return host
+	}
+	return s
 }
 
 // IPKey is the key a per-IP limiter should use for ip: an IPv6 client owns a

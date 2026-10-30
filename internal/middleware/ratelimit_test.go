@@ -73,6 +73,25 @@ func TestClientIP(t *testing.T) {
 	}
 }
 
+// A proxy that writes ip:port or [v6]:port must still key on the address, not
+// fall back to the proxy's own RemoteAddr for every client.
+func TestClientIPHeaderWithPort(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.RemoteAddr = "10.0.0.1:5555"
+	for in, want := range map[string]string{
+		"203.0.113.9:4711":           "203.0.113.9",
+		"[2001:db8::1]:4711":         "2001:db8::1",
+		"[2001:db8::1]":              "2001:db8::1",
+		"2001:db8::1":                "2001:db8::1",
+		"198.51.100.2, 192.0.2.7:80": "192.0.2.7",
+	} {
+		r.Header.Set("X-Forwarded-For", in)
+		if got := ClientIP("X-Forwarded-For")(r); got != want {
+			t.Errorf("%q: got %s, want %s", in, got, want)
+		}
+	}
+}
+
 // One IPv6 subscriber can pick addresses freely within their /64, so each
 // address must not be its own bucket.
 func TestIPKey(t *testing.T) {
