@@ -20,9 +20,6 @@ jobs:
       # lint, Deno tests, then bundle before the Go tests (with -race, then
       # govulncheck) so the embedded assets exist.
       - run: make check
-      # Last on purpose: a newly published CVE must not hide the test results.
-      # govulncheck fails only for vulnerabilities reachable from this module.
-      - run: make vulncheck-install vulncheck
 
   docker:
     runs-on: ubuntu-latest
