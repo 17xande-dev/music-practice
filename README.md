@@ -148,14 +148,14 @@ make docker  # multi-stage image: Deno bundle → Go build → distroless
 The tools are Go 1.27 and Deno 2.9, pinned in `mise.toml`. Configuration comes from the environment
 only:
 
-| Variable           | Default | Meaning                                                                              |
-| ------------------ | ------- | ------------------------------------------------------------------------------------ |
-| `ADDR`             | `:8080` | Listen address                                                                       |
-| `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost  |
+| Variable           | Default | Meaning                                                                                                                                                                                                            |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADDR`             | `:8080` | Listen address                                                                                                                                                                                                     |
+| `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost                                                                                                                                |
 | `COOKIE_SECURE`    | `auto`  | Secure flag on the session cookie: `auto`, `1` or `0`. Auto is Secure unless the request came over plain HTTP and `HSTS` is off, so `http://192.168.x.x` sign-in works on a LAN. With `HSTS=1` it is always Secure |
-| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                       |
-| `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
-| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits. Prefer a single-value one the proxy overwrites (`CF-Connecting-IP`); for `X-Forwarded-For` only the rightmost entry is used |
+| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                                                                                                                                                     |
+| `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db`                                                                                                                               |
+| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits. Prefer a single-value one the proxy overwrites (`CF-Connecting-IP`); for `X-Forwarded-For` only the rightmost entry is used                      |
 
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
 applies pending ones itself on startup, each in its own transaction.
@@ -248,9 +248,9 @@ comes from `-add-admin` (see Develop).
 Both apps stay local-first: the device's own history is the source of truth and works offline. The
 server stores each run as the app's JSON and swaps runs between a user's devices through
 `POST /api/sync`: a union by id, deletions as tombstones, and a cursor so each sync asks only for
-what is new. [`docs/sync-api.md`](docs/sync-api.md) is the contract; the iPad side is not built yet
-([`docs/ipad-sync-handoff.md`](docs/ipad-sync-handoff.md)). Settings and uploaded scores are not
-synced.
+what is new. [`docs/sync-api.md`](docs/sync-api.md) is the contract; the iPad app syncs too
+([`docs/ipad-sync-handoff.md`](docs/ipad-sync-handoff.md) has the design notes). Settings and
+uploaded scores are not synced.
 
 Browsers authenticate with a session cookie (90 days, sliding), the app with a bearer token from
 `POST /api/token` that lasts until it is revoked. Both are opaque random tokens stored only as their
@@ -410,8 +410,8 @@ without re-deriving the design.
 
 **Stage 2: accounts**
 
-- ~~Accounts and server-side history (SQLite).~~ Done for the web, see "Accounts and sync". Next:
-  **sync in the iPad app**, briefed in `docs/ipad-sync-handoff.md`.
+- ~~Accounts and server-side history (SQLite).~~ Done for the web and the iPad app, see "Accounts
+  and sync".
 - **Sharing songs by link,** which needs scores stored on the server, and history across devices.
 - **Teacher view:** assign exercises and passages, see students' results and heat maps.
 

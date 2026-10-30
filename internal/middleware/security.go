@@ -38,7 +38,7 @@ type Policy struct {
 // front of this server — the page asks for a script this code never wrote —
 // so refusing it put a violation in the console on every load while the
 // analytics silently collected nothing. Two hosts because they are two
-// different things, as in ~/dev/teleprompter: the beacon is fetched from
+// different things, as in 17xande-dev/teleprompter: the beacon is fetched from
 // static.cloudflareinsights.com (script-src) and reports to
 // cloudflareinsights.com/cdn-cgi/rum (connect-src). Turning off the injection
 // in the Cloudflare dashboard is the way back out; nothing here depends on it

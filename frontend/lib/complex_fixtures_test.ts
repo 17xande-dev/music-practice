@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertNotEquals } from "@std/assert";
 
-// The larger real scores (frontend/lib/testdata/complex, shared with ScoreKit)
+// The larger real scores (frontend/lib/testdata/complex, shared with the iPad app)
 // run through OSMD by `deno task score-fixtures`; these tests read what it
 // wrote, so they fail if a fixture was not regenerated after an OSMD bump.
 
