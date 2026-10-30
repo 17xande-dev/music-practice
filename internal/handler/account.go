@@ -200,8 +200,12 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	token, _, err := h.accounts.CreateSession(r.Context(), u.ID, account.KindWeb, browserLabel(r.UserAgent()))
+	token, _, err := h.accounts.SignIn(r.Context(), u, account.KindWeb, browserLabel(r.UserAgent()))
 	if err != nil {
+		if errors.Is(err, account.ErrStaleCredentials) {
+			fail(http.StatusUnauthorized, loginFailed)
+			return
+		}
 		h.serverError(w, err)
 		return
 	}
@@ -283,6 +287,9 @@ func (h *Handler) checkPassword(r *http.Request, email, password string) (accoun
 	}
 	if u.Disabled {
 		return bad("disabled")
+	}
+	if h.afterVerify != nil {
+		h.afterVerify()
 	}
 	return u, nil
 }

@@ -37,8 +37,22 @@ type Session struct {
 }
 
 // CreateSession signs a user in and returns the token to hand to the client.
-// Only the token's hash is stored.
+// Only the token's hash is stored. It trusts the caller to have checked who
+// the user is; a sign-in from a password uses SignIn.
 func (s *Store) CreateSession(ctx context.Context, userID int64, kind, label string) (string, Session, error) {
+	return s.createSession(ctx, userID, "", false, kind, label)
+}
+
+// SignIn is CreateSession for a user whose password has just been verified:
+// the session is inserted only while the stored hash is still the one that
+// was verified and the account is enabled, in the same statement, so a
+// sign-in that overlaps a password reset (which deletes the user's sessions)
+// cannot end up holding one. It returns ErrStaleCredentials otherwise.
+func (s *Store) SignIn(ctx context.Context, u User, kind, label string) (string, Session, error) {
+	return s.createSession(ctx, u.ID, u.PasswordHash, true, kind, label)
+}
+
+func (s *Store) createSession(ctx context.Context, userID int64, verifiedHash string, guard bool, kind, label string) (string, Session, error) {
 	token := auth.NewToken()
 	now := s.now()
 	var expires time.Time
@@ -48,12 +62,25 @@ func (s *Store) CreateSession(ctx context.Context, userID int64, kind, label str
 	if len(label) > 100 {
 		label = label[:100]
 	}
-	res, err := s.db.ExecContext(ctx, `INSERT INTO auth_sessions
-		(token_hash, user_id, kind, label, created_at, last_used_at, expires_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		auth.HashToken(token), userID, kind, label, timestamp(now), timestamp(now), timestamp(expires))
+	var res sql.Result
+	var err error
+	if guard {
+		res, err = s.db.ExecContext(ctx, `INSERT INTO auth_sessions
+			(token_hash, user_id, kind, label, created_at, last_used_at, expires_at)
+			SELECT ?, id, ?, ?, ?, ?, ? FROM users
+			WHERE id = ? AND password_hash = ? AND disabled = 0`,
+			auth.HashToken(token), kind, label, timestamp(now), timestamp(now), timestamp(expires), userID, verifiedHash)
+	} else {
+		res, err = s.db.ExecContext(ctx, `INSERT INTO auth_sessions
+			(token_hash, user_id, kind, label, created_at, last_used_at, expires_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			auth.HashToken(token), userID, kind, label, timestamp(now), timestamp(now), timestamp(expires))
+	}
 	if err != nil {
 		return "", Session{}, err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return "", Session{}, ErrStaleCredentials
 	}
 	id, _ := res.LastInsertId()
 	return token, Session{ID: id, UserID: userID, Kind: kind, Label: label, CreatedAt: now, LastUsedAt: now, ExpiresAt: expires}, nil

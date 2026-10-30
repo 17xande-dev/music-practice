@@ -80,6 +80,10 @@ type Handler struct {
 
 	cookieSecure string // "auto", "1" or "0"; see Options.CookieSecure
 	hsts         bool
+
+	// afterVerify, when set, runs between a sign-in's password check and its
+	// session insert; tests use it to land a password reset in that window.
+	afterVerify func()
 }
 
 // limits are the rate limits on everything that verifies a password. Each

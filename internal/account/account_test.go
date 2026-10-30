@@ -203,3 +203,26 @@ func TestDeleteCascades(t *testing.T) {
 		t.Error("deleted user's token still works")
 	}
 }
+
+// A sign-in verified against a hash that has since been replaced (a reset
+// overlapped it) or an account since disabled gets no session.
+func TestSignInRefusesStaleCredentials(t *testing.T) {
+	s := newStore(t)
+	u := mustCreate(t, s, "a@x.com", false)
+	if _, _, err := s.SignIn(ctx, u, KindWeb, ""); err != nil {
+		t.Fatalf("fresh sign-in: %v", err)
+	}
+	if err := s.SetPassword(ctx, u.ID, "$new-hash", 0); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.SignIn(ctx, u, KindWeb, ""); !errors.Is(err, ErrStaleCredentials) {
+		t.Errorf("sign-in with the replaced hash: %v, want ErrStaleCredentials", err)
+	}
+	cur, _ := s.ByEmail(ctx, "a@x.com")
+	if err := s.SetDisabled(ctx, cur.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := s.SignIn(ctx, cur, KindWeb, ""); !errors.Is(err, ErrStaleCredentials) {
+		t.Errorf("sign-in on a disabled account: %v, want ErrStaleCredentials", err)
+	}
+}

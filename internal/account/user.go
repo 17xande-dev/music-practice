@@ -16,6 +16,9 @@ var (
 	ErrExists    = errors.New("account: a user with that email already exists")
 	ErrLastAdmin = errors.New("account: that would leave no enabled admin")
 	ErrBadEmail  = errors.New("account: not a valid email address")
+	// ErrStaleCredentials means the password hash a sign-in was verified
+	// against is no longer the user's (a reset or a disable overlapped it).
+	ErrStaleCredentials = errors.New("account: the credentials changed during sign-in")
 )
 
 // User is one account. Admins manage the other accounts; everyone syncs
