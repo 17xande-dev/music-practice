@@ -366,7 +366,6 @@ cookie Secure.
 
 ```sh
 make deploy                        # check gate, then kamal deploy (build, push to ghcr.io, swap in)
-make deploy KAMAL=$HOME/.local/share/gem/ruby/3.4.0/bin/kamal   # if kamal is not on PATH
 kamal rollback <version>           # back to an earlier image; `kamal app version` / `kamal app containers` list them
 make logs-prod                     # kamal app logs -f
 ```
