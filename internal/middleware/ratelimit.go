@@ -10,9 +10,20 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// maxBuckets is the most buckets one limiter holds. The lazy sweep only runs
+// once per idle period, so a spray of distinct keys could otherwise fill the
+// map well inside it; the cap is what makes the size a bound.
+const maxBuckets = 10_000
+
+// capSweepEvery is the least time between sweeps triggered by hitting the cap.
+// A sweep scans every bucket under the lock, so at the cap an attacker's
+// request rate must not become the lock's busy time.
+const capSweepEvery = 5 * time.Second
+
 // Limiter is a token bucket per key (an email, an IP, a user id). Buckets
-// idle for longer than it takes to refill are dropped by a lazy sweep, so
-// the map cannot grow without bound under a spray of distinct keys.
+// idle for longer than it takes to refill are dropped by a lazy sweep, and
+// the map never holds more than maxBuckets: once full of live keys a new key
+// is refused (fail closed) until a sweep frees room.
 type Limiter struct {
 	mu        sync.Mutex
 	every     rate.Limit
@@ -20,6 +31,8 @@ type Limiter struct {
 	idle      time.Duration
 	buckets   map[string]*bucket
 	lastSweep time.Time
+	capSwept  time.Time
+	max       int
 	now       func() time.Time
 }
 
@@ -35,6 +48,7 @@ func NewLimiter(burst int, interval time.Duration) *Limiter {
 		burst:   burst,
 		idle:    time.Duration(burst) * interval,
 		buckets: map[string]*bucket{},
+		max:     maxBuckets,
 		now:     time.Now,
 	}
 }
@@ -45,20 +59,37 @@ func (l *Limiter) Allow(key string) bool {
 	defer l.mu.Unlock()
 	now := l.now()
 	if now.Sub(l.lastSweep) > l.idle {
-		for k, b := range l.buckets {
-			if now.Sub(b.seen) > l.idle {
-				delete(l.buckets, k)
-			}
-		}
-		l.lastSweep = now
+		l.sweep(now)
 	}
 	b, ok := l.buckets[key]
 	if !ok {
+		if len(l.buckets) >= l.max {
+			// Idle buckets cost nothing to forget; try that first, but at most
+			// once per capSweepEvery so a flood is refused without rescanning.
+			if l.capSwept.IsZero() || now.Sub(l.capSwept) >= capSweepEvery {
+				l.sweep(now)
+				l.capSwept = now
+			}
+			if len(l.buckets) >= l.max {
+				// Still full of live keys. Failing open would let a flood of
+				// fresh keys switch the limiter off.
+				return false
+			}
+		}
 		b = &bucket{lim: rate.NewLimiter(l.every, l.burst)}
 		l.buckets[key] = b
 	}
 	b.seen = now
 	return b.lim.AllowN(now, 1)
+}
+
+func (l *Limiter) sweep(now time.Time) {
+	for k, b := range l.buckets {
+		if now.Sub(b.seen) > l.idle {
+			delete(l.buckets, k)
+		}
+	}
+	l.lastSweep = now
 }
 
 // Len is how many buckets are held, for tests.

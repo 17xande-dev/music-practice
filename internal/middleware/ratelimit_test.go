@@ -91,3 +91,31 @@ func TestIPKey(t *testing.T) {
 		t.Error("unparsable address not passed through")
 	}
 }
+
+// The map never exceeds its cap; at the cap a new key fails closed, a known
+// key is unaffected, and room returns once buckets go idle.
+func TestLimiterCapFailsClosed(t *testing.T) {
+	l := NewLimiter(2, time.Second)
+	l.max = 3
+	now := time.Unix(0, 0)
+	l.now = func() time.Time { return now }
+	for _, k := range []string{"a", "b", "c"} {
+		if !l.Allow(k) {
+			t.Fatalf("%s refused below the cap", k)
+		}
+	}
+	if l.Allow("d") {
+		t.Fatal("new key allowed at the cap")
+	}
+	if l.Len() != 3 {
+		t.Fatalf("%d buckets, want 3", l.Len())
+	}
+	if !l.Allow("a") {
+		t.Fatal("existing key refused at the cap")
+	}
+	// Idle buckets are reclaimed by the cap-time sweep, spaced by capSweepEvery.
+	now = now.Add(capSweepEvery)
+	if !l.Allow("d") {
+		t.Fatal("no room after the buckets went idle")
+	}
+}

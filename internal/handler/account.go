@@ -233,17 +233,23 @@ func emailTag(email string) string {
 // allowLogin applies both sign-in limits to an already normalised email. The
 // tight one is keyed on the email's hash, which an attacker cannot shed the
 // way they can a cookie; the looser per-IP ceiling (an IPv6 client counts by
-// its /64) stops one address spraying many emails. A refusal is logged.
+// its /64) stops one address spraying many emails. The email limiter is only
+// consulted once the IP check passes: a refused client must not leave an
+// email bucket behind for every address it tries. A refusal is logged.
 func (h *Handler) allowLogin(r *http.Request, email string) bool {
 	ip := h.clientIP(r)
-	ipOK := h.limits.loginIP.Allow(middleware.IPKey(ip))
-	sum := sha256.Sum256([]byte(email))
-	emailOK := h.limits.loginEmail.Allow(string(sum[:]))
-	if !ipOK || !emailOK {
+	if !h.limits.loginIP.Allow(middleware.IPKey(ip)) {
 		h.log.Warn("sign-in rate limited", "email", emailTag(email), "ip", ip, "path", r.URL.Path,
-			"by_ip", !ipOK, "by_email", !emailOK)
+			"by_ip", true, "by_email", false)
+		return false
 	}
-	return ipOK && emailOK
+	sum := sha256.Sum256([]byte(email))
+	if !h.limits.loginEmail.Allow(string(sum[:])) {
+		h.log.Warn("sign-in rate limited", "email", emailTag(email), "ip", ip, "path", r.URL.Path,
+			"by_ip", false, "by_email", true)
+		return false
+	}
+	return true
 }
 
 // checkPassword is the one place a sign-in is decided, shared by the web

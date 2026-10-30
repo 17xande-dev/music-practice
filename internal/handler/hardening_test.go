@@ -280,3 +280,18 @@ func TestSignedOutPageClearsLocalSync(t *testing.T) {
 		t.Errorf("logout redirects to %q", loc)
 	}
 }
+
+// A client the IP limiter refuses must not leave an email bucket per request:
+// the email limiter is only consulted once the IP check has passed.
+func TestRefusedIPLeavesNoEmailBuckets(t *testing.T) {
+	s := newTestServer(t)
+	for i := range 40 {
+		email := fmt.Sprintf("u%d@x.com", i)
+		s.do(t, "POST", "/account/login", url.Values{"email": {email}, "password": {"wrong password!"}}, "")
+		s.api(t, "POST", "/api/token", fmt.Sprintf(`{"email":%q,"password":"x","label":"l"}`, email), "", "")
+	}
+	// The IP burst is 10 sign-ins, so at most that many emails got a bucket.
+	if n := s.h.limits.loginEmail.Len(); n > 10 {
+		t.Errorf("the email limiter holds %d buckets after an IP-limited spray, want at most 10", n)
+	}
+}
