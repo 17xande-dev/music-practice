@@ -1,6 +1,6 @@
 # Stage 1: bundle the frontend. The output lands in
 # internal/handler/static/dist, which the Go build embeds.
-FROM denoland/deno:alpine-2.9.7 AS frontend
+FROM denoland/deno:alpine-2.9.8 AS frontend
 WORKDIR /src
 COPY deno.jsonc deno.lock ./
 COPY frontend/ ./frontend/
@@ -18,7 +18,7 @@ RUN deno task bundle
 # which is what lets the runtime stay distroless/static (no libc). The tags
 # drop SQLite's extension loading (which static linking cannot support) and
 # use Go's own DNS and user lookups instead of libc's.
-FROM golang:1.27-alpine AS backend
+FROM golang:1.27.3-alpine AS backend
 RUN apk add --no-cache gcc musl-dev
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -36,7 +36,7 @@ RUN mkdir -p /out/data
 
 # Stage 3: the binary alone. Everything it serves is embedded, so the image
 # needs no assets and no shell.
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot
 COPY --from=backend /out/music-practice /music-practice
 COPY --from=backend --chown=65532:65532 /out/data /data
 USER nonroot:nonroot
