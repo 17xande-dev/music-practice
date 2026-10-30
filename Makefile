@@ -9,7 +9,7 @@ DB_PATH ?= data/dev.db
 # v1.1.x crashes on Go 1.27; v1.9.0 works.
 GOVULNCHECK_VERSION ?= v1.9.0
 
-.PHONY: build bundle run dev test test-go test-deno check fmt vet lint vulncheck-install vulncheck clean docker
+.PHONY: build bundle run dev test test-go test-deno check fmt vet lint vulncheck-install vulncheck clean docker deploy logs-prod
 
 ## build: bundle the frontend, then compile the server that embeds it
 build: bundle
@@ -73,5 +73,19 @@ clean:
 	deno task clean
 	rm -rf bin
 
+## docker: build the image locally
 docker:
 	docker build -t music-practice .
+
+# The gem's bin dir is not on PATH everywhere; override with `make deploy KAMAL=/path/to/kamal`.
+KAMAL ?= kamal
+
+## deploy: run the check gate, then `kamal deploy` (build, push to ghcr.io, swap in on home-docker)
+deploy: check
+	@# Kamal builds from HEAD, not the working tree, so refuse edits the checks just ran against.
+	@git diff --quiet HEAD -- || { echo "deploy: tracked files have uncommitted changes; commit first so the tag names what runs" >&2; exit 1; }
+	$(KAMAL) deploy
+
+## logs-prod: follow the production app's logs
+logs-prod:
+	$(KAMAL) app logs -f

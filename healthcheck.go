@@ -9,11 +9,9 @@ import (
 
 // The runtime image is distroless: no shell, no wget, no curl. A container
 // healthcheck therefore cannot shell out to probe the server, so the binary
-// probes itself (`music-practice -healthcheck`). This matters beyond Docker's
-// own status column: Traefik's Docker provider skips any container whose
-// healthcheck is not "healthy", so a healthcheck that can never run leaves the
-// site with no route at all — which is exactly how the first deployment
-// failed, behind a 503 from Coolify's catch-all and a 526 from Cloudflare.
+// probes itself (`music-practice -healthcheck`). Production does not use it:
+// kamal-proxy checks /healthz over HTTP. It stays for `docker exec` and for a
+// local compose stack that wants a Docker healthcheck.
 
 // healthcheckURL turns a listen address into the URL to probe. An address
 // with no host (":8080", the default) listens on every interface, so the

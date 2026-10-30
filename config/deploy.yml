@@ -1,0 +1,68 @@
+# Kamal deploy for the Docker host (home-docker). `make deploy` runs the check
+# gate, then `kamal deploy`: build the image locally, push it to ghcr.io, and swap
+# it in behind kamal-proxy with a health check. Host-side setup (kamal-proxy and
+# the shared Cloudflare tunnel) lives in ~/dev/17xande.dev/infra.
+service: music-practice
+
+image: 17xande-dev/music-practice
+
+registry:
+  server: ghcr.io
+  username: 17xande
+  # Read from .kamal/secrets.
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# The host is linux/amd64. Building for it explicitly keeps an arm laptop honest.
+builder:
+  arch: amd64
+
+ssh:
+  user: ubuntu
+
+servers:
+  web:
+    hosts:
+      - home-docker
+    options:
+      # argon2id holds 64 MiB per sign-in, at most three at a time (see
+      # internal/auth), so this is ample and stops a runaway from taking the host.
+      memory: 512m
+
+# Cloudflare terminates TLS and the shared tunnel forwards the hostname to
+# http://kamal-proxy:80, so kamal-proxy serves plain http and asks for no cert.
+# The runtime image is distroless (no shell, no wget), so kamal-proxy's HTTP
+# check of /healthz is the health check; the image sets no Docker HEALTHCHECK.
+proxy:
+  ssl: false
+  host: music.17xande.dev
+  app_port: 8080
+  healthcheck:
+    path: /healthz
+
+env:
+  clear:
+    # The browser always sees https (Cloudflare terminates it), even though
+    # kamal-proxy and the app speak plain http. HSTS=1 is the operator's "this
+    # site is https": it sends Strict-Transport-Security, and it makes
+    # COOKIE_SECURE=auto always set Secure on the session cookie. Without HSTS the
+    # app would see plain http from kamal-proxy and drop Secure (auto's LAN
+    # case). Same behaviour as before the move.
+    HSTS: "1"
+    COOKIE_SECURE: auto
+    # Accounts and synced history. On the named volume below, so a redeploy
+    # keeps it. Daily VACUUM INTO backups land beside it, in /data/backups.
+    DB_PATH: /data/music-practice.db
+    # Every connection comes from kamal-proxy, so without this the per-IP
+    # sign-in limit would be one bucket shared by everyone. Cloudflare sets this
+    # header and overwrites it, so it is safe to trust whole. Safe only while
+    # the shared tunnel is the sole way in: kamal-proxy publishes nothing on the
+    # host. A setup with another route to the app must not set this.
+    CLIENT_IP_HEADER: CF-Connecting-IP
+
+# A NEW named volume: this is a new host, so the database starts fresh (by
+# decision; the old Coolify box's data is not carried over). The image's /data
+# is owned by the nonroot user it runs as (uid 65532, see the Dockerfile), and
+# Docker copies that ownership into a fresh named volume, so it is writable.
+volumes:
+  - "music-practice-data:/data"

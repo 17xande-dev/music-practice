@@ -169,6 +169,8 @@ docker exec <container> /music-practice -add-admin you@example.com
 docker exec <container> /music-practice -reset-password someone@example.com
 ```
 
+(Those are for a local container; for production see "Deploying" below.)
+
 ## How it fits together
 
 Go serves the pages and the static files, and holds accounts and synced history in SQLite.
@@ -349,31 +351,82 @@ file input. A real instrument still needs a human.
 
 ## Deploying
 
-Live at **https://music.17xande.dev**, set up like the teleprompter app:
+Live at **https://music.17xande.dev**, deployed with [Kamal](https://kamal-deploy.org)
+(`config/deploy.yml`). The host (`home-docker`) runs kamal-proxy with nothing published, behind one
+shared Cloudflare tunnel; that host-side setup lives in `~/dev/17xande.dev/infra`. The tunnel's
+public hostname `music.17xande.dev` has service `http://kamal-proxy:80`, and kamal-proxy routes by
+host to the app (port 8080, health check `/healthz`, which is unauthenticated). Cloudflare
+terminates TLS, so Kamal runs with `proxy.ssl: false`. Nothing else can reach the app, which is what
+makes trusting `CF-Connecting-IP` safe. The app runs with a 512 MB limit and the named volume
+`music-practice-data` at `/data`.
 
-- **Coolify** on the Oracle free-tier VM (the same box Coolify itself runs on) builds
-  `docker-compose.yaml` with the Docker Compose build pack. A push to `master` deploys through the
-  GitHub webhook.
-- **Traefik**, managed by Coolify, terminates TLS at the origin with a Let's Encrypt certificate.
-  The domain is set on the `music-practice` compose service in Coolify's Domains tab, not the
-  app-level field.
-- **Cloudflare** DNS: a proxied `A` record to the VM. The zone runs SSL in Full (strict) mode, so
-  the origin certificate has to be real, and it is. `HSTS=1` is safe for that reason.
+`HSTS=1` stays on: the browser always sees https, even though the app sees plain http from
+kamal-proxy. It sends Strict-Transport-Security and, with `COOKIE_SECURE=auto`, keeps the session
+cookie Secure.
 
-The database lives on the `data` named volume at `/data/music-practice.db`. The image creates
-`/data` owned by the nonroot user it runs as, which Docker copies into a fresh volume, so the server
-can write it without root. At startup and daily after that, it writes a `VACUUM INTO` backup to
+```sh
+make deploy                        # check gate, then kamal deploy (build, push to ghcr.io, swap in)
+make deploy KAMAL=$HOME/.local/share/gem/ruby/3.4.0/bin/kamal   # if kamal is not on PATH
+kamal rollback <version>           # back to an earlier image; `kamal app version` / `kamal app containers` list them
+make logs-prod                     # kamal app logs -f
+```
+
+`make deploy` refuses uncommitted tracked changes, since Kamal builds from `HEAD`. Registry login is
+`gh auth token` (see `.kamal/secrets`). The app has no secrets of its own.
+
+The database lives at `/data/music-practice.db` on that volume. This is a new host, so the volume
+starts fresh: the old Coolify box's database is not carried over. The image creates `/data` owned by
+the nonroot user it runs as (uid 65532), which Docker copies into a fresh volume, so the server can
+write it without root. At startup and daily after that, it writes a `VACUUM INTO` backup to
 `/data/backups/` and keeps seven. That covers a bad migration or a mistaken delete, not losing the
-volume (see "Decisions still open"). After the first deploy, create the first admin with
-`docker exec <container> /music-practice -add-admin you@example.com`, and everyone else at
-`/admin/users`.
+volume (see "Decisions still open").
 
-Traefik only routes to a container whose Docker healthcheck is `healthy`. The runtime image is
-distroless (no shell, no `wget`), so the healthcheck runs `music-practice -healthcheck`, which
-probes `/healthz` itself. A test stops it from ever shelling out again. If the site returns 503 at
-the origin (526 through Cloudflare), check
-`docker inspect <container> --format '{{.State.Health.Status}}'` first. Coolify's own
-"running:healthy" status does not reflect Docker's health state.
+Operating production (run from this repo; `kamal` as above). Only the `kamal app logs` form is
+exercised by `make logs-prod`; the rest are reasoned from Kamal's and the image's behaviour and
+**untested**:
+
+```sh
+# First admin (after the first deploy), or a lockout reset. --reuse execs in
+# the running container. Without it Kamal starts a fresh container, and the
+# image's ENTRYPOINT (/music-practice) would be prefixed to the command,
+# starting a second server. The whole command is ONE quoted argument.
+kamal app exec -i --reuse "/music-practice -add-admin you@example.com"
+kamal app exec -i --reuse "/music-practice -reset-password someone@example.com"
+
+# Logs
+kamal app logs -f            # or: kamal app logs --since 1h
+```
+
+Backups and restore. The image has no shell or tar, so the volume is read from a throwaway container
+**on home-docker** (`ssh ubuntu@home-docker`; every `docker run` below runs there, the `kamal` lines
+run from this repo on your laptop):
+
+```sh
+# ON home-docker: list the backups, and copy one out
+docker run --rm -v music-practice-data:/data busybox ls -l /data/backups
+docker run --rm -v music-practice-data:/data -v "$PWD":/out busybox cp /data/backups/<file>.db /out/
+
+# Restore. First verify the copy BEFORE touching anything: the file must exist,
+# be non-empty, and pass SQLite's own check (ON home-docker, in the directory
+# holding <file>.db; the image has no sqlite3, so use one that does):
+ls -l <file>.db
+docker run --rm -v "$PWD":/in alpine sh -c 'apk add --no-cache sqlite >/dev/null && sqlite3 /in/<file>.db "PRAGMA integrity_check"'   # want: ok
+
+# Only then replace the live database. It overwrites it, so copy the current
+# one out first (the cp above). The files must end up owned by uid 65532.
+kamal app stop                     # laptop
+docker run --rm -v music-practice-data:/data -v "$PWD":/in busybox \
+  sh -c 'cp /in/<file>.db /data/music-practice.db && rm -f /data/music-practice.db-wal /data/music-practice.db-shm && chown 65532:65532 /data/music-practice.db'   # ON home-docker
+kamal app boot                     # laptop
+```
+
+Cloudflare settings for the hostname: the tunnel's public hostname points at
+`http://kamal-proxy:80`. Do not set an `httpHostHeader` override: the cross-origin check compares
+`Origin` with the request's `Host`, so rewriting `Host` breaks every sign-in and sync POST.
+
+The runtime image is distroless (no shell, no `wget`), so Docker health is not used: kamal-proxy
+checks `/healthz` over HTTP and only routes to a container that answers. The binary's own
+`music-practice -healthcheck` probe remains for `docker exec`.
 
 ## Roadmap
 
@@ -419,7 +472,7 @@ without re-deriving the design.
 
 | Decision                    | Current choice                                      | What would change it                                                                                                                                               |
 | --------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Off-box backups             | None: daily `VACUUM INTO` copies on the same volume | Any data someone would miss. Options: Litestream to object storage (another process in the image), or a Coolify scheduled task copying `/data/backups` off the VM. |
+| Off-box backups             | None: daily `VACUUM INTO` copies on the same volume | Any data someone would miss. Options: Litestream to object storage (another process in the image), or a cron job on home-docker copying `/data/backups` off the host. |
 | Self-service sign-up        | None; the admin creates accounts                    | More users than an admin wants to type in. Needs email verification, so an email provider.                                                                         |
 | Password reset by email     | None; an admin resets it and passes it on           | Same trigger and same email provider as sign-up.                                                                                                                   |
 | Syncing settings and scores | Not synced                                          | People practising the same song on two devices. Scores need blob storage and size limits; settings need last-writer-wins per field.                                |
