@@ -17,9 +17,12 @@ jobs:
         with:
           deno-version: "2.9.8"
       # The same gate as a local `make check`: formatting, vet, type check,
-      # lint, Deno tests, then bundle before the Go tests so the embedded
-      # assets exist.
+      # lint, Deno tests, then bundle before the Go tests (with -race, then
+      # govulncheck) so the embedded assets exist.
       - run: make check
+      # Last on purpose: a newly published CVE must not hide the test results.
+      # govulncheck fails only for vulnerabilities reachable from this module.
+      - run: make vulncheck-install vulncheck
 
   docker:
     runs-on: ubuntu-latest

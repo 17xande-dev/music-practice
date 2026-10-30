@@ -74,7 +74,7 @@ func TestComposeHealthcheckUsesBinary(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !strings.Contains(string(dockerfile), "distroless") {
-		t.Skip("runtime image is no longer distroless; revisit this test")
+		t.Fatal("runtime image is no longer distroless; revisit this test")
 	}
 	// Only the healthcheck's test: line matters; comments may mention tools.
 	var testLine string

@@ -5,7 +5,11 @@ ADDR ?= :8080
 # Local database. The container sets its own DB_PATH on the data volume.
 DB_PATH ?= data/dev.db
 
-.PHONY: build bundle run dev test test-go test-deno check fmt vet lint clean docker
+# govulncheck is pinned here rather than in go.mod: it is a build-time tool.
+# v1.1.x crashes on Go 1.27; v1.9.0 works.
+GOVULNCHECK_VERSION ?= v1.9.0
+
+.PHONY: build bundle run dev test test-go test-deno check fmt vet lint vulncheck-install vulncheck clean docker
 
 ## build: bundle the frontend, then compile the server that embeds it
 build: bundle
@@ -30,7 +34,7 @@ dev:
 test: test-deno bundle test-go
 
 test-go:
-	go test -count=1 ./...
+	go test -count=1 -race ./...
 
 test-deno:
 	deno task test
@@ -44,7 +48,8 @@ check:
 	deno fmt --check
 	deno task test
 	deno task bundle
-	go test -count=1 ./...
+	go test -count=1 -race ./...
+	$(MAKE) vulncheck-install vulncheck
 
 fmt:
 	gofmt -w .
@@ -55,6 +60,14 @@ vet:
 
 lint:
 	deno lint
+
+## vulncheck-install: install the pinned govulncheck
+vulncheck-install:
+	go install golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION)
+
+## vulncheck: fail if a reachable known vulnerability affects the build
+vulncheck:
+	govulncheck ./...
 
 clean:
 	deno task clean
