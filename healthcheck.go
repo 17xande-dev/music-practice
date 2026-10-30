@@ -10,8 +10,8 @@ import (
 // The runtime image is distroless: no shell, no wget, no curl. A container
 // healthcheck therefore cannot shell out to probe the server, so the binary
 // probes itself (`music-practice -healthcheck`). Production does not use it:
-// kamal-proxy checks /healthz over HTTP. It stays for `docker exec` and for a
-// local compose stack that wants a Docker healthcheck.
+// kamal-proxy checks /healthz over HTTP. It stays for `docker exec`
+// (`kamal app exec --reuse`).
 
 // healthcheckURL turns a listen address into the URL to probe. An address
 // with no host (":8080", the default) listens on every interface, so the

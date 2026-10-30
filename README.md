@@ -412,9 +412,12 @@ docker run --rm -v music-practice-data:/data -v "$PWD":/out busybox cp /data/bac
 ls -l <file>.db
 docker run --rm -v "$PWD":/in alpine sh -c 'apk add --no-cache sqlite >/dev/null && sqlite3 /in/<file>.db "PRAGMA integrity_check"'   # want: ok
 
-# Only then replace the live database. It overwrites it, so copy the current
-# one out first (the cp above). The files must end up owned by uid 65532.
+# Only then replace the live database. It overwrites it, so stop the app and
+# copy the CURRENT database out first (the pre-restore copy, with its -wal/-shm
+# files). The files must end up owned by uid 65532.
 kamal app stop                     # laptop
+docker run --rm -v music-practice-data:/data -v "$PWD":/out busybox \
+  sh -c 'cp /data/music-practice.db* /out/'   # ON home-docker: the pre-restore copy
 docker run --rm -v music-practice-data:/data -v "$PWD":/in busybox \
   sh -c 'cp /in/<file>.db /data/music-practice.db && rm -f /data/music-practice.db-wal /data/music-practice.db-shm && chown 65532:65532 /data/music-practice.db'   # ON home-docker
 kamal app boot                     # laptop
@@ -423,6 +426,8 @@ kamal app boot                     # laptop
 Cloudflare settings for the hostname: the tunnel's public hostname points at
 `http://kamal-proxy:80`. Do not set an `httpHostHeader` override: the cross-origin check compares
 `Origin` with the request's `Host`, so rewriting `Host` breaks every sign-in and sync POST.
+Also turn off Email Obfuscation and Rocket Loader for this hostname (a Configuration Rule, or
+Speed and Scrape Shield): both rewrite served pages and scripts, which the strict CSP then refuses.
 
 The runtime image is distroless (no shell, no `wget`), so Docker health is not used: kamal-proxy
 checks `/healthz` over HTTP and only routes to a container that answers. The binary's own
