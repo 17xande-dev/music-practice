@@ -114,7 +114,7 @@ func TestIPKey(t *testing.T) {
 // The map never exceeds its cap; at the cap a new key fails closed, a known
 // key is unaffected, and room returns once buckets go idle.
 func TestLimiterCapFailsClosed(t *testing.T) {
-	l := NewLimiter(2, time.Second)
+	l := NewLimiter(2, time.Minute)
 	l.max = 3
 	now := time.Unix(0, 0)
 	l.now = func() time.Time { return now }
@@ -132,8 +132,16 @@ func TestLimiterCapFailsClosed(t *testing.T) {
 	if !l.Allow("a") {
 		t.Fatal("existing key refused at the cap")
 	}
-	// Idle buckets are reclaimed by the cap-time sweep, spaced by capSweepEvery.
-	now = now.Add(capSweepEvery)
+	// Step past the idle time. The regular lazy sweep is parked (lastSweep is
+	// now) so only the cap-time sweep can free room, and the last cap sweep
+	// is one second short of capSweepEvery ago.
+	now = now.Add(l.idle + time.Second)
+	l.lastSweep = now
+	l.capSwept = now.Add(time.Second - capSweepEvery)
+	if l.Allow("d") {
+		t.Fatal("cap sweep ran again before capSweepEvery")
+	}
+	now = now.Add(time.Second)
 	if !l.Allow("d") {
 		t.Fatal("no room after the buckets went idle")
 	}
