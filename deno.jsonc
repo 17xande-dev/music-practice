@@ -45,10 +45,10 @@
     // its "bravura" entry, which embeds the Bravura and Academico fonts as
     // data: URIs (hence the CSP's font-src data:); the default "core" path
     // would fetch them from a CDN at runtime.
-    "vexflow": "npm:vexflow@5.0.0",
+    "vexflow": "npm:vexflow@5.2.0",
     // Song scores: renders MusicXML (and zipped .mxl) and walks it with a
     // cursor. BSD-3. Pinned exactly like VexFlow, for the same reason; it
     // carries its own VexFlow 1.x fork, used only on the songs page.
-    "opensheetmusicdisplay": "npm:opensheetmusicdisplay@2.2.0"
+    "opensheetmusicdisplay": "npm:opensheetmusicdisplay@2.3.1"
   }
 }

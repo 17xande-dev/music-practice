@@ -18,7 +18,7 @@ RUN deno task bundle
 # which is what lets the runtime stay distroless/static (no libc). The tags
 # drop SQLite's extension loading (which static linking cannot support) and
 # use Go's own DNS and user lookups instead of libc's.
-FROM golang:1.27.3-alpine AS backend
+FROM golang:1.27.4-alpine AS backend
 RUN apk add --no-cache gcc musl-dev
 WORKDIR /src
 COPY go.mod go.sum ./
