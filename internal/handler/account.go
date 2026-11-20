@@ -192,7 +192,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusTooManyRequests, accountErrors["rate-limited"])
 		return
 	}
-	u, err := h.checkPassword(r, email, password)
+	u, rehash, err := h.checkPassword(r, email, password)
 	if err != nil {
 		if errors.Is(err, errBadCredentials) {
 			fail(http.StatusUnauthorized, loginFailed)
@@ -218,6 +218,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 			h.log.Error("revoke previous session", "err", err)
 		}
 	}
+	h.upgradePasswordHash(r.Context(), u, password, rehash)
 	h.accounts.RecordLogin(r.Context(), u.ID)
 	h.setSessionCookie(w, r, token)
 	if next == "" {
@@ -260,27 +261,27 @@ func (h *Handler) allowLogin(r *http.Request, email string) bool {
 // checkPassword is the one place a sign-in is decided, shared by the web
 // form and the app's token endpoint. Wrong passwords and unknown emails
 // each spend one check for inputs within policy. email is normalised.
-func (h *Handler) checkPassword(r *http.Request, email, pw string) (account.User, error) {
-	bad := func(why string) (account.User, error) {
+func (h *Handler) checkPassword(r *http.Request, email, pw string) (account.User, bool, error) {
+	bad := func(why string) (account.User, bool, error) {
 		// Never the password or the email itself; the why is for the operator
 		// only, the client sees one message.
 		h.log.Warn("sign-in failed", "email", emailTag(email), "ip", h.clientIP(r), "path", r.URL.Path, "why", why)
-		return account.User{}, errBadCredentials
+		return account.User{}, false, errBadCredentials
 	}
 	u, err := h.accounts.ByEmail(r.Context(), email)
 	if errors.Is(err, account.ErrNotFound) {
 		if err := auth.SpendVerifyTime(r.Context(), pw); err != nil {
-			return account.User{}, err
+			return account.User{}, false, err
 		}
 		return bad("unknown email")
 	}
 	if err != nil {
-		return account.User{}, err
+		return account.User{}, false, err
 	}
-	ok, err := auth.VerifyPassword(r.Context(), pw, u.PasswordHash)
+	ok, rehash, err := auth.CheckPassword(r.Context(), pw, u.PasswordHash)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
-			return account.User{}, err
+			return account.User{}, false, err
 		}
 		return bad("invalid stored password hash")
 	}
@@ -295,7 +296,22 @@ func (h *Handler) checkPassword(r *http.Request, email, pw string) (account.User
 	if h.afterVerify != nil {
 		h.afterVerify()
 	}
-	return u, nil
+	return u, rehash, nil
+}
+
+// Upgrade only after the session has been created so a best-effort rehash
+// cannot invalidate the verified hash used by the sign-in guard.
+func (h *Handler) upgradePasswordHash(ctx context.Context, u account.User, pw string, rehash bool) {
+	if !rehash {
+		return
+	}
+	hash, err := auth.HashPassword(ctx, pw)
+	if err == nil {
+		err = h.accounts.UpgradePasswordHash(ctx, u.ID, u.PasswordHash, hash)
+	}
+	if err != nil {
+		h.log.Warn("password hash upgrade failed", "user", u.ID, "err", err)
+	}
 }
 
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
