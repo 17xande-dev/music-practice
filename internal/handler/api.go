@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/17xande-dev/music-practice/internal/account"
-	"github.com/17xande-dev/music-practice/internal/auth"
 	"github.com/17xande-dev/music-practice/internal/history"
 )
 
@@ -125,7 +124,7 @@ func (h *Handler) apiToken(w http.ResponseWriter, r *http.Request) {
 		apiError(w, http.StatusUnauthorized, loginFailed)
 		return
 	}
-	if errors.Is(err, auth.ErrBusy) {
+	if passwordBusy(err) {
 		w.Header().Set("Retry-After", "5")
 		apiError(w, http.StatusServiceUnavailable, "the server is busy; try again in a few seconds")
 		return
