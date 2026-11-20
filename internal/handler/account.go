@@ -13,7 +13,6 @@ import (
 
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/auth"
-	"github.com/17xande-dev/music-practice/internal/middleware"
 )
 
 // sessionCookie carries a browser's session token.
@@ -243,8 +242,8 @@ func emailTag(email string) string {
 // consulted once the IP check passes: a refused client must not leave an
 // email bucket behind for every address it tries. A refusal is logged.
 func (h *Handler) allowLogin(r *http.Request, email string) bool {
-	ip := h.clientIP(r)
-	if !h.limits.loginIP.Allow(middleware.IPKey(ip)) {
+	ip := h.ipAddr(r)
+	if !h.limits.loginIP.Allow(h.ipKey(r)) {
 		h.log.Warn("sign-in rate limited", "email", emailTag(email), "ip", ip, "path", r.URL.Path,
 			"by_ip", true, "by_email", false)
 		return false
@@ -265,7 +264,7 @@ func (h *Handler) checkPassword(r *http.Request, email, pw string) (account.User
 	bad := func(why string) (account.User, bool, error) {
 		// Never the password or the email itself; the why is for the operator
 		// only, the client sees one message.
-		h.log.Warn("sign-in failed", "email", emailTag(email), "ip", h.clientIP(r), "path", r.URL.Path, "why", why)
+		h.log.Warn("sign-in failed", "email", emailTag(email), "ip", h.ipAddr(r), "path", r.URL.Path, "why", why)
 		return account.User{}, false, errBadCredentials
 	}
 	u, err := h.accounts.ByEmail(r.Context(), email)
@@ -350,8 +349,8 @@ func (h *Handler) changePassword(w http.ResponseWriter, r *http.Request, u accou
 	}
 	// Limited like sign-in: a form that checks the current password is a
 	// guessing oracle for anyone holding a stolen cookie.
-	if !h.limits.loginIP.Allow(middleware.IPKey(h.clientIP(r))) || !h.limits.password.Allow(strconv.FormatInt(u.ID, 10)) {
-		h.log.Warn("password change rate limited", "user", u.ID, "ip", h.clientIP(r))
+	if !h.limits.loginIP.Allow(h.ipKey(r)) || !h.limits.password.Allow(strconv.FormatInt(u.ID, 10)) {
+		h.log.Warn("password change rate limited", "user", u.ID, "ip", h.ipAddr(r))
 		back("rate-limited")
 		return
 	}
@@ -361,7 +360,7 @@ func (h *Handler) changePassword(w http.ResponseWriter, r *http.Request, u accou
 		return
 	}
 	if !ok {
-		h.log.Warn("password change failed", "user", u.ID, "ip", h.clientIP(r))
+		h.log.Warn("password change failed", "user", u.ID, "ip", h.ipAddr(r))
 		back("wrong-password")
 		return
 	}

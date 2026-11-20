@@ -99,7 +99,7 @@ func run(log *slog.Logger, dev bool) error {
 		Dev:      dev,
 		Accounts: accounts,
 		History:  history.NewStore(database),
-		ClientIP: middleware.ClientIP(cfg.ClientIPHeader),
+		ClientIP: cfg.ClientIP,
 
 		CookieSecure: cfg.CookieSecure,
 		HSTS:         cfg.HSTS,

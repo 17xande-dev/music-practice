@@ -185,7 +185,7 @@ internal/db/                SQLite open, embedded migrations (user_version), VAC
 internal/auth/              argon2id passwords, generated passwords, session tokens
 internal/account/           users and their signed-in sessions; the last-admin guard
 internal/history/           synced practice runs: push, pull by cursor, tombstones
-internal/middleware/        security headers (CSP, Permissions-Policy: midi=(self)), rate limits, access log
+internal/middleware/        security headers (CSP, Permissions-Policy: midi=(self)), access log (rate limits and client IP: github.com/17xande-dev/ratelimit)
 internal/handler/           pages, account + admin pages, the sync API, static assets (go:embed'ed)
   templates/                layout + one template set per page
   static/styles.css         the theme (custom properties, light and dark)
