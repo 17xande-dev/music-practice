@@ -6,6 +6,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"fmt"
@@ -15,39 +16,35 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/17xande-dev/sqlitekit"
+	_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-// Open opens (creating if absent) the database at path.
-//
-//   - _foreign_keys=on: SQLite enforces no REFERENCES at all without it, so a
-//     deleted user would silently leave their sessions and records behind.
-//   - _journal_mode=WAL: the sync API writes while pages read, and WAL lets
-//     readers carry on during a write. It needs the directory writable (it
-//     creates -wal and -shm files) and makes a plain `cp` of the file an
-//     unsafe backup, so backups use VACUUM INTO.
-//   - _txlock=immediate: a transaction takes the write lock when it begins.
-//     SQLite's default (deferred) lets a transaction that reads first and
-//     writes later fail with "database is locked" the moment another write
-//     commits in between, and busy_timeout cannot help: the snapshot it
-//     read is stale. Every transaction here may write, so none loses by it.
-//   - busy_timeout is left at the driver's 5s default.
+// Open opens (creating if absent) the database at path with sqlitekit's
+// settings (foreign keys, WAL, busy timeout, immediate transactions) and
+// refuses to start if the driver did not apply them. WAL makes a plain `cp`
+// of the file an unsafe backup, so backups use VACUUM INTO.
 //
 // Schema changes go through a numbered migration, never an ALTER run on
 // startup: on a STRICT table that leaves the database diverged from the
 // schema files.
 func Open(path string) (*sql.DB, error) {
-	dsn := fmt.Sprintf("file:%s?_foreign_keys=on&_journal_mode=WAL&_txlock=immediate", path)
-	d, err := sql.Open("sqlite3", dsn)
+	opts := sqlitekit.Options{}
+	dsn, err := sqlitekit.DSN(path, opts)
 	if err != nil {
 		return nil, fmt.Errorf("db: open %s: %w", path, err)
 	}
-	// sql.Open is lazy; ping so a bad path or an unwritable directory fails
-	// at startup rather than on the first sign-in.
-	if err := d.Ping(); err != nil {
+	d, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("db: open %s: %w", path, err)
+	}
+	// Check connects, so a bad path or an unwritable directory fails at
+	// startup rather than on the first sign-in, and a setting the driver
+	// silently ignored fails here rather than months later.
+	if err := sqlitekit.Check(context.Background(), d, opts); err != nil {
 		d.Close()
 		return nil, fmt.Errorf("db: open %s: %w", path, err)
 	}

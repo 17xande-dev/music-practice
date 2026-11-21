@@ -264,7 +264,8 @@ The server is stdlib apart from:
 
 | Dependency                    | Why                                                                                                                                                                                                                                                                                                                                               |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `github.com/mattn/go-sqlite3` | The SQLite driver for accounts and synced history. It is cgo, so the Docker build compiles it with musl and links statically, which keeps the runtime image `distroless/static`. Chosen over `modernc.org/sqlite` (pure Go but a much larger machine-translated codebase) as the long-established, widely reviewed wrapper around SQLite's own C. |
+| `modernc.org/sqlite` | The SQLite driver for accounts and synced history. Pure Go, so the Docker build needs no C toolchain (`CGO_ENABLED=0`) and the runtime stays `distroless/static`. Chosen over `mattn/go-sqlite3` (the C original, faster) for that cgo cost; the speed difference does not matter at this size, and the file format is the same. |
+| `github.com/17xande-dev/sqlitekit` | The shared SQLite standard: the connection string (foreign keys, WAL, busy timeout, immediate transactions), the startup check that they took effect, goose on STRICT tables and the dated backups. |
 | `golang.org/x/crypto`         | argon2id password hashing (`x/crypto/argon2`). Security-sensitive, so a widely reviewed implementation from the Go team rather than anything hand-rolled; it brings `golang.org/x/sys` with it.                                                                                                                                                   |
 | `golang.org/x/time`           | `rate`, the token bucket behind the sign-in and password-change limits. From the Go team, and small.                                                                                                                                                                                                                                              |
 
@@ -379,6 +380,11 @@ the nonroot user it runs as (uid 65532), which Docker copies into a fresh volume
 write it without root. At startup and daily after that, it writes a `VACUUM INTO` backup to
 `/data/backups/` and keeps seven. That covers a bad migration or a mistaken delete, not losing the
 volume (see "Decisions still open").
+
+While it runs the database is three files: `music-practice.db`, `music-practice.db-wal` and
+`music-practice.db-shm` (it runs in WAL mode). Never copy the `.db` of a running app (`cp`,
+`docker cp`, a tar of the volume): recent commits live in the `-wal` file and the copy can be torn.
+Take a `VACUUM INTO` copy (the daily backups are exactly that) or stop the app first.
 
 Operating production (run from this repo; `kamal` as above). Only the `kamal app logs` form is
 exercised by `make logs-prod`; the rest are reasoned from Kamal's and the image's behaviour and

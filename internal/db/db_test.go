@@ -50,7 +50,7 @@ func TestMigrateTwiceIsANoOp(t *testing.T) {
 	}
 }
 
-// Without _foreign_keys=on every REFERENCES is decoration: deleting a user
+// Without foreign_keys on every REFERENCES is decoration: deleting a user
 // would leave their sessions able to sign in as nobody.
 func TestForeignKeysEnforced(t *testing.T) {
 	d := dbtest.New(t)
@@ -105,7 +105,7 @@ func TestTransactionsBeginImmediate(t *testing.T) {
 	}
 	defer tx.Rollback()
 	// A second handle with no wait: it can only write if tx holds no lock yet.
-	other, err := sql.Open("sqlite3", "file:"+path+"?_busy_timeout=0")
+	other, err := sql.Open("sqlite", "file:"+path+"?_pragma=busy_timeout(0)")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,5 +113,30 @@ func TestTransactionsBeginImmediate(t *testing.T) {
 	_, err = other.Exec(`INSERT INTO users (email, password_hash, created_at) VALUES ('a@x.com', 'h', '')`)
 	if err == nil || !strings.Contains(err.Error(), "locked") {
 		t.Fatalf("a write succeeded while a transaction was open (err = %v); transactions must begin immediate", err)
+	}
+}
+
+// Open must refuse a database whose settings did not take, and accept one
+// that has them: foreign keys on, WAL, a busy timeout. Check is what turns
+// a silently ignored DSN parameter into a startup failure.
+func TestOpenAppliesTheStandardSettings(t *testing.T) {
+	d := dbtest.New(t)
+	var fk int
+	var mode string
+	var busy int
+	if err := d.QueryRow("PRAGMA foreign_keys").Scan(&fk); err != nil || fk != 1 {
+		t.Errorf("foreign_keys = %d, err %v", fk, err)
+	}
+	if err := d.QueryRow("PRAGMA journal_mode").Scan(&mode); err != nil || mode != "wal" {
+		t.Errorf("journal_mode = %q, err %v", mode, err)
+	}
+	if err := d.QueryRow("PRAGMA busy_timeout").Scan(&busy); err != nil || busy != 5000 {
+		t.Errorf("busy_timeout = %d, err %v", busy, err)
+	}
+}
+
+func TestOpenFailsOnAnUnusablePath(t *testing.T) {
+	if _, err := db.Open(filepath.Join(t.TempDir(), "missing-dir", "x.db")); err == nil {
+		t.Fatal("opened a database in a directory that does not exist")
 	}
 }
