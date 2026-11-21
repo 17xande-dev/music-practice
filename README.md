@@ -328,7 +328,7 @@ and a test keeps them published. When a dependency is added or upgraded, update
 
 ## Testing
 
-`make check` runs everything CI runs:
+`make check` is the gate before any commit:
 
 - **Deno:** scale spelling across every tonic × type × octave count; fingering against the standard
   tables, plus a playability check over every scale, key and length; the grading engines driven by

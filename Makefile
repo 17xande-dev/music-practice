@@ -39,7 +39,7 @@ test-go:
 test-deno:
 	deno task test
 
-## check: the gate before any commit — what CI runs
+## check: the gate before any commit
 check:
 	@test -z "$$(gofmt -l .)" || (echo "gofmt needed:"; gofmt -l .; exit 1)
 	go vet ./...
