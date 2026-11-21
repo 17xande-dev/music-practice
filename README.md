@@ -158,7 +158,12 @@ only:
 | `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits. Prefer a single-value one the proxy overwrites (`CF-Connecting-IP`); for `X-Forwarded-For` only the rightmost entry is used                      |
 
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
-applies pending ones itself on startup, each in its own transaction.
+applies pending ones itself on startup, each in its own transaction. Migrations are goose files in
+`internal/db/migrations/` (`-- +goose Up`), run through sqlitekit's `goosestrict`, whose version table
+is STRICT like the rest. A database written before goose (tables and a `PRAGMA user_version`, no
+`goose_db_version` table) is adopted once at that version on first start; one with tables and no
+recorded version, or one newer than the binary, is refused. `-migrate-status` reports such a
+database without adopting it.
 
 Accounts are created by an admin in the admin pages; there is no self-service sign-up. Two commands
 cover what the pages cannot: creating the first admin, and getting back in when every admin is
@@ -181,7 +186,7 @@ main.go                     server wiring, graceful shutdown, -dev / -migrate-st
 usercmd.go                  -add-admin and -reset-password (bootstrap and lockout recovery)
 cleanup.go                  daily backup, backup pruning, expired-session sweep
 internal/config/            environment → one Config struct
-internal/db/                SQLite open, embedded migrations (user_version), VACUUM INTO backups
+internal/db/                SQLite open, embedded goose migrations (adopting pre-goose databases), VACUUM INTO backups
 internal/auth/              argon2id passwords, generated passwords, session tokens
 internal/account/           users and their signed-in sessions; the last-admin guard
 internal/history/           synced practice runs: push, pull by cursor, tombstones
@@ -266,6 +271,7 @@ The server is stdlib apart from:
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `modernc.org/sqlite` | The SQLite driver for accounts and synced history. Pure Go, so the Docker build needs no C toolchain (`CGO_ENABLED=0`) and the runtime stays `distroless/static`. Chosen over `mattn/go-sqlite3` (the C original, faster) for that cgo cost; the speed difference does not matter at this size, and the file format is the same. |
 | `github.com/17xande-dev/sqlitekit` | The shared SQLite standard: the connection string (foreign keys, WAL, busy timeout, immediate transactions), the startup check that they took effect, goose on STRICT tables and the dated backups. |
+| `github.com/pressly/goose/v3` | Runs the migrations (through sqlitekit's `goosestrict`). The shared house choice for every app's schema history; it replaces the small `user_version` runner this app had. |
 | `golang.org/x/crypto`         | argon2id password hashing (`x/crypto/argon2`). Security-sensitive, so a widely reviewed implementation from the Go team rather than anything hand-rolled; it brings `golang.org/x/sys` with it.                                                                                                                                                   |
 | `golang.org/x/time`           | `rate`, the token bucket behind the sign-in and password-change limits. From the Go team, and small.                                                                                                                                                                                                                                              |
 

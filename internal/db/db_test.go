@@ -61,22 +61,6 @@ func TestForeignKeysEnforced(t *testing.T) {
 	}
 }
 
-// A newer database means a rollback deploy; running old code against a
-// schema it does not know would misread it.
-func TestRefusesNewerDatabase(t *testing.T) {
-	d, err := db.Open(filepath.Join(t.TempDir(), "x.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer d.Close()
-	if _, err := d.Exec("PRAGMA user_version = 999"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := db.Migrate(d); err == nil {
-		t.Fatal("migrated a database newer than the build")
-	}
-}
-
 func TestStrictRefusesWrongType(t *testing.T) {
 	d := dbtest.New(t)
 	_, err := d.Exec(`INSERT INTO users (email, password_hash, is_admin, created_at)

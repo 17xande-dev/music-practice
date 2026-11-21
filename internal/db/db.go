@@ -9,14 +9,13 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
-	"path"
-	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/17xande-dev/sqlitekit"
+	"github.com/17xande-dev/sqlitekit/goosestrict"
+	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )
 
@@ -51,106 +50,128 @@ func Open(path string) (*sql.DB, error) {
 	return d, nil
 }
 
-type migration struct {
-	version int
-	name    string
-	sql     string
-}
-
-// migrations lists the embedded NNNN_name.sql files in order. A gap or a
-// duplicate number is an error: either means a file was misnamed, and
-// applying around it would skip a schema change for good.
-func migrations() ([]migration, error) {
-	entries, err := fs.ReadDir(migrationsFS, "migrations")
-	if err != nil {
-		return nil, err
-	}
-	var ms []migration
-	for _, e := range entries {
-		num, _, ok := strings.Cut(e.Name(), "_")
-		v, err := strconv.Atoi(num)
-		if !ok || err != nil {
-			return nil, fmt.Errorf("db: migration %q is not named NNNN_name.sql", e.Name())
-		}
-		b, err := migrationsFS.ReadFile(path.Join("migrations", e.Name()))
-		if err != nil {
-			return nil, err
-		}
-		ms = append(ms, migration{version: v, name: e.Name(), sql: string(b)})
-	}
-	sort.Slice(ms, func(i, j int) bool { return ms[i].version < ms[j].version })
-	for i, m := range ms {
-		if m.version != i+1 {
-			return nil, fmt.Errorf("db: migration %s: want version %d", m.name, i+1)
-		}
-	}
-	return ms, nil
-}
-
-// Migrate applies every migration newer than the database's user_version,
-// each in its own transaction together with the version bump, so a failed
-// migration leaves the database exactly at the previous version. goose was
-// the alternative; this is the few lines of it that a single-instance
-// SQLite server needs, without its Postgres-shaped locking.
+// Migrate brings the schema up to date and returns the migrations it applied.
+//
+// Migrations are goose files (-- +goose Up) run through goosestrict, whose
+// version table is STRICT like every other table here. A database written by
+// the previous runner has no version table and records its progress in
+// PRAGMA user_version; it is adopted once, below.
 func Migrate(d *sql.DB) (applied []string, err error) {
-	ms, err := migrations()
+	return migrate(context.Background(), d, migrationFiles())
+}
+
+// migrationFiles is the embedded migrations directory as the root of an
+// fs.FS, which is what goose reads.
+func migrationFiles() fs.FS {
+	sub, err := fs.Sub(migrationsFS, "migrations")
 	if err != nil {
-		return nil, err
+		panic(err) // a constant, embedded path
 	}
-	current, err := Version(d)
+	return sub
+}
+
+func migrate(ctx context.Context, d *sql.DB, files fs.FS) ([]string, error) {
+	if legacy, err := legacyVersion(ctx, d, files); err != nil {
+		return nil, err
+	} else if legacy > 0 {
+		// The previous runner applied migrations 1..user_version in order,
+		// each with its version bump in one transaction, so those are exactly
+		// the ones goose may skip. Adopting at the wrong version silently skips
+		// real migrations, which is why anything doubtful is refused instead.
+		if err := goosestrict.Adopt(ctx, d, legacy); err != nil {
+			return nil, fmt.Errorf("db: adopt a database at version %d: %w", legacy, err)
+		}
+	}
+	p, err := goosestrict.NewProvider(d, files)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("db: %w", err)
 	}
-	if current > len(ms) {
-		return nil, fmt.Errorf("db: database is at version %d but this build knows only %d: refusing to run an older binary against it", current, len(ms))
+	results, err := p.Up(ctx)
+	var applied []string
+	for _, r := range results {
+		if r.Error == nil {
+			applied = append(applied, r.Source.Path)
+		}
 	}
-	for _, m := range ms[current:] {
-		tx, err := d.Begin()
-		if err != nil {
-			return applied, err
-		}
-		if _, err := tx.Exec(m.sql); err != nil {
-			tx.Rollback()
-			return applied, fmt.Errorf("db: migration %s: %w", m.name, err)
-		}
-		// PRAGMA takes no bound parameters; the version is an int we own.
-		if _, err := tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", m.version)); err != nil {
-			tx.Rollback()
-			return applied, err
-		}
-		if err := tx.Commit(); err != nil {
-			return applied, fmt.Errorf("db: migration %s: %w", m.name, err)
-		}
-		applied = append(applied, m.name)
+	if err != nil {
+		return applied, fmt.Errorf("db: %w", err)
 	}
 	return applied, nil
 }
 
-// Version is the last migration applied.
-func Version(d *sql.DB) (int, error) {
-	var v int
-	err := d.QueryRow("PRAGMA user_version").Scan(&v)
-	return v, err
+// legacyVersion returns the PRAGMA user_version of a database that holds
+// tables but no goose version table, i.e. one written by the previous
+// migration runner, and 0 for any other database. It refuses a legacy database
+// the binary cannot vouch for: user_version 0 with tables (no record of what
+// ran) and a version newer than the migrations this build embeds (a rollback
+// deploy).
+func legacyVersion(ctx context.Context, d *sql.DB, files fs.FS) (int64, error) {
+	var hasVersionTable, tables int
+	if err := d.QueryRowContext(ctx, `SELECT
+	    count(*) FILTER (WHERE name = ?),
+	    count(*) FILTER (WHERE name NOT LIKE 'sqlite_%')
+	    FROM sqlite_master WHERE type = 'table'`, goose.DefaultTablename).Scan(&hasVersionTable, &tables); err != nil {
+		return 0, err
+	}
+	if hasVersionTable > 0 || tables == 0 {
+		return 0, nil
+	}
+	var v int64
+	if err := d.QueryRowContext(ctx, "PRAGMA user_version").Scan(&v); err != nil {
+		return 0, err
+	}
+	if v == 0 {
+		return 0, errors.New("db: the database has tables but neither a goose version table nor a PRAGMA user_version: its migration history is unknown, so it is not adopted")
+	}
+	known, err := fs.Glob(files, "*.sql")
+	if err != nil {
+		return 0, err
+	}
+	if v > int64(len(known)) {
+		return 0, fmt.Errorf("db: database is at version %d but this build knows only %d: refusing to run an older binary against it", v, len(known))
+	}
+	return v, nil
 }
 
 // Status describes each known migration as applied or pending, for the
-// -migrate-status flag.
+// -migrate-status flag. It never writes to a database it has to adopt: a
+// legacy database is reported from its user_version.
 func Status(d *sql.DB) ([]string, error) {
-	ms, err := migrations()
-	if err != nil {
-		return nil, err
-	}
-	v, err := Version(d)
-	if err != nil {
-		return nil, err
-	}
+	return status(context.Background(), d, migrationFiles())
+}
+
+func status(ctx context.Context, d *sql.DB, files fs.FS) ([]string, error) {
 	var out []string
-	for _, m := range ms {
+	if legacy, err := legacyVersion(ctx, d, files); err != nil {
+		return nil, err
+	} else if legacy > 0 {
+		names, err := fs.Glob(files, "*.sql")
+		if err != nil {
+			return nil, err
+		}
+		for i, n := range names {
+			state := "pending"
+			if int64(i+1) <= legacy {
+				state = "applied"
+			}
+			out = append(out, fmt.Sprintf("%-8s %s", state, n))
+		}
+		return out, nil
+	}
+	p, err := goosestrict.NewProvider(d, files)
+	if err != nil {
+		return nil, fmt.Errorf("db: %w", err)
+	}
+	st, err := p.Status(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range st {
 		state := "pending"
-		if m.version <= v {
+		if m.State == goose.StateApplied {
 			state = "applied"
 		}
-		out = append(out, fmt.Sprintf("%-8s %s", state, m.name))
+		out = append(out, fmt.Sprintf("%-8s %s", state, m.Source.Path))
 	}
 	return out, nil
 }
