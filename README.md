@@ -184,9 +184,9 @@ Everything a visitor does while practising happens in the browser, in TypeScript
 ```
 main.go                     server wiring, graceful shutdown, -dev / -migrate-status flags
 usercmd.go                  -add-admin and -reset-password (bootstrap and lockout recovery)
-cleanup.go                  daily backup, backup pruning, expired-session sweep
+cleanup.go                  daily backup (sqlitekit Backups), expired-session sweep
 internal/config/            environment → one Config struct
-internal/db/                SQLite open, embedded goose migrations (adopting pre-goose databases), VACUUM INTO backups
+internal/db/                SQLite open (sqlitekit settings and check), embedded goose migrations (adopting pre-goose databases)
 internal/auth/              argon2id passwords, generated passwords, session tokens
 internal/account/           users and their signed-in sessions; the last-admin guard
 internal/history/           synced practice runs: push, pull by cursor, tombstones
@@ -383,9 +383,12 @@ make logs-prod                     # kamal app logs -f
 The database lives at `/data/music-practice.db` on that volume. This is a new host, so the volume
 starts fresh: the old Coolify box's database is not carried over. The image creates `/data` owned by
 the nonroot user it runs as (uid 65532), which Docker copies into a fresh volume, so the server can
-write it without root. At startup and daily after that, it writes a `VACUUM INTO` backup to
-`/data/backups/` and keeps seven. That covers a bad migration or a mistaken delete, not losing the
-volume (see "Decisions still open").
+write it without root. At startup and daily after that (from the same loop that sweeps expired sessions), it writes a
+`VACUUM INTO` backup to `/data/backups/music-practice-YYYYMMDD.db` (UTC date; one per day, mode 0600,
+in a folder only the app uses) and keeps the newest seven, via sqlitekit's `Backups`. A backup is an
+ordinary, complete database file, consistent while the app writes. A leftover
+`music-practice-*.partial` from the previous backup code is deleted once at startup. Backups cover a
+bad migration or a mistaken delete, not losing the volume (see "Decisions still open").
 
 While it runs the database is three files: `music-practice.db`, `music-practice.db-wal` and
 `music-practice.db-shm` (it runs in WAL mode). Never copy the `.db` of a running app (`cp`,

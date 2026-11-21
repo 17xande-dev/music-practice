@@ -124,7 +124,7 @@ func run(log *slog.Logger, dev bool) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	go maintain(ctx, log, database, accounts, cfg.DBPath)
+	go maintain(ctx, log, database, accounts, backups(cfg.DBPath))
 
 	errc := make(chan error, 1)
 	go func() {
