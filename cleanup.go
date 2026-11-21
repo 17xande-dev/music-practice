@@ -45,8 +45,9 @@ func removeStalePartials(log *slog.Logger, dir string) {
 
 // maintain runs the daily chores until ctx ends: back up the database (which
 // also prunes old backups), and delete expired browser sessions. The first
-// run is at startup, so a deploy always leaves a fresh backup of the state it
-// started from.
+// run is at startup. That is not a pre-deploy backup: if today's backup
+// already exists (a same-day deploy) the new binary writes none at boot, so
+// the operator takes a backup before deploying.
 func maintain(ctx context.Context, log *slog.Logger, database *sql.DB, accounts *account.Store, b sqlitekit.Backups) {
 	removeStalePartials(log, b.Dir)
 	tick := time.NewTicker(24 * time.Hour)

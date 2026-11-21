@@ -1,13 +1,16 @@
 package db_test
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/17xande-dev/music-practice/internal/db"
 	"github.com/17xande-dev/music-practice/internal/dbtest"
+	"github.com/17xande-dev/sqlitekit"
 )
 
 // Checked against sqlite_master rather than the .sql files, because
@@ -122,5 +125,16 @@ func TestOpenAppliesTheStandardSettings(t *testing.T) {
 func TestOpenFailsOnAnUnusablePath(t *testing.T) {
 	if _, err := db.Open(filepath.Join(t.TempDir(), "missing-dir", "x.db")); err == nil {
 		t.Fatal("opened a database in a directory that does not exist")
+	}
+}
+
+// Open must stop startup when the settings check fails. Swapping Check for a
+// plain ping would still open a healthy database, so only a failing check
+// shows that Open really consults it.
+func TestOpenFailsWhenTheSettingsCheckFails(t *testing.T) {
+	want := errors.New("settings did not take")
+	db.SetCheckForTest(t, func(context.Context, *sql.DB, sqlitekit.Options) error { return want })
+	if _, err := db.Open(filepath.Join(t.TempDir(), "x.db")); !errors.Is(err, want) {
+		t.Fatalf("Open err = %v, want the check's error", err)
 	}
 }
