@@ -12,6 +12,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"path/filepath"
+	"time"
 
 	"github.com/17xande-dev/sqlitekit"
 	"github.com/17xande-dev/sqlitekit/goosestrict"
@@ -26,15 +28,33 @@ var migrationsFS embed.FS
 // the check fails: replacing it with a bare ping would otherwise go unnoticed.
 var checkSettings = sqlitekit.Check
 
-// Open opens (creating if absent) the database at path with sqlitekit's
-// settings (foreign keys, WAL, busy timeout, immediate transactions) and
-// refuses to start if the driver did not apply them. WAL makes a plain `cp`
-// of the file an unsafe backup, so backups use VACUUM INTO.
-//
-// Schema changes go through a numbered migration, never an ALTER run on
-// startup: on a STRICT table that leaves the database diverged from the
-// schema files.
-func Open(path string) (*sql.DB, error) {
+// lockTimeout bounds the wait for another process's migration.
+const lockTimeout = time.Minute
+
+// lock takes the migration lock (a <db>.migrate-lock file beside the database,
+// never deleted) on the absolute path the database is opened with. It must
+// come before the first query on the database, Check included: the first open
+// of a fresh database can fail with SQLITE_BUSY that the busy timeout does not
+// cover, and goose reads its pending list before it takes SQLite's write lock,
+// so two processes migrating at once (a restart overlapping its predecessor,
+// a flag command beside the server) could both apply the same migration.
+func lock(path string) (abs string, release func(), err error) {
+	abs, err = filepath.Abs(path)
+	if err != nil {
+		return "", nil, fmt.Errorf("db: open %s: %w", path, err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), lockTimeout)
+	defer cancel()
+	unlock, err := sqlitekit.MigrationLock(ctx, abs)
+	if err != nil {
+		return "", nil, fmt.Errorf("db: open %s: lock migrations: %w", path, err)
+	}
+	return abs, func() { _ = unlock() }, nil
+}
+
+// openLocked opens the database with sqlitekit's settings and refuses to
+// return it unless Check confirms they took. The caller holds the migration lock.
+func openLocked(path string) (*sql.DB, error) {
 	opts := sqlitekit.Options{}
 	dsn, err := sqlitekit.DSN(path, opts)
 	if err != nil {
@@ -54,14 +74,52 @@ func Open(path string) (*sql.DB, error) {
 	return d, nil
 }
 
-// Migrate brings the schema up to date and returns the migrations it applied.
+// Open opens (creating if absent) the database at path with sqlitekit's
+// settings (foreign keys, WAL, busy timeout, immediate transactions) and
+// refuses to start if the driver did not apply them. WAL makes a plain `cp`
+// of the file an unsafe backup, so backups use VACUUM INTO.
+//
+// Open does not migrate (the status command uses it as is; everything that
+// writes the schema uses OpenMigrated). It holds the migration lock around
+// Check, which can switch a fresh database to WAL, and releases it before
+// returning.
+//
+// Schema changes go through a numbered migration, never an ALTER run on
+// startup: on a STRICT table that leaves the database diverged from the
+// schema files.
+func Open(path string) (*sql.DB, error) {
+	abs, release, err := lock(path)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+	return openLocked(abs)
+}
+
+// OpenMigrated is Open followed by the migrations, with the migration lock
+// held from before the first query until the schema is current. It returns
+// the migrations it applied.
 //
 // Migrations are goose files (-- +goose Up) run through goosestrict, whose
 // version table is STRICT like every other table here. A database written by
 // the previous runner has no version table and records its progress in
-// PRAGMA user_version; it is adopted once, below.
-func Migrate(d *sql.DB) (applied []string, err error) {
-	return migrate(context.Background(), d, migrationFiles())
+// PRAGMA user_version; it is adopted once, in migrate.
+func OpenMigrated(path string) (*sql.DB, []string, error) {
+	abs, release, err := lock(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer release()
+	d, err := openLocked(abs)
+	if err != nil {
+		return nil, nil, err
+	}
+	applied, err := migrate(context.Background(), d, migrationFiles())
+	if err != nil {
+		d.Close()
+		return nil, applied, err
+	}
+	return d, applied, nil
 }
 
 // migrationFiles is the embedded migrations directory as the root of an
@@ -74,6 +132,8 @@ func migrationFiles() fs.FS {
 	return sub
 }
 
+// migrate adopts an old-runner database and applies what is pending. The
+// caller holds the migration lock.
 func migrate(ctx context.Context, d *sql.DB, files fs.FS) ([]string, error) {
 	if legacy, err := legacyVersion(ctx, d, files); err != nil {
 		return nil, err

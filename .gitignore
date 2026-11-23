@@ -11,3 +11,4 @@ internal/handler/static/dist/*
 
 # Local agent config (may hold tokens).
 .codex/
+*.migrate-lock

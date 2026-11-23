@@ -41,13 +41,19 @@ func TestEveryTableIsStrict(t *testing.T) {
 	}
 }
 
-// A redeploy runs Migrate against an up-to-date database every time.
+// A redeploy opens an up-to-date database every time.
 func TestMigrateTwiceIsANoOp(t *testing.T) {
-	d := dbtest.New(t)
-	applied, err := db.Migrate(d)
+	path := filepath.Join(t.TempDir(), "twice.db")
+	first, applied, err := db.OpenMigrated(path)
+	if err != nil || len(applied) != 1 {
+		t.Fatalf("first open: applied %v, err %v", applied, err)
+	}
+	first.Close()
+	d, applied, err := db.OpenMigrated(path)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer d.Close()
 	if len(applied) != 0 {
 		t.Errorf("second run applied %v", applied)
 	}
@@ -78,14 +84,11 @@ func TestStrictRefusesWrongType(t *testing.T) {
 // commit in between ("database is locked", which busy_timeout cannot cure).
 func TestTransactionsBeginImmediate(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "test.db")
-	d, err := db.Open(path)
+	d, _, err := db.OpenMigrated(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer d.Close()
-	if _, err := db.Migrate(d); err != nil {
-		t.Fatal(err)
-	}
 	tx, err := d.Begin()
 	if err != nil {
 		t.Fatal(err)

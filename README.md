@@ -394,6 +394,9 @@ While it runs the database is three files: `music-practice.db`, `music-practice.
 `music-practice.db-shm` (it runs in WAL mode). Never copy the `.db` of a running app (`cp`,
 `docker cp`, a tar of the volume): recent commits live in the `-wal` file and the copy can be torn.
 Take a `VACUUM INTO` copy (the daily backups are exactly that) or stop the app first.
+A fourth file, `music-practice.db.migrate-lock`, sits beside the database: it serialises migrations
+between processes that open it at the same time (it is released when a process exits). It is
+created on first open and never deleted, so leave it alone while the app runs.
 
 Operating production (run from this repo; `kamal` as above). Only the `kamal app logs` form is
 exercised by `make logs-prod`; the rest are reasoned from Kamal's and the image's behaviour and
