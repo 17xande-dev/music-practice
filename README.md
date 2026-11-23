@@ -427,6 +427,21 @@ run from this repo on your laptop):
 docker run --rm -v music-practice-data:/data busybox ls -l /data/backups
 docker run --rm -v music-practice-data:/data -v "$PWD":/out busybox cp /data/backups/<file>.db /out/
 
+# Before a deploy: take a backup, because the daily one may predate the change
+# and a deploy that runs a migration cannot be undone by rolling the image back.
+# The image has no shell or sqlite3, so use a throwaway alpine container ON
+# home-docker. The backup runs as uid 65532 (a root read of a WAL database that
+# is not running would leave root-owned -wal/-shm files the app cannot use).
+# `.timeout 5000` waits out a write in progress; the last line must print `ok`.
+docker run --rm -v music-practice-data:/data alpine:3 sh -c '
+  set -e
+  apk add --no-cache sqlite >/dev/null
+  adduser -D -H -u 65532 app
+  su -s /bin/sh app -c "sqlite3 -bail -cmd \".timeout 5000\" /data/music-practice.db \".backup /data/music-practice-pre-deploy.db\""
+  chmod 600 /data/music-practice-pre-deploy.db
+  su -s /bin/sh app -c "sqlite3 -readonly /data/music-practice-pre-deploy.db \"PRAGMA integrity_check\""'
+# It overwrites an earlier music-practice-pre-deploy.db and is not pruned; delete it once the deploy is confirmed.
+
 # Restore. First verify the copy BEFORE touching anything: the file must exist,
 # be non-empty, and pass SQLite's own check (ON home-docker, in the directory
 # holding <file>.db; the image has no sqlite3, so use one that does):
