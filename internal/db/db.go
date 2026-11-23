@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -105,6 +106,12 @@ func Open(path string) (*sql.DB, error) {
 // the previous runner has no version table and records its progress in
 // PRAGMA user_version; it is adopted once, in migrate.
 func OpenMigrated(path string) (*sql.DB, []string, error) {
+	return openMigrated(path, migrationFiles())
+}
+
+// openMigrated is OpenMigrated over any migrations, so a test can run the
+// locked path against several migrations including a non-idempotent one.
+func openMigrated(path string, files fs.FS) (*sql.DB, []string, error) {
 	abs, release, err := lock(path)
 	if err != nil {
 		return nil, nil, err
@@ -114,7 +121,7 @@ func OpenMigrated(path string) (*sql.DB, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	applied, err := migrate(context.Background(), d, migrationFiles())
+	applied, err := migrate(context.Background(), d, files)
 	if err != nil {
 		d.Close()
 		return nil, applied, err
@@ -195,6 +202,35 @@ func legacyVersion(ctx context.Context, d *sql.DB, files fs.FS) (int64, error) {
 		return 0, fmt.Errorf("db: database is at version %d but this build knows only %d: refusing to run an older binary against it", v, len(known))
 	}
 	return v, nil
+}
+
+// StatusAt is the -migrate-status command: it reports each migration of the
+// database at path as applied or pending. It never creates a database: a
+// missing file is reported as not yet migrated. For an existing file it holds
+// the migration lock from before the first query until it has closed the
+// database, because reading the status of an empty file still writes goose's
+// version table, and that write must not race another process's migration.
+func StatusAt(path string) ([]string, error) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("db: status %s: %w", path, err)
+	}
+	if _, err := os.Stat(abs); errors.Is(err, fs.ErrNotExist) {
+		return []string{fmt.Sprintf("no database at %s: not yet migrated", abs)}, nil
+	} else if err != nil {
+		return nil, fmt.Errorf("db: status %s: %w", path, err)
+	}
+	abs, release, err := lock(abs)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+	d, err := openLocked(abs)
+	if err != nil {
+		return nil, err
+	}
+	defer d.Close()
+	return Status(d)
 }
 
 // Status describes each known migration as applied or pending, for the
