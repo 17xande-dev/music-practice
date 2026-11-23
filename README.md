@@ -396,7 +396,7 @@ While it runs the database is three files: `music-practice.db`, `music-practice.
 Take a `VACUUM INTO` copy (the daily backups are exactly that) or stop the app first.
 A fourth file, `music-practice.db.migrate-lock`, sits beside the database: it serialises migrations
 between processes that open it at the same time (it is released when a process exits). It is
-created on first open and never deleted, so leave it alone while the app runs.
+created on first open and never deleted, so leave it alone while the app runs. Run migrating commands as the image user (e.g. through `kamal app exec`), never as root: a root-created `music-practice.db.migrate-lock` (0600) blocks the app user from migrating.
 
 Operating production (run from this repo; `kamal` as above). Only the `kamal app logs` form is
 exercised by `make logs-prod`; the rest are reasoned from Kamal's and the image's behaviour and
