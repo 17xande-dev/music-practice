@@ -80,8 +80,8 @@ func openLocked(path string) (*sql.DB, error) {
 // refuses to start if the driver did not apply them. WAL makes a plain `cp`
 // of the file an unsafe backup, so backups use VACUUM INTO.
 //
-// Open does not migrate (the status command uses it as is; everything that
-// writes the schema uses OpenMigrated). It holds the migration lock around
+// Open does not migrate: everything that writes the schema uses OpenMigrated,
+// and the status command uses StatusAt. It holds the migration lock around
 // Check, which can switch a fresh database to WAL, and releases it before
 // returning.
 //
@@ -230,12 +230,19 @@ func StatusAt(path string) ([]string, error) {
 		return nil, err
 	}
 	defer d.Close()
-	return Status(d)
+	lines, err := Status(d)
+	statusHook()
+	return lines, err
 }
 
-// Status describes each known migration as applied or pending, for the
-// -migrate-status flag. It never writes to a database it has to adopt: a
-// legacy database is reported from its user_version.
+// statusHook runs after the status is read and before the database is closed
+// and the lock released, so a test can prove the lock is still held then.
+var statusHook = func() {}
+
+// Status describes each known migration as applied or pending. It never adopts
+// a legacy database (it is reported from its user_version), but on an empty
+// database goose still creates its version table, and Status takes no lock of
+// its own: the -migrate-status command goes through StatusAt, which does.
 func Status(d *sql.DB) ([]string, error) {
 	return status(context.Background(), d, migrationFiles())
 }

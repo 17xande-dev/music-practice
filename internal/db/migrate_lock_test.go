@@ -94,10 +94,10 @@ func TestConcurrentOpenMigratedOnALegacyDatabase(t *testing.T) {
 // finished re-runs an ALTER and fails.
 func TestConcurrentOpenMigratedOverSeveralMigrations(t *testing.T) {
 	fsys := files(t, map[string]string{
-		"0002_later.sql":   add0002,
-		"0003_add_a.sql":   "-- +goose Up\nALTER TABLE later ADD COLUMN a TEXT NOT NULL DEFAULT '';\n",
-		"0004_add_b.sql":   "-- +goose Up\nALTER TABLE later ADD COLUMN b TEXT NOT NULL DEFAULT '';\n",
-		"0005_add_row.sql": "-- +goose Up\nCREATE TABLE more (id INTEGER PRIMARY KEY) STRICT;\n",
+		"0002_later.sql":       add0002,
+		"0003_add_a.sql":       "-- +goose Up\nALTER TABLE later ADD COLUMN a TEXT NOT NULL DEFAULT '';\n",
+		"0004_add_b.sql":       "-- +goose Up\nALTER TABLE later ADD COLUMN b TEXT NOT NULL DEFAULT '';\n",
+		"0005_create_more.sql": "-- +goose Up\nCREATE TABLE more (id INTEGER PRIMARY KEY) STRICT;\n",
 	})
 	dbs := openConcurrentlyWith(t, filepath.Join(t.TempDir(), "fresh.db"), 8, fsys)
 	requireVersionsOnce(t, dbs[0], 6) // 0..5
