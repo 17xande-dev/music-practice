@@ -119,6 +119,7 @@ func TestSessionListsAndSweepUseKindDeadlines(t *testing.T) {
 	u := mustCreate(t, s, "u@example.com", false)
 	const day = 24 * time.Hour
 	live := map[int64]time.Time{}
+	dead := 0
 	for _, tc := range []struct {
 		kind         string
 		age, idleFor time.Duration
@@ -132,6 +133,18 @@ func TestSessionListsAndSweepUseKindDeadlines(t *testing.T) {
 		// A clock step made last use precede creation. Counting it as
 		// creation keeps the web row live despite its old expires_at.
 		{KindWeb, day, 60 * day, "2026-01-01T00:00:00Z", now.Add(29 * day)},
+		// Every deadline to the second: exactly at it the row is gone, one
+		// second before it the row is live until that second.
+		{KindWeb, 90 * day, 0, "", time.Time{}},
+		{KindWeb, 90*day - time.Second, 0, "", now.Add(time.Second)},
+		{KindWeb, 40 * day, 30 * day, "", time.Time{}},
+		{KindWeb, 40 * day, 30*day - time.Second, "", now.Add(time.Second)},
+		{KindDevice, 365*day - time.Second, 0, "", now.Add(time.Second)},
+		{KindDevice, 100 * day, 90*day - time.Second, "", now.Add(time.Second)},
+		// Last use before creation counts as creation, for devices too: the
+		// row lives to created+90d, not "idle since the older timestamp".
+		{KindDevice, 10 * day, 200 * day, "", now.Add(80 * day)},
+		{KindDevice, 90 * day, 200 * day, "", time.Time{}},
 	} {
 		_, sess, err := s.SignIn(t.Context(), u, tc.kind, "")
 		if err != nil {
@@ -142,7 +155,9 @@ func TestSessionListsAndSweepUseKindDeadlines(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !tc.liveUntil.IsZero() {
+		if tc.liveUntil.IsZero() {
+			dead++
+		} else {
 			live[sess.ID] = tc.liveUntil
 		}
 	}
@@ -159,13 +174,57 @@ func TestSessionListsAndSweepUseKindDeadlines(t *testing.T) {
 	if err != nil || len(users) != 1 || users[0].Sessions != len(live) {
 		t.Fatalf("admin list did not count the same live sessions: %v", err)
 	}
-	if n, err := s.DeleteExpired(t.Context()); err != nil || n != 3 {
-		t.Fatalf("sweep removed %d rows; want three: %v", n, err)
+	if n, err := s.DeleteExpired(t.Context()); err != nil || n != int64(dead) {
+		t.Fatalf("sweep removed %d rows; want %d: %v", n, dead, err)
 	}
 	for id := range live {
 		var n int
 		if err := s.db.QueryRowContext(t.Context(), `SELECT count(*) FROM auth_sessions WHERE id = ?`, id).Scan(&n); err != nil || n != 1 {
 			t.Fatalf("sweep did not keep live row %d: count=%d, err=%v", id, n, err)
+		}
+	}
+}
+
+// The touch is throttled to once an hour. The SQL repeats the throttle, so its
+// boundary must agree with the Go check to the second: one second early is
+// not written, exactly an hour and a second later are.
+func TestTouchThrottleBoundary(t *testing.T) {
+	for _, kind := range []string{KindWeb, KindDevice} {
+		for _, tc := range []struct {
+			name    string
+			since   time.Duration
+			touched bool
+		}{
+			{"one second before the interval", time.Hour - time.Second, false},
+			{"exactly the interval", time.Hour, true},
+			{"one second after the interval", time.Hour + time.Second, true},
+		} {
+			t.Run(kind+"/"+tc.name, func(t *testing.T) {
+				s := newStore(t)
+				u := mustCreate(t, s, "u@example.com", false)
+				created := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
+				s.now = func() time.Time { return created }
+				token, sess, err := s.SignIn(t.Context(), u, kind, "")
+				if err != nil {
+					t.Fatal(err)
+				}
+				now := created.Add(tc.since)
+				s.now = func() time.Time { return now }
+				if _, _, err := s.Authenticate(t.Context(), token); err != nil {
+					t.Fatal(err)
+				}
+				var last string
+				if err := s.db.QueryRowContext(t.Context(), `SELECT last_used_at FROM auth_sessions WHERE id = ?`, sess.ID).Scan(&last); err != nil {
+					t.Fatal(err)
+				}
+				want := timestamp(created)
+				if tc.touched {
+					want = timestamp(now)
+				}
+				if last != want {
+					t.Fatalf("last_used_at = %s; want %s", last, want)
+				}
+			})
 		}
 	}
 }
