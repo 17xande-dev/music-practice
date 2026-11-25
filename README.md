@@ -510,8 +510,10 @@ kamal app boot                     # laptop
 ```
 
 Cloudflare settings for the hostname: the tunnel's public hostname points at
-`http://kamal-proxy:80`. Do not set an `httpHostHeader` override: the cross-origin check compares
-`Origin` with the request's `Host`, so rewriting `Host` breaks every sign-in and sync POST.
+`http://kamal-proxy:80`. Do not set an `httpHostHeader` override: kamal-proxy routes by `Host`, so
+an override breaks routing anyway. Keep `BASE_URL` set to the exact public HTTPS origin (it is
+installed as a trusted origin), so an `Origin`-only sign-in or sync POST is still accepted if a
+proxy ever rewrites `Host`; requests that carry `Sec-Fetch-Site` never depended on `Host`.
 Also turn off Email Obfuscation and Rocket Loader for this hostname (a Configuration Rule, or
 Speed and Scrape Shield): both rewrite served pages and scripts, which the strict CSP then refuses.
 

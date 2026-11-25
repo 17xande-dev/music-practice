@@ -60,7 +60,8 @@ Native clients can omit both `Origin` and `Sec-Fetch-Site`. On endpoints that re
 session, a request with any `Authorization` header that is not exactly one well-formed
 `Bearer <token>` (an empty Bearer, `Basic ...`, an empty value, a second `Authorization` header)
 is a 401, not a request to use the session cookie instead. The cookie is used only when there is
-no `Authorization` header at all.
+no `Authorization` header at all. The scheme is case-insensitive and may be followed by a space or
+a tab; no other whitespace (a non-breaking space, say) counts as a separator.
 
 These limits are configurable on the server (see the README config table). Activity is recorded
 at most hourly, so idle expiry can arrive up to an hour early. Existing tokens use the original
