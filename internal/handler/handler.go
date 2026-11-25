@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/account"
@@ -63,6 +64,9 @@ type Options struct {
 	// behind a TLS-terminating proxy.
 	CookieSecure bool
 
+	// BaseURL is the validated public origin, if configured.
+	BaseURL string
+
 	// ClientIP resolves the visitor's address for rate limiting; the zero
 	// value uses the connection's own address.
 	ClientIP clientip.Source
@@ -81,6 +85,7 @@ type Handler struct {
 	limits   limits
 
 	session *cookie.Cookie
+	router  http.Handler
 
 	// afterVerify, when set, runs between a sign-in's password check and its
 	// session insert; tests use it to land a password reset in that window.
@@ -168,6 +173,9 @@ func New(o Options) (*Handler, error) {
 		log: o.Log, dev: o.Dev, accounts: o.Accounts, history: o.History, clientIP: o.ClientIP,
 		session: session, limits: lims,
 	}
+	if h.log == nil {
+		h.log = slog.Default()
+	}
 	if o.Dev {
 		h.tmplFS = os.DirFS(devTemplatesDir)
 		h.assets = NewAssets(os.DirFS(devStaticDir), true)
@@ -184,6 +192,10 @@ func New(o Options) (*Handler, error) {
 		return nil, err
 	}
 	h.pages = pages
+	h.router, err = h.newRoutes(o.BaseURL)
+	if err != nil {
+		return nil, err
+	}
 	return h, nil
 }
 
@@ -209,18 +221,44 @@ func (h *Handler) parsePages() (map[string]*template.Template, error) {
 	return pages, nil
 }
 
-// Routes returns the mux. Every route is registered here, so this function
-// is the complete list of what the server answers.
-//
-// Every state-changing request passes the stdlib's cross-origin check
-// (Sec-Fetch-Site, falling back to Origin against Host), which is the CSRF
-// defence for the forms and the API alike. A request from the iPad app
-// carries neither header and passes; it authenticates with a bearer token a
-// browser would never attach on its own.
-func (h *Handler) Routes() http.Handler {
+// Routes returns the complete HTTP router, including cross-origin protection.
+func (h *Handler) Routes() http.Handler { return h.router }
+
+func (h *Handler) newRoutes(origin string) (http.Handler, error) {
 	mux := http.NewServeMux()
-	h.routes(func(pattern string, f http.Handler) { mux.Handle(pattern, f) })
-	return adminHeaders(http.NewCrossOriginProtection().Handler(mux))
+	patterns := make(map[string]bool)
+	h.routes(func(pattern string, f http.Handler) {
+		mux.Handle(pattern, f)
+		patterns[pattern] = true
+	})
+	protection := http.NewCrossOriginProtection()
+	if origin != "" {
+		if err := protection.AddTrustedOrigin(origin); err != nil {
+			return nil, fmt.Errorf("csrf: add trusted origin: %w", err)
+		}
+	}
+	protection.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Handler can return a concrete path for a redirect; only log registered patterns.
+		_, pattern := mux.Handler(r)
+		if !patterns[pattern] {
+			pattern = "(unmatched)"
+		}
+		reason := "Origin"
+		if r.Header.Get("Sec-Fetch-Site") != "" {
+			reason = "Sec-Fetch-Site"
+		}
+		h.log.WarnContext(r.Context(), "csrf: request refused", "method", r.Method, "route", pattern, "reason", reason)
+		w.Header().Set("Cache-Control", "no-store")
+		const message = "cross-origin request refused"
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			apiError(w, http.StatusForbidden, message)
+			return
+		}
+		http.Error(w, message, http.StatusForbidden)
+	}))
+	// Wrap the whole mux, not just cookie routes: desktop forms and native sync
+	// share the same origin policy. No headers is a supported native request.
+	return adminHeaders(protection.Handler(mux)), nil
 }
 
 // handleFunc registers one route. Every route goes through one, so a test

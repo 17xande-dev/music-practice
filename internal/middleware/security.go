@@ -105,9 +105,15 @@ func Logging(log *slog.Logger) Middleware {
 			if strings.HasPrefix(r.URL.Path, "/static/") && rec.status < 400 {
 				return
 			}
+			path := r.URL.Path
+			if rec.status == http.StatusForbidden {
+				// A refusal can happen before routing; the CSRF warning records
+				// the registered pattern separately without echoing the URL.
+				path = "(forbidden)"
+			}
 			log.Info("request",
 				"method", r.Method,
-				"path", r.URL.Path,
+				"path", path,
 				"status", rec.status,
 				"dur", time.Since(start).Round(time.Microsecond))
 		})

@@ -389,6 +389,32 @@ from the recorded sign-in and last use, not from the deploy. Browser history sta
 deletions are discarded when sync sees the old cookie rejected. Rolling back across the cookie
 rename signs browsers out again.
 
+### Cross-origin requests and offline sync
+
+Go's `http.CrossOriginProtection` wraps the entire router. For state-changing requests
+it uses `Sec-Fetch-Site` first, then falls back to comparing `Origin` with the request
+`Host`. The validated `BASE_URL`, when set, is an exact trusted origin so a proxy
+rewriting `Host` does not break browser requests. Refusals are non-cacheable 403s
+(JSON under `/api/`); the warning records the method, registered route pattern
+(or an unmatched marker), and which header caused the refusal, not the URL or header values.
+
+Requests with neither header still pass the origin check: this is how the native
+iPad client works, and it still needs to authenticate. For a browser that sends
+neither header, the session cookie's `SameSite=Lax` is the backstop; the server
+does not require a separate form token. An explicitly empty Bearer credential
+is rejected rather than falling back to a browser session.
+
+The service worker stores only the public, cookie-independent shells (`/`,
+`/songs`, `/progress`, `/about`) and static assets. It doesn't cache account or
+admin pages or intercept API requests or non-GET requests. Tests exercise the
+worker's cache decisions, compare the served shells with and without a session,
+and check that a cookie-authenticated `POST /api/sync` with
+`Sec-Fetch-Site: same-origin` succeeds. To verify browser behavior end to end,
+sign in on a worksheet page, trigger a sync and inspect the request and response
+in DevTools. Then go offline under worker control and verify that a public
+shell loads from Cache Storage and no private account, admin or API response
+is stored there. The tests do not run that full browser flow.
+
 ```sh
 make deploy                        # check gate, then kamal deploy (build, push to ghcr.io, swap in)
 kamal rollback <version>           # back to an earlier image; `kamal app version` / `kamal app containers` list them

@@ -43,7 +43,8 @@ at the end of this page.
 
 - **Browser:** the `__Host-mp_session` cookie set by signing in at `/account` (`mp_session` only
   when running with `COOKIE_SECURE=0` for plain-HTTP development). Same-origin `fetch` sends it.
-  Cross-site requests are refused (403) by the server's cross-origin protection. HTTPS browsers
+  Cross-site browser requests can receive `403 {"error":"cross-origin request refused"}` from
+  the server's cross-origin protection. HTTPS browsers
   still using the old bare name get a 401 and must sign in again; the cookie rename does not affect
   iPad tokens. By default, a browser session ends after 30 days without use or 90 days after
   sign-in, whichever comes first.
@@ -54,6 +55,9 @@ at the end of this page.
   `401 {"error":"not signed in"}` on authenticated endpoints, including `/api/sync`. Sign in again
   to obtain a new token. This is the existing signed-out flow: the client keeps local history but
   clears the token and sync state, including the cursor and any queued deletions.
+
+Native clients can omit both `Origin` and `Sec-Fetch-Site`. On endpoints that require a
+session, an empty Bearer credential is a 401, not a request to use the session cookie instead.
 
 These limits are configurable on the server (see the README config table). Activity is recorded
 at most hourly, so idle expiry can arrive up to an hour early. Existing tokens use the original
