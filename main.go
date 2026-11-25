@@ -98,7 +98,6 @@ func run(log *slog.Logger, dev bool) error {
 		ClientIP: cfg.ClientIP,
 
 		CookieSecure: cfg.CookieSecure,
-		HSTS:         cfg.HSTS,
 	})
 	if err != nil {
 		return err

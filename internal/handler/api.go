@@ -60,11 +60,11 @@ var errNotSignedIn = errors.New("not signed in")
 func (h *Handler) apiUser(r *http.Request) (account.User, account.Session, error) {
 	tok := bearer(r)
 	if tok == "" {
-		c, err := r.Cookie(sessionCookie)
-		if err != nil {
+		var ok bool
+		tok, ok = h.session.Value(r)
+		if !ok {
 			return account.User{}, account.Session{}, errNotSignedIn
 		}
-		tok = c.Value
 	}
 	u, s, err := h.accounts.Authenticate(r.Context(), tok)
 	if errors.Is(err, account.ErrNotFound) {

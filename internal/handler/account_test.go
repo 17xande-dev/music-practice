@@ -1,18 +1,19 @@
 package handler
 
 import (
-	tls_ "crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/auth"
 
 	"github.com/17xande-dev/password"
+	"github.com/17xande-dev/websec/webtest"
 )
 
 const testPassword = "a long enough password"
@@ -42,7 +43,7 @@ func (s *testServer) do(t *testing.T, method, target string, form url.Values, co
 		r = httptest.NewRequest(method, target, nil)
 	}
 	if cookie != "" {
-		r.AddCookie(&http.Cookie{Name: sessionCookie, Value: cookie})
+		r.AddCookie(&http.Cookie{Name: s.h.session.Name(), Value: cookie})
 	}
 	rec := httptest.NewRecorder()
 	s.routes.ServeHTTP(rec, r)
@@ -57,7 +58,7 @@ func (s *testServer) signIn(t *testing.T, email, password string) string {
 		t.Fatalf("sign in as %s: status %d", email, rec.Code)
 	}
 	for _, c := range rec.Result().Cookies() {
-		if c.Name == sessionCookie && c.Value != "" {
+		if c.Name == s.h.session.Name() && c.Value != "" {
 			return c.Value
 		}
 	}
@@ -177,19 +178,47 @@ func (s *testServer) signInLegacy(t *testing.T, via string) account.User {
 // The cookie signs in an account, so it must be unreadable to scripts and
 // never sent on another site's cross-site POST.
 func TestSessionCookieAttributes(t *testing.T) {
-	// As in production: HSTS on, so auto is Secure.
-	s := newTestServerWith(t, func(o *Options) { o.HSTS = true })
+	s := newTestServer(t)
 	s.addUser(t, "a@x.com", false)
-	rec := s.do(t, "POST", "/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}}, "")
-	var c *http.Cookie
-	for _, x := range rec.Result().Cookies() {
-		if x.Name == sessionCookie {
-			c = x
-		}
+	server := httptest.NewTLSServer(s.routes)
+	t.Cleanup(server.Close)
+	browser := webtest.NewServer(t, server)
+	want := webtest.CookieWant{Name: "__Host-mp_session", HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode, Path: "/"}
+	login := browser.PostForm("/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}})
+	afterSet := s.accounts.Now()
+	login.WantRedirect(http.StatusSeeOther, "/account")
+	c := webtest.WantCookie(t, login, want)
+	_, sess, err := s.accounts.Authenticate(t.Context(), c.Value)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if c == nil || !c.HttpOnly || !c.Secure || c.SameSite != http.SameSiteLaxMode || c.Path != "/" {
-		t.Fatalf("cookie = %+v", c)
+	// Cookie expiry is written at browser timestamp precision; Max-Age rounds down.
+	const ttl = 90 * 24 * time.Hour
+	expires := sess.CreatedAt.Add(ttl)
+	if !c.Expires.Equal(expires.Truncate(time.Second)) ||
+		c.MaxAge < int(expires.Sub(afterSet).Seconds()) || c.MaxAge > int(ttl.Seconds()) {
+		t.Errorf("cookie expiry: Expires=%s Max-Age=%d; want a fixed deadline 90 days after sign-in", c.Expires, c.MaxAge)
 	}
+
+	browser.Get("/api/me").WantStatus(http.StatusOK)
+	logout := browser.PostForm("/account/logout", url.Values{})
+	logout.WantRedirect(http.StatusSeeOther, "/account?notice=signed-out")
+	want.Cleared = true
+	webtest.WantCookie(t, logout, want)
+	browser.Get("/api/me").WantStatus(http.StatusUnauthorized)
+}
+
+func TestBareNamedSessionCookieIsIgnored(t *testing.T) {
+	s := newTestServer(t)
+	s.addUser(t, "a@x.com", false)
+	token := s.signIn(t, "a@x.com", testPassword)
+	check := func(name string, status int) {
+		b := webtest.New(t, s.routes, "https://example.com")
+		b.SetCookie(&http.Cookie{Name: name, Value: token, Path: "/"})
+		b.Get("/api/me").WantStatus(status)
+	}
+	check("mp_session", http.StatusUnauthorized)
+	check("__Host-mp_session", http.StatusOK)
 }
 
 // Sign-in failures must answer identically, or the form says which emails
@@ -239,7 +268,7 @@ func TestSignInIsRateLimitedPerEmail(t *testing.T) {
 	}
 	// Even the right password is refused once the bucket is empty, and
 	// changing the email's case does not buy a fresh bucket.
-	rec := s.do(t, "POST", "/account/login", url.Values{"email": {"A@x.com"}, "password": {testPassword}}, "")
+	rec := s.do(t, "POST", "/account/login", url.Values{"email": {" A@x.com "}, "password": {testPassword}}, "")
 	if rec.Code != http.StatusTooManyRequests {
 		t.Fatalf("status %d, want 429", rec.Code)
 	}
@@ -361,7 +390,7 @@ func TestCrossOriginPostIsRefused(t *testing.T) {
 	cookie := s.signIn(t, "a@x.com", testPassword)
 	r := httptest.NewRequest("POST", "/account/logout", strings.NewReader(""))
 	r.Header.Set("Sec-Fetch-Site", "cross-site")
-	r.AddCookie(&http.Cookie{Name: sessionCookie, Value: cookie})
+	r.AddCookie(&http.Cookie{Name: s.h.session.Name(), Value: cookie})
 	rec := httptest.NewRecorder()
 	s.routes.ServeHTTP(rec, r)
 	if rec.Code != http.StatusForbidden {
@@ -396,56 +425,25 @@ func TestBrowserLabel(t *testing.T) {
 
 func itoa(n int64) string { return strconv.FormatInt(n, 10) }
 
-// Sign-in over plain HTTP on a LAN address needs a cookie the browser will
-// keep, so auto drops Secure there; but never when HSTS says the site is
-// https, whatever a client sends.
-func TestSessionCookieSecureModes(t *testing.T) {
-	login := func(s *testServer, hdr map[string]string, tls bool) *http.Cookie {
-		t.Helper()
-		r := httptest.NewRequest("POST", "/account/login", strings.NewReader(url.Values{"email": {"a@x.com"}, "password": {testPassword}}.Encode()))
-		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		for k, v := range hdr {
-			r.Header.Set(k, v)
-		}
-		if tls {
-			r.TLS = &tls_.ConnectionState{}
-		}
-		rec := httptest.NewRecorder()
-		s.routes.ServeHTTP(rec, r)
-		for _, c := range rec.Result().Cookies() {
-			if c.Name == sessionCookie {
-				return c
-			}
-		}
-		t.Fatalf("no session cookie: status %d", rec.Code)
-		return nil
-	}
-	mk := func(mode string, hsts bool) *testServer {
-		s := newTestServerWith(t, func(o *Options) { o.CookieSecure, o.HSTS = mode, hsts })
-		s.addUser(t, "a@x.com", false)
-		return s
-	}
-	for _, c := range []struct {
-		name string
-		mode string
-		hsts bool
-		hdr  map[string]string
-		tls  bool
-		want bool
+// A proxy or client must not control the cookie through a request header.
+func TestSessionCookieSecureIgnoresForwardedProto(t *testing.T) {
+	for _, tc := range []struct {
+		name, proto, cookie string
+		secure              bool
 	}{
-		{"auto, plain http, no HSTS", "auto", false, nil, false, false},
-		{"default mode is auto", "", false, nil, false, false},
-		{"auto, direct TLS", "auto", false, nil, true, true},
-		{"auto, proxy says https", "auto", false, map[string]string{"X-Forwarded-Proto": "https"}, false, true},
-		{"auto, HSTS on, plain http", "auto", true, nil, false, true},
-		{"auto, HSTS on, forged http header", "auto", true, map[string]string{"X-Forwarded-Proto": "http"}, false, true},
-		{"always", "1", false, nil, false, true},
-		{"never", "0", false, nil, false, false},
+		{"secure_behind_proxy", "http", "__Host-mp_session", true},
+		{"plain_http_LAN", "https", "mp_session", false},
 	} {
-		s := mk(c.mode, c.hsts)
-		got := login(s, c.hdr, c.tls)
-		if got.Secure != c.want || !got.HttpOnly || got.SameSite != http.SameSiteLaxMode {
-			t.Errorf("%s: Secure=%v want %v (cookie %+v)", c.name, got.Secure, c.want, got)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			s := newTestServerWith(t, func(o *Options) { o.CookieSecure = tc.secure })
+			s.addUser(t, "a@x.com", false)
+			c := webtest.New(t, s.routes, "http://app.example")
+			res := c.PostForm("/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}},
+				webtest.Header("X-Forwarded-Proto", tc.proto))
+			res.WantRedirect(http.StatusSeeOther, "/account")
+			webtest.WantCookie(t, res, webtest.CookieWant{
+				Name: tc.cookie, HttpOnly: true, Secure: tc.secure, SameSite: http.SameSiteLaxMode, Path: "/",
+			})
+		})
 	}
 }

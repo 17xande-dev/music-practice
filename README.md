@@ -139,23 +139,28 @@ included. It also needs HTTPS, and permission to use the audio input.
 ## Develop
 
 ```sh
-make dev     # rebundle TypeScript on change + run the server with -dev on :8080
+COOKIE_SECURE=0 make dev  # rebundle TypeScript on change + run with -dev on :8080
 make check   # the gate before any commit: gofmt, vet, deno check/lint/fmt/test, bundle, go test
 make build   # bundle, then compile bin/music-practice with everything embedded
 make docker  # multi-stage image: Deno bundle → Go build → distroless
 ```
 
 The tools are Go 1.27 and Deno 2.9, pinned in `mise.toml`. Configuration comes from the environment
-only:
+only. `.env.example` lists local settings; copy it to `.env` and export the values if you want to
+reuse them (`set -a; . ./.env; set +a`). The app does not load `.env` itself.
 
-| Variable           | Default | Meaning                                                                                                                                                                                                            |
-| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ADDR`             | `:8080` | Listen address                                                                                                                                                                                                     |
-| `HSTS`             | off     | `1` to send Strict-Transport-Security. Only on an HTTPS deployment, never localhost                                                                                                                                |
-| `COOKIE_SECURE`    | `auto`  | Secure flag on the session cookie: `auto`, `1` or `0`. Auto is Secure unless the request came over plain HTTP and `HSTS` is off, so `http://192.168.x.x` sign-in works on a LAN. With `HSTS=1` it is always Secure |
-| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM                                                                                                                                                                     |
-| `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db`                                                                                                                               |
-| `CLIENT_IP_HEADER` | none    | Header carrying the visitor's IP behind a proxy, for rate limits. Prefer a single-value one the proxy overwrites (`CF-Connecting-IP`); for `X-Forwarded-For` only the rightmost entry is used                      |
+| Variable           | Default | Meaning |
+| ------------------ | ------- | ------- |
+| `ADDR`             | `:8080` | Listen address |
+| `HSTS`             | `0`     | Send Strict-Transport-Security on HTTPS only. Accepts `1`, `0`, `true`, `false` |
+| `COOKIE_SECURE`    | `1`     | Secure session cookie. Accepts `1`, `0`, `true`, `false`; `auto` is refused. Set `0` for plain-HTTP development |
+| `BASE_URL`         | unset   | Optional canonical public origin: lowercase `scheme://host[:port]`, no path or trailing slash, omit default port. HTTPS required unless `COOKIE_SECURE=0` |
+| `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM |
+| `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
+| `CLIENT_IP_HEADER` | unset   | Socket peer by default. Set a header only if all traffic arrives through a proxy that controls it. Production trusts `CF-Connecting-IP`; `X-Forwarded-For` uses the rightmost entry |
+
+For sign-in over plain HTTP on a LAN, set `COOKIE_SECURE=0` and use the LAN origin for `BASE_URL`
+(e.g. `http://192.0.2.1:8080`). Forwarded protocol headers do not change cookie security.
 
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
 applies pending ones itself on startup, each in its own transaction. Migrations are goose files in
@@ -367,9 +372,13 @@ terminates TLS, so Kamal runs with `proxy.ssl: false`. Nothing else can reach th
 makes trusting `CF-Connecting-IP` safe. The app runs with a 512 MB limit and the named volume
 `music-practice-data` at `/data`.
 
-`HSTS=1` stays on: the browser always sees https, even though the app sees plain http from
-kamal-proxy. It sends Strict-Transport-Security and, with `COOKIE_SECURE=auto`, keeps the session
-cookie Secure.
+`HSTS=1` sends Strict-Transport-Security. Set `COOKIE_SECURE=1` and
+`BASE_URL=https://music.17xande.dev`: the browser sees HTTPS even though the app sees plain HTTP
+from kamal-proxy. The first release using `__Host-mp_session` signs browser users out once; iPad
+tokens continue to work. The new cookie expires 90 days after sign-in, even if server-side
+activity keeps the session row live longer. Browser history stays local, but any not-yet-sent
+deletions are discarded when sync sees the old cookie rejected. Rolling back across the cookie
+rename signs browsers out again.
 
 ```sh
 make deploy                        # check gate, then kamal deploy (build, push to ghcr.io, swap in)

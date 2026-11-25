@@ -31,12 +31,12 @@ type testServer struct {
 
 func newTestServer(t *testing.T) *testServer { return newTestServerWith(t, nil) }
 
-// newTestServerWith lets a test set Options (cookie mode, HSTS) before New.
+// newTestServerWith lets a test override Options before New.
 func newTestServerWith(t *testing.T, tweak func(*Options)) *testServer {
 	t.Helper()
 	d := dbtest.New(t)
 	accounts := account.NewStore(d)
-	o := Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d)}
+	o := Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d), CookieSecure: true}
 	if tweak != nil {
 		tweak(&o)
 	}

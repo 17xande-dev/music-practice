@@ -41,8 +41,10 @@ at the end of this page.
 
 ## Authentication
 
-- **Browser:** the `mp_session` cookie set by signing in at `/account`. Same-origin `fetch` sends
-  it. Cross-site requests are refused (403) by the server's cross-origin protection.
+- **Browser:** the `__Host-mp_session` cookie set by signing in at `/account` (`mp_session` only
+  when running with `COOKIE_SECURE=0` for plain-HTTP development). Same-origin `fetch` sends it.
+  Cross-site requests are refused (403) by the server's cross-origin protection. HTTPS browsers
+  still using the old bare name get a 401 and must sign in again; the iPad token is unaffected.
 - **App:** `Authorization: Bearer <token>`, from `POST /api/token`. A token lasts until it's
   revoked: by signing out in the app, by "Sign out" on the account page's device list, by an admin,
   by a password change or reset, or by the account being disabled or deleted. After any of these,

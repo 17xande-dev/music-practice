@@ -48,14 +48,11 @@ proxy:
 
 env:
   clear:
-    # The browser always sees https (Cloudflare terminates it), even though
-    # kamal-proxy and the app speak plain http. HSTS=1 is the operator's "this
-    # site is https": it sends Strict-Transport-Security, and it makes
-    # COOKIE_SECURE=auto always set Secure on the session cookie. Without HSTS the
-    # app would see plain http from kamal-proxy and drop Secure (auto's LAN
-    # case). Same behaviour as before the move.
+    # The browser sees HTTPS even though kamal-proxy and the app speak HTTP.
+    # Configure the public origin and cookie policy, not the transport to the app.
     HSTS: "1"
-    COOKIE_SECURE: auto
+    COOKIE_SECURE: "1"
+    BASE_URL: https://music.17xande.dev
     # Accounts and synced history. On the named volume below, so a redeploy
     # keeps it. Daily VACUUM INTO backups land beside it, in /data/backups.
     DB_PATH: /data/music-practice.db

@@ -12,10 +12,11 @@ import (
 
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/auth"
+	"github.com/17xande-dev/ratelimit"
 	"github.com/17xande-dev/websec"
 )
 
-// sessionCookie carries a browser's session token.
+// sessionCookie is the bare name; the cookie policy prefixes it on HTTPS.
 const sessionCookie = "mp_session"
 
 // notices and accountErrors are the only messages a redirect can ask the
@@ -64,11 +65,11 @@ type accountPage struct {
 // admin and API routes call it: the page shells stay identical for everyone,
 // which is what lets the service worker cache them.
 func (h *Handler) currentUser(r *http.Request) (account.User, account.Session, bool) {
-	c, err := r.Cookie(sessionCookie)
-	if err != nil {
+	token, ok := h.session.Value(r)
+	if !ok {
 		return account.User{}, account.Session{}, false
 	}
-	u, s, err := h.accounts.Authenticate(r.Context(), c.Value)
+	u, s, err := h.accounts.Authenticate(r.Context(), token)
 	if err != nil {
 		if !errors.Is(err, account.ErrNotFound) {
 			h.log.Error("authenticate", "err", err)
@@ -76,47 +77,6 @@ func (h *Handler) currentUser(r *http.Request) (account.User, account.Session, b
 		return account.User{}, account.Session{}, false
 	}
 	return u, s, true
-}
-
-// secureCookie reports whether the session cookie gets the Secure flag. A
-// browser drops a Secure cookie set over plain HTTP (except from localhost),
-// so web sign-in on a LAN address needs it off, but only where that is
-// honestly plain HTTP: auto drops Secure only when the request has no TLS,
-// no proxy says it was https, and HSTS (the operator's "this site is https")
-// is off. X-Forwarded-Proto can only ever raise this to Secure, never lower
-// it, so a forged header gains an attacker nothing.
-func (h *Handler) secureCookie(r *http.Request) bool {
-	switch h.cookieSecure {
-	case "1":
-		return true
-	case "0":
-		return false
-	}
-	if h.hsts || r.TLS != nil {
-		return true
-	}
-	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
-}
-
-func (h *Handler) setSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     sessionCookie,
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   h.secureCookie(r),
-		// Lax, hard-coded: the cookie signs in an account (and an admin), so it
-		// must never ride along on another site's cross-site POST.
-		SameSite: http.SameSiteLaxMode,
-		// The browser's maximum. The server's own expiry (90 days, sliding)
-		// decides when the session ends; the cookie only has to outlive it.
-		MaxAge: 400 * 24 * 60 * 60,
-	})
-}
-
-func (h *Handler) clearSessionCookie(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", HttpOnly: true,
-		Secure: h.secureCookie(r), SameSite: http.SameSiteLaxMode, MaxAge: -1})
 }
 
 // safeNext keeps a post-sign-in redirect on this site. The rules (browsers
@@ -182,7 +142,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	token, _, err := h.accounts.SignIn(r.Context(), u, account.KindWeb, browserLabel(r.UserAgent()))
+	token, sess, err := h.accounts.SignIn(r.Context(), u, account.KindWeb, browserLabel(r.UserAgent()))
 	if err != nil {
 		if errors.Is(err, account.ErrStaleCredentials) {
 			fail(http.StatusUnauthorized, loginFailed)
@@ -194,14 +154,15 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	// Signing in over a live session (another account's, say) ends the old
 	// one: otherwise it lingers, valid but unreachable, in that account's
 	// device list.
-	if old, err := r.Cookie(sessionCookie); err == nil && old.Value != token {
-		if err := h.accounts.RevokeToken(r.Context(), old.Value); err != nil {
+	if old, ok := h.session.Value(r); ok && old != token {
+		if err := h.accounts.RevokeToken(r.Context(), old); err != nil {
 			h.log.Error("revoke previous session", "err", err)
 		}
 	}
 	h.upgradePasswordHash(r.Context(), u, password, rehash)
 	h.accounts.RecordLogin(r.Context(), u.ID)
-	h.setSessionCookie(w, r, token)
+	// Store touches may extend the row's expiry, but not the browser deadline.
+	h.session.Set(w, token, sess.ExpiresAt)
 	if next == "" {
 		next = "/account"
 	}
@@ -218,7 +179,7 @@ func emailTag(email string) string {
 }
 
 // allowLogin applies both sign-in limits to an already normalised email. The
-// tight one is keyed on the email's hash, which an attacker cannot shed the
+// tight one is keyed on the email, which an attacker cannot shed the
 // way they can a cookie; the looser per-IP ceiling (an IPv6 client counts by
 // its /64) stops one address spraying many emails. The email limiter is only
 // consulted once the IP check passes: a refused client must not leave an
@@ -230,8 +191,7 @@ func (h *Handler) allowLogin(r *http.Request, email string) bool {
 			"by_ip", true, "by_email", false)
 		return false
 	}
-	sum := sha256.Sum256([]byte(email))
-	if !h.limits.loginEmail.Allow(string(sum[:])) {
+	if !h.limits.loginEmail.Allow(ratelimit.AccountKey(email)) {
 		h.log.Warn("sign-in rate limited", "email", emailTag(email), "ip", ip, "path", r.URL.Path,
 			"by_ip", false, "by_email", true)
 		return false
@@ -299,13 +259,13 @@ func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 	if !parseForm(w, r, maxFormBody) {
 		return
 	}
-	if c, err := r.Cookie(sessionCookie); err == nil {
-		if err := h.accounts.RevokeToken(r.Context(), c.Value); err != nil {
+	if token, ok := h.session.Value(r); ok {
+		if err := h.accounts.RevokeToken(r.Context(), token); err != nil {
 			h.serverError(w, err)
 			return
 		}
 	}
-	h.clearSessionCookie(w, r)
+	h.session.Clear(w)
 	http.Redirect(w, r, "/account?notice=signed-out", http.StatusSeeOther)
 }
 
@@ -382,7 +342,7 @@ func (h *Handler) revokeSession(w http.ResponseWriter, r *http.Request, u accoun
 		return
 	}
 	if id == s.ID {
-		h.clearSessionCookie(w, r)
+		h.session.Clear(w)
 		http.Redirect(w, r, "/account?notice=signed-out", http.StatusSeeOther)
 		return
 	}

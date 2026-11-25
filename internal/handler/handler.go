@@ -27,6 +27,7 @@ import (
 	"github.com/17xande-dev/password"
 	"github.com/17xande-dev/ratelimit"
 	"github.com/17xande-dev/ratelimit/clientip"
+	"github.com/17xande-dev/websec/cookie"
 	"golang.org/x/time/rate"
 )
 
@@ -58,12 +59,9 @@ type Options struct {
 	// History is the synced practice runs.
 	History *history.Store
 
-	// CookieSecure is the Secure-flag mode for the session cookie: "auto"
-	// (or empty), "1" or "0". Auto is Secure unless the request arrived over
-	// plain HTTP and HSTS is off. HSTS is the deployment's statement that it
-	// is https-only, so with it on the cookie is always Secure.
-	CookieSecure string
-	HSTS         bool
+	// CookieSecure is set by the deployment, even when the app sees plain HTTP
+	// behind a TLS-terminating proxy.
+	CookieSecure bool
 
 	// ClientIP resolves the visitor's address for rate limiting; the zero
 	// value uses the connection's own address.
@@ -82,8 +80,7 @@ type Handler struct {
 	clientIP clientip.Source
 	limits   limits
 
-	cookieSecure string // "auto", "1" or "0"; see Options.CookieSecure
-	hsts         bool
+	session *cookie.Cookie
 
 	// afterVerify, when set, runs between a sign-in's password check and its
 	// session insert; tests use it to land a password reset in that window.
@@ -163,10 +160,13 @@ func New(o Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	session, err := cookie.New(cookie.Config{Name: sessionCookie, Insecure: !o.CookieSecure, Now: o.Accounts.Now})
+	if err != nil {
+		return nil, fmt.Errorf("session cookie: %w", err)
+	}
 	h := &Handler{
 		log: o.Log, dev: o.Dev, accounts: o.Accounts, history: o.History, clientIP: o.ClientIP,
-		cookieSecure: o.CookieSecure, hsts: o.HSTS,
-		limits: lims,
+		session: session, limits: lims,
 	}
 	if o.Dev {
 		h.tmplFS = os.DirFS(devTemplatesDir)
