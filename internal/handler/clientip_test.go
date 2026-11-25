@@ -2,12 +2,11 @@ package handler
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 
 	"github.com/17xande-dev/music-practice/internal/config"
+	"github.com/17xande-dev/websec/webtest"
 )
 
 // serverFor builds a server whose client-IP policy comes from the real
@@ -27,19 +26,27 @@ func serverFor(t *testing.T, header string) *testServer {
 	return newTestServerWith(t, func(o *Options) { o.ClientIP = cfg.ClientIP })
 }
 
+// peerHeader carries the connection's peer address for one request. webtest
+// always connects from 192.0.2.1:1234 (httptest's peer) and has no way to
+// choose another, and these tests are about which peer and header the limiter
+// keys on, so a thin wrapper copies the header into RemoteAddr and removes it
+// before the real routes see the request.
+const peerHeader = "X-Test-Peer"
+
 func (s *testServer) loginFrom(t *testing.T, peer string, hdr map[string]string, email string) int {
 	t.Helper()
-	r := httptest.NewRequest("POST", "/account/login", strings.NewReader(url.Values{
-		"email": {email}, "password": {"wrong password!!"},
-	}.Encode()))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	r.RemoteAddr = peer
+	c := webtest.New(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if p := r.Header.Get(peerHeader); p != "" {
+			r.RemoteAddr = p
+			r.Header.Del(peerHeader)
+		}
+		s.routes.ServeHTTP(w, r)
+	}), csrfTestOrigin)
+	opts := []webtest.Option{webtest.Header(peerHeader, peer)}
 	for k, v := range hdr {
-		r.Header.Set(k, v)
+		opts = append(opts, webtest.Header(k, v))
 	}
-	rec := httptest.NewRecorder()
-	s.routes.ServeHTTP(rec, r)
-	return rec.Code
+	return c.PostForm("/account/login", url.Values{"email": {email}, "password": {"wrong password!!"}}, opts...).Status
 }
 
 // exhaust spends the per-IP burst (10) from one source and returns the status

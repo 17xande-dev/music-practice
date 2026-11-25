@@ -5,7 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/dbtest"
 	"github.com/17xande-dev/music-practice/internal/history"
+	"github.com/17xande-dev/websec/webtest"
 )
 
 func newTestHandler(t *testing.T) http.Handler {
@@ -52,11 +52,12 @@ func newTestServerWithLifetimes(t *testing.T, lifetimes account.Lifetimes, tweak
 	return &testServer{h: h, accounts: accounts, routes: h.Routes(), db: d}
 }
 
-func get(t *testing.T, h http.Handler, target string) *httptest.ResponseRecorder {
+// get fetches target from h anonymously. The client keeps cookies and sends
+// an https origin like every other client here; a GET carries no Origin
+// header, so the request is the one httptest.NewRequest used to make.
+func get(t *testing.T, h http.Handler, target string) *webtest.Response {
 	t.Helper()
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest("GET", target, nil))
-	return rec
+	return webtest.New(t, h, csrfTestOrigin).Get(target)
 }
 
 // pagePaths are every HTML page the server renders. The inline-content test
@@ -68,11 +69,11 @@ func TestPagesRender(t *testing.T) {
 	h := newTestHandler(t)
 	for _, p := range pagePaths {
 		rec := get(t, h, p)
-		if rec.Code != http.StatusOK {
-			t.Errorf("%s: status %d", p, rec.Code)
+		if rec.Status != http.StatusOK {
+			t.Errorf("%s: status %d", p, rec.Status)
 			continue
 		}
-		if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
+		if ct := rec.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
 			t.Errorf("%s: content-type %q", p, ct)
 		}
 	}
@@ -85,7 +86,7 @@ func TestEachPageLoadsItsOwnBundle(t *testing.T) {
 	for path, want := range map[string]string{
 		"/": "dist/practice.js", "/songs": "dist/songs.js", "/progress": "dist/progress.js",
 	} {
-		body := get(t, h, path).Body.String()
+		body := get(t, h, path).Body
 		if !regexp.MustCompile(`src="/static/` + regexp.QuoteMeta(want) + `\?v=[0-9a-f]{12}"`).MatchString(body) {
 			t.Errorf("%s does not load hashed %s", path, want)
 		}
@@ -102,7 +103,7 @@ func TestNoInlineStyleOrHandlers(t *testing.T) {
 	inlineScript := regexp.MustCompile(`(?i)<script(?:\s[^>]*)?>\s*[^<\s]`)
 	checked := 0
 	for _, p := range pagePaths {
-		body := get(t, h, p).Body.String()
+		body := get(t, h, p).Body
 		if onAttr.MatchString(body) {
 			t.Errorf("%s contains an inline on*= handler", p)
 		}
@@ -122,15 +123,15 @@ func TestNoInlineStyleOrHandlers(t *testing.T) {
 func TestUnknownPathIs404(t *testing.T) {
 	h := newTestHandler(t)
 	for _, p := range []string{"/nope", "/progress/extra", "/static/nope.js"} {
-		if rec := get(t, h, p); rec.Code != http.StatusNotFound {
-			t.Errorf("%s: status %d, want 404", p, rec.Code)
+		if rec := get(t, h, p); rec.Status != http.StatusNotFound {
+			t.Errorf("%s: status %d, want 404", p, rec.Status)
 		}
 	}
 }
 
 func TestHealthz(t *testing.T) {
-	if rec := get(t, newTestHandler(t), "/healthz"); rec.Code != 200 || rec.Body.String() != "ok\n" {
-		t.Errorf("healthz: %d %q", rec.Code, rec.Body.String())
+	if rec := get(t, newTestHandler(t), "/healthz"); rec.Status != 200 || rec.Body != "ok\n" {
+		t.Errorf("healthz: %d %q", rec.Status, rec.Body)
 	}
 }
 
@@ -145,10 +146,10 @@ func TestStaticServesHashedAssetsImmutable(t *testing.T) {
 			t.Fatalf("URL(%q) = %q", name, url)
 		}
 		rec := get(t, a, url)
-		if rec.Code != 200 {
-			t.Fatalf("%s: status %d", url, rec.Code)
+		if rec.Status != 200 {
+			t.Fatalf("%s: status %d", url, rec.Status)
 		}
-		if cc := rec.Header().Get("Cache-Control"); !strings.Contains(cc, "immutable") {
+		if cc := rec.Header.Get("Cache-Control"); !strings.Contains(cc, "immutable") {
 			t.Errorf("%s: Cache-Control %q", url, cc)
 		}
 	}
@@ -174,8 +175,8 @@ func TestStaticRefusesUnlistedExtensions(t *testing.T) {
 		"dist/.gitkeep": {Data: nil},
 	}, false)
 	for _, name := range []string{"page.html", ".env", "x.ts", "dist/.gitkeep"} {
-		if rec := get(t, a, "/static/"+name); rec.Code != http.StatusNotFound {
-			t.Errorf("%s: status %d, want 404", name, rec.Code)
+		if rec := get(t, a, "/static/"+name); rec.Status != http.StatusNotFound {
+			t.Errorf("%s: status %d, want 404", name, rec.Status)
 		}
 	}
 }
@@ -195,19 +196,19 @@ func TestCheckReportsMissingBundle(t *testing.T) {
 func TestLicenceNoticesAreServed(t *testing.T) {
 	h := newTestHandler(t)
 	rec := get(t, h, "/static/licenses.txt")
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d", rec.Code)
+	if rec.Status != http.StatusOK {
+		t.Fatalf("status %d", rec.Status)
 	}
-	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/plain") {
+	if ct := rec.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/plain") {
 		t.Errorf("content-type %q", ct)
 	}
-	body := rec.Body.String()
+	body := rec.Body
 	for _, want := range []string{"OpenSheetMusicDisplay", "BSD-3-Clause", "SIL Open Font License", "pitchy", "Steinberg"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("licenses.txt lacks %q", want)
 		}
 	}
-	if about := get(t, h, "/about").Body.String(); !strings.Contains(about, `href="/static/licenses.txt?v=`) {
+	if about := get(t, h, "/about").Body; !strings.Contains(about, `href="/static/licenses.txt?v=`) {
 		t.Error("the About page does not link the licence notices")
 	}
 }
@@ -218,24 +219,24 @@ func TestLicenceNoticesAreServed(t *testing.T) {
 func TestServiceWorker(t *testing.T) {
 	h := newTestHandler(t)
 	rec := get(t, h, "/sw.js")
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d", rec.Code)
+	if rec.Status != http.StatusOK {
+		t.Fatalf("status %d", rec.Status)
 	}
-	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/javascript") {
+	if ct := rec.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/javascript") {
 		t.Errorf("content-type %q", ct)
 	}
-	if cc := rec.Header().Get("Cache-Control"); cc != "no-cache" {
+	if cc := rec.Header.Get("Cache-Control"); cc != "no-cache" {
 		t.Errorf("cache-control %q", cc)
 	}
-	if !regexp.MustCompile(`^const VERSION = "[0-9a-f]{12}";\n`).MatchString(rec.Body.String()) {
-		t.Errorf("worker does not start with its version: %.60q", rec.Body.String())
+	if !regexp.MustCompile(`^const VERSION = "[0-9a-f]{12}";\n`).MatchString(rec.Body) {
+		t.Errorf("worker does not start with its version: %.60q", rec.Body)
 	}
-	page := get(t, h, "/").Body.String()
+	page := get(t, h, "/").Body
 	if !strings.Contains(page, `rel="manifest" href="/static/manifest.webmanifest?v=`) {
 		t.Error("pages do not link the web app manifest")
 	}
-	if m := get(t, h, "/static/manifest.webmanifest"); m.Header().Get("Content-Type") != "application/manifest+json" {
-		t.Errorf("manifest content-type %q", m.Header().Get("Content-Type"))
+	if m := get(t, h, "/static/manifest.webmanifest"); m.Header.Get("Content-Type") != "application/manifest+json" {
+		t.Errorf("manifest content-type %q", m.Header.Get("Content-Type"))
 	}
 }
 
@@ -262,7 +263,7 @@ func TestIcons(t *testing.T) {
 		t.Error("an unknown icon should be an error")
 	}
 	// Pages use them: the scales page draws its transport icons.
-	if !strings.Contains(get(t, newTestHandler(t), "/").Body.String(), "icon-restart") {
+	if !strings.Contains(get(t, newTestHandler(t), "/").Body, "icon-restart") {
 		t.Error("the scales page has no restart icon")
 	}
 }

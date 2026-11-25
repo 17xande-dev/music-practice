@@ -4,40 +4,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/auth"
+	"github.com/17xande-dev/websec/webtest"
 )
 
 // api sends a JSON request with a bearer token, a cookie, or neither.
-func (s *testServer) api(t *testing.T, method, target, body, token, cookie string) *httptest.ResponseRecorder {
+func (s *testServer) api(t *testing.T, method, target, body, token, cookie string) *webtest.Response {
 	t.Helper()
-	r := httptest.NewRequest(method, target, strings.NewReader(body))
+	c := s.client(t, cookie)
+	r := c.NewRequest(method, target, strings.NewReader(body))
 	r.Header.Set("Content-Type", "application/json")
 	if token != "" {
 		r.Header.Set("Authorization", "Bearer "+token)
 	}
-	if cookie != "" {
-		r.AddCookie(&http.Cookie{Name: s.h.session.Name(), Value: cookie})
-	}
-	rec := httptest.NewRecorder()
-	s.routes.ServeHTTP(rec, r)
-	return rec
+	return c.Do(r)
 }
 
 // deviceToken signs in the way the iPad app does.
 func (s *testServer) deviceToken(t *testing.T, email, password string) string {
 	t.Helper()
 	rec := s.api(t, "POST", "/api/token", fmt.Sprintf(`{"email":%q,"password":%q,"label":"iPad"}`, email, password), "", "")
-	if rec.Code != http.StatusOK {
-		t.Fatalf("token: %d %s", rec.Code, rec.Body)
+	if rec.Status != http.StatusOK {
+		t.Fatalf("token: %d %s", rec.Status, rec.Body)
 	}
 	var resp struct{ Token, Email string }
-	json.Unmarshal(rec.Body.Bytes(), &resp)
+	json.Unmarshal([]byte(rec.Body), &resp)
 	if resp.Token == "" || resp.Email != email {
 		t.Fatalf("token response %s", rec.Body)
 	}
@@ -55,11 +51,11 @@ type syncResult struct {
 func (s *testServer) sync(t *testing.T, body, token, cookie string) syncResult {
 	t.Helper()
 	rec := s.api(t, "POST", "/api/sync", body, token, cookie)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("sync: %d %s", rec.Code, rec.Body)
+	if rec.Status != http.StatusOK {
+		t.Fatalf("sync: %d %s", rec.Status, rec.Body)
 	}
 	var res syncResult
-	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+	if err := json.Unmarshal([]byte(rec.Body), &res); err != nil {
 		t.Fatal(err)
 	}
 	return res
@@ -88,13 +84,13 @@ func TestExpiredLegacyDeviceTokenRequiresSignIn(t *testing.T) {
 				t.Fatal(err)
 			}
 			rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, tok, "")
-			if rec.Code != http.StatusUnauthorized || rec.Header().Get("Cache-Control") != "no-store" ||
-				strings.TrimSpace(rec.Body.String()) != `{"error":"not signed in"}` {
-				t.Fatalf("expired token got status %d, want 401 with the signed-out error", rec.Code)
+			if rec.Status != http.StatusUnauthorized || rec.Header.Get("Cache-Control") != "no-store" ||
+				strings.TrimSpace(rec.Body) != `{"error":"not signed in"}` {
+				t.Fatalf("expired token got status %d, want 401 with the signed-out error", rec.Status)
 			}
 			fresh := s.deviceToken(t, u.Email, testPassword)
-			if rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, fresh, ""); rec.Code != http.StatusOK {
-				t.Fatalf("sync after signing in again: status %d", rec.Code)
+			if rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, fresh, ""); rec.Status != http.StatusOK {
+				t.Fatalf("sync after signing in again: status %d", rec.Status)
 			}
 		})
 	}
@@ -107,8 +103,8 @@ func TestActiveDeviceTokenIgnoresStaleStoredExpiry(t *testing.T) {
 	if _, err := s.db.ExecContext(t.Context(), `UPDATE auth_sessions SET expires_at = '2000-01-01T00:00:00Z' WHERE token_hash = ?`, auth.HashToken(tok)); err != nil {
 		t.Fatal(err)
 	}
-	if rec := s.api(t, "GET", "/api/me", "", tok, ""); rec.Code != http.StatusOK {
-		t.Fatalf("active token with stale stored expiry: status %d, want 200", rec.Code)
+	if rec := s.api(t, "GET", "/api/me", "", tok, ""); rec.Status != http.StatusOK {
+		t.Fatalf("active token with stale stored expiry: status %d, want 200", rec.Status)
 	}
 }
 
@@ -157,7 +153,7 @@ func TestSyncEmptyResponseShape(t *testing.T) {
 	token := s.deviceToken(t, "a@x.com", testPassword)
 	rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, token, "")
 	want := `{"cursor":0,"records":{"learn":[],"scale":[],"song":[]},"deleted":[],"more":false,"rejected":[]}`
-	if got := strings.TrimSpace(rec.Body.String()); got != want {
+	if got := strings.TrimSpace(rec.Body); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
 	}
 }
@@ -186,13 +182,13 @@ func TestSyncBadRequests(t *testing.T) {
 		"negative cursor": `{"cursor":-1}`,
 		"wrong type":      `{"cursor":"0"}`,
 	} {
-		if rec := s.api(t, "POST", "/api/sync", body, token, ""); rec.Code != http.StatusBadRequest {
-			t.Errorf("%s: %d", name, rec.Code)
+		if rec := s.api(t, "POST", "/api/sync", body, token, ""); rec.Status != http.StatusBadRequest {
+			t.Errorf("%s: %d", name, rec.Status)
 		}
 	}
 	huge := `{"cursor":0,"push":{"scale":["` + strings.Repeat("x", maxSyncBody) + `"]}}`
-	if rec := s.api(t, "POST", "/api/sync", huge, token, ""); rec.Code != http.StatusRequestEntityTooLarge {
-		t.Errorf("oversized: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/sync", huge, token, ""); rec.Status != http.StatusRequestEntityTooLarge {
+		t.Errorf("oversized: %d", rec.Status)
 	}
 }
 
@@ -241,8 +237,8 @@ func TestAPIRefusesAnonymous(t *testing.T) {
 		method, path, _ := strings.Cut(route, " ")
 		for _, token := range []string{"", "made-up"} {
 			rec := s.api(t, method, path, `{}`, token, "")
-			if rec.Code != http.StatusUnauthorized || !strings.Contains(rec.Body.String(), `"error"`) {
-				t.Errorf("%s token=%q: %d %s", route, token, rec.Code, rec.Body)
+			if rec.Status != http.StatusUnauthorized || !strings.Contains(rec.Body, `"error"`) {
+				t.Errorf("%s token=%q: %d %s", route, token, rec.Status, rec.Body)
 			}
 		}
 	}
@@ -255,15 +251,15 @@ func TestTokenSignIn(t *testing.T) {
 	s.addUser(t, "a@x.com", false)
 	for _, body := range []string{`{"email":"a@x.com","password":"wrong password!"}`, `{"email":"no@x.com","password":"whatever it is"}`} {
 		rec := s.api(t, "POST", "/api/token", body, "", "")
-		if rec.Code != http.StatusUnauthorized || !strings.Contains(rec.Body.String(), loginFailed) {
-			t.Errorf("%s: %d %s", body, rec.Code, rec.Body)
+		if rec.Status != http.StatusUnauthorized || !strings.Contains(rec.Body, loginFailed) {
+			t.Errorf("%s: %d %s", body, rec.Status, rec.Body)
 		}
 	}
 	for range 5 {
 		s.api(t, "POST", "/api/token", `{"email":"a@x.com","password":"wrong password!"}`, "", "")
 	}
-	if rec := s.api(t, "POST", "/api/token", `{"email":"a@x.com","password":"`+testPassword+`"}`, "", ""); rec.Code != http.StatusTooManyRequests {
-		t.Errorf("not rate limited: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/token", `{"email":"a@x.com","password":"`+testPassword+`"}`, "", ""); rec.Status != http.StatusTooManyRequests {
+		t.Errorf("not rate limited: %d", rec.Status)
 	}
 }
 
@@ -275,12 +271,12 @@ func TestMalformedHashTokenSignInIsGenericAndRateLimited(t *testing.T) {
 	body := `{"email":"broken@x.com","password":"a long enough password"}`
 	for range 5 {
 		rec := s.api(t, "POST", "/api/token", body, "", "")
-		if rec.Code != http.StatusUnauthorized || !strings.Contains(rec.Body.String(), loginFailed) {
-			t.Fatalf("malformed hash: %d %s", rec.Code, rec.Body)
+		if rec.Status != http.StatusUnauthorized || !strings.Contains(rec.Body, loginFailed) {
+			t.Fatalf("malformed hash: %d %s", rec.Status, rec.Body)
 		}
 	}
-	if rec := s.api(t, "POST", "/api/token", body, "", ""); rec.Code != http.StatusTooManyRequests {
-		t.Fatalf("malformed-hash attempts must count toward the rate limit: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/token", body, "", ""); rec.Status != http.StatusTooManyRequests {
+		t.Fatalf("malformed-hash attempts must count toward the rate limit: %d", rec.Status)
 	}
 }
 
@@ -291,20 +287,20 @@ func TestTokenSignOut(t *testing.T) {
 	s.addUser(t, "a@x.com", false)
 	token := s.deviceToken(t, "a@x.com", testPassword)
 	cookie := s.signIn(t, "a@x.com", testPassword)
-	if !strings.Contains(s.do(t, "GET", "/account", nil, cookie).Body.String(), "iPad") {
+	if !strings.Contains(s.do(t, "GET", "/account", nil, cookie).Body, "iPad") {
 		t.Error("device missing from the account page")
 	}
-	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Code != 200 || !strings.Contains(rec.Body.String(), "a@x.com") {
-		t.Fatalf("me: %d %s", rec.Code, rec.Body)
+	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Status != 200 || !strings.Contains(rec.Body, "a@x.com") {
+		t.Fatalf("me: %d %s", rec.Status, rec.Body)
 	}
-	if rec := s.api(t, "DELETE", "/api/token", "", token, ""); rec.Code != http.StatusNoContent {
-		t.Fatalf("delete: %d", rec.Code)
+	if rec := s.api(t, "DELETE", "/api/token", "", token, ""); rec.Status != http.StatusNoContent {
+		t.Fatalf("delete: %d", rec.Status)
 	}
-	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Code != http.StatusUnauthorized {
+	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Status != http.StatusUnauthorized {
 		t.Error("token works after sign-out")
 	}
 	// The browser session is untouched.
-	if rec := s.api(t, "GET", "/api/me", "", "", cookie); rec.Code != 200 {
+	if rec := s.api(t, "GET", "/api/me", "", "", cookie); rec.Status != 200 {
 		t.Error("app sign-out ended the browser session")
 	}
 }
@@ -316,7 +312,7 @@ func TestCreatedAccountWorksForWebAndApp(t *testing.T) {
 	s.addUser(t, "admin@x.com", true)
 	cookie := s.signIn(t, "admin@x.com", testPassword)
 	rec := s.do(t, "POST", "/admin/users", url.Values{"email": {"p@x.com"}}, cookie)
-	pw := shownPassword.FindStringSubmatch(rec.Body.String())[1]
+	pw := shownPassword.FindStringSubmatch(rec.Body)[1]
 	s.signIn(t, "p@x.com", pw)
 	s.deviceToken(t, "p@x.com", pw)
 }
@@ -328,11 +324,11 @@ func TestAuthFaultIsNotSignedOut(t *testing.T) {
 	s.addUser(t, "a@x.com", false)
 	token := s.deviceToken(t, "a@x.com", testPassword)
 	s.db.Close()
-	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Code != http.StatusInternalServerError {
-		t.Errorf("auth fault: %d, want 500", rec.Code)
+	if rec := s.api(t, "GET", "/api/me", "", token, ""); rec.Status != http.StatusInternalServerError {
+		t.Errorf("auth fault: %d, want 500", rec.Status)
 	}
-	if rec := s.api(t, "GET", "/api/me", "", "", ""); rec.Code != http.StatusUnauthorized {
-		t.Errorf("no credentials: %d, want 401", rec.Code)
+	if rec := s.api(t, "GET", "/api/me", "", "", ""); rec.Status != http.StatusUnauthorized {
+		t.Errorf("no credentials: %d, want 401", rec.Status)
 	}
 }
 
@@ -343,8 +339,8 @@ func TestDisabledUserTokenRefused(t *testing.T) {
 	u := s.addUser(t, "a@x.com", false)
 	token := s.deviceToken(t, "a@x.com", testPassword)
 	s.accounts.SetDisabled(t.Context(), u.ID, true)
-	if rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, token, ""); rec.Code != http.StatusUnauthorized {
-		t.Errorf("disabled user synced: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, token, ""); rec.Status != http.StatusUnauthorized {
+		t.Errorf("disabled user synced: %d", rec.Status)
 	}
 }
 
@@ -354,13 +350,10 @@ func TestCrossSiteSyncRefused(t *testing.T) {
 	s := newTestServer(t)
 	s.addUser(t, "a@x.com", false)
 	cookie := s.signIn(t, "a@x.com", testPassword)
-	r := httptest.NewRequest("POST", "/api/sync", strings.NewReader(`{"cursor":0}`))
-	r.Header.Set("Sec-Fetch-Site", "cross-site")
-	r.AddCookie(&http.Cookie{Name: s.h.session.Name(), Value: cookie})
-	rec := httptest.NewRecorder()
-	s.routes.ServeHTTP(rec, r)
-	if rec.Code != http.StatusForbidden {
-		t.Errorf("cross-site sync: %d", rec.Code)
+	// Only Sec-Fetch-Site and the cookie, as before: no Origin, no JSON content type.
+	c := s.client(t, cookie, webtest.NoOrigin(), webtest.SecFetchSite("cross-site"))
+	if rec := c.Do(c.NewRequest(http.MethodPost, "/api/sync", strings.NewReader(`{"cursor":0}`))); rec.Status != http.StatusForbidden {
+		t.Errorf("cross-site sync: %d", rec.Status)
 	}
 }
 
@@ -373,13 +366,13 @@ func TestSyncRejectedCarriesIDWhateverTheReason(t *testing.T) {
 	big := `{"id":"fat","ts":1,"pad":"` + strings.Repeat("x", 70<<10) + `"}`
 	body := `{"cursor":0,"push":{"scale":[` + big + `,{"id":"badts","ts":0},{"id":"","ts":1},{"ts":1},{"id":7,"ts":1}]}}`
 	rec := s.api(t, "POST", "/api/sync", body, token, "")
-	if rec.Code != http.StatusOK {
-		t.Fatalf("sync: %d", rec.Code)
+	if rec.Status != http.StatusOK {
+		t.Fatalf("sync: %d", rec.Status)
 	}
 	var res struct {
 		Rejected []map[string]any `json:"rejected"`
 	}
-	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+	if err := json.Unmarshal([]byte(rec.Body), &res); err != nil {
 		t.Fatal(err)
 	}
 	if len(res.Rejected) != 5 {
@@ -401,21 +394,21 @@ func TestSyncAccountMismatch(t *testing.T) {
 	cookie := s.signIn(t, "b@x.com", testPassword)
 	// A browser whose cookie is b's, syncing as a: nothing may be stored or returned.
 	rec := s.api(t, "POST", "/api/sync", `{"account":"a@x.com","cursor":0,"push":{"scale":[`+runJSON("mine")+`]}}`, "", cookie)
-	if rec.Code != http.StatusConflict || strings.TrimSpace(rec.Body.String()) != `{"error":"account mismatch"}` {
-		t.Fatalf("mismatch: %d %s", rec.Code, rec.Body)
+	if rec.Status != http.StatusConflict || strings.TrimSpace(rec.Body) != `{"error":"account mismatch"}` {
+		t.Fatalf("mismatch: %d %s", rec.Status, rec.Body)
 	}
 	if got := s.sync(t, `{"cursor":0}`, "", cookie); len(got.Records["scale"]) != 0 {
 		t.Error("a mismatched push was stored under the session's account")
 	}
 	// The right account, in any case or padding, and an omitted field, both work.
 	for _, body := range []string{`{"account":"b@x.com","cursor":0}`, `{"account":" B@X.com ","cursor":0}`, `{"cursor":0}`} {
-		if rec := s.api(t, "POST", "/api/sync", body, "", cookie); rec.Code != http.StatusOK {
-			t.Errorf("%s: %d", body, rec.Code)
+		if rec := s.api(t, "POST", "/api/sync", body, "", cookie); rec.Status != http.StatusOK {
+			t.Errorf("%s: %d", body, rec.Status)
 		}
 	}
 	// Junk is a mismatch, not a pass.
-	if rec := s.api(t, "POST", "/api/sync", `{"account":"not an email","cursor":0}`, "", cookie); rec.Code != http.StatusConflict {
-		t.Errorf("junk account: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/sync", `{"account":"not an email","cursor":0}`, "", cookie); rec.Status != http.StatusConflict {
+		t.Errorf("junk account: %d", rec.Status)
 	}
 }
 
@@ -432,20 +425,20 @@ func TestSyncPushCaps(t *testing.T) {
 	}
 	// 600 + 401 across two kinds is over 1000 in total.
 	over := `{"push":{"scale":[` + recs(600) + `],"song":[` + strings.ReplaceAll(recs(401), `"c`, `"s`) + `]}}`
-	if rec := s.api(t, "POST", "/api/sync", over, token, ""); rec.Code != http.StatusBadRequest {
-		t.Errorf("1001 records: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/sync", over, token, ""); rec.Status != http.StatusBadRequest {
+		t.Errorf("1001 records: %d", rec.Status)
 	}
 	var dels []string
 	for i := range 1001 {
 		dels = append(dels, fmt.Sprintf(`{"kind":"scale","id":"d%d"}`, i))
 	}
-	if rec := s.api(t, "POST", "/api/sync", `{"deleted":[`+strings.Join(dels, ",")+`]}`, token, ""); rec.Code != http.StatusBadRequest {
-		t.Errorf("1001 deletions: %d", rec.Code)
+	if rec := s.api(t, "POST", "/api/sync", `{"deleted":[`+strings.Join(dels, ",")+`]}`, token, ""); rec.Status != http.StatusBadRequest {
+		t.Errorf("1001 deletions: %d", rec.Status)
 	}
 	// Exactly 1000 of each is fine.
 	ok := `{"push":{"scale":[` + recs(1000) + `]},"deleted":[` + strings.Join(dels[:1000], ",") + `]}`
-	if rec := s.api(t, "POST", "/api/sync", ok, token, ""); rec.Code != http.StatusOK {
-		t.Errorf("1000 and 1000: %d %.100s", rec.Code, rec.Body)
+	if rec := s.api(t, "POST", "/api/sync", ok, token, ""); rec.Status != http.StatusOK {
+		t.Errorf("1000 and 1000: %d %.100s", rec.Status, rec.Body)
 	}
 	// And nothing from the refused requests was stored.
 	got := s.sync(t, `{"cursor":0}`, token, "")
