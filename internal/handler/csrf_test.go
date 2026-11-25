@@ -44,7 +44,7 @@ func TestCrossOriginUnsafeRoutes(t *testing.T) {
 			before := csrfTestState(t, s)
 			webtest.Sweep{
 				Routes: routes,
-				Min:    14, // 15 current unsafe routes, with room to remove one.
+				Min:    15, // exactly the current unsafe routes: removing one must fail until this is lowered on purpose.
 				Client: func() *webtest.Client {
 					return webtest.New(t, s.routes, csrfTestOrigin, tc.opts...)
 				},
