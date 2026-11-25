@@ -216,6 +216,11 @@ func TestFailedSignInsAndLimitsAreLoggedWithoutSecrets(t *testing.T) {
 	}
 	out := logs.String()
 	webtest.NoSecrets(t, out, `"msg":"sign-in failed"`, pw, email)
+	// NoSecrets matches whole secrets only: a fragment of the password
+	// (a partial leak) needs its own check.
+	if strings.Contains(out, "hunter2") {
+		t.Errorf("a fragment of the password reached the log:\n%s", out)
+	}
 	if !strings.Contains(out, `"msg":"sign-in rate limited"`) {
 		t.Fatalf("missing the rate-limit log line:\n%s", out)
 	}
