@@ -53,6 +53,10 @@ env:
     HSTS: "1"
     COOKIE_SECURE: "1"
     BASE_URL: https://music.17xande.dev
+    SESSION_IDLE: 720h
+    SESSION_ABSOLUTE: 2160h
+    DEVICE_SESSION_IDLE: 2160h
+    DEVICE_SESSION_ABSOLUTE: 8760h
     # Accounts and synced history. On the named volume below, so a redeploy
     # keeps it. Daily VACUUM INTO backups land beside it, in /data/backups.
     DB_PATH: /data/music-practice.db
