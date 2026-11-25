@@ -424,12 +424,24 @@ func TestEveryRouteIsPublicOrProtected(t *testing.T) {
 		// A made-up token is tried as the session cookie as well as no cookie.
 		Cookies: []*http.Cookie{{Name: s.h.session.Name(), Value: "made-up-token", Path: "/", Secure: true}},
 		NoToken: true, // No per-form token in the stdlib policy.
-		Refused: func(_ webtest.Route, r *webtest.Response) error {
-			loc := r.Header.Get("Location")
-			if r.Status == http.StatusUnauthorized || (r.Status == http.StatusSeeOther && strings.HasPrefix(loc, "/account")) {
-				return nil
+		// Today's refusals, exactly (the twin's rule): the JSON API answers
+		// 401; a page GET is sent to sign in and back (next=); a form POST goes
+		// to /account with no next. A looser rule would let a route start
+		// answering a different refusal unnoticed.
+		Refused: func(route webtest.Route, res *webtest.Response) error {
+			switch {
+			case strings.HasPrefix(route.Path, "/api/"):
+				return webtest.Status(http.StatusUnauthorized)(route, res)
+			case route.Method == http.MethodGet:
+				return webtest.RedirectsTo("/account?next=%2F")(route, res)
 			}
-			return fmt.Errorf("want 401 or a 303 to /account, got %d %q", r.Status, loc)
+			if err := webtest.RedirectsTo("/account")(route, res); err != nil {
+				return err
+			}
+			if loc := res.Location(); loc != "/account" {
+				return fmt.Errorf("want Location exactly /account; got %q", loc)
+			}
+			return nil
 		},
 	}.Run(t)
 	if n := len(routes) - len(publicRoutes); n != protected {
