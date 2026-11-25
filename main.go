@@ -89,7 +89,7 @@ func run(log *slog.Logger, dev bool) error {
 	}
 	defer database.Close()
 
-	accounts := account.NewStore(database)
+	accounts := account.NewStore(database, cfg.Lifetimes)
 	h, err := handler.New(handler.Options{
 		Log:      log,
 		Dev:      dev,
@@ -185,5 +185,5 @@ func withStore(fn func(context.Context, *account.Store) error) error {
 		return err
 	}
 	defer database.Close()
-	return fn(context.Background(), account.NewStore(database))
+	return fn(context.Background(), account.NewStore(database, cfg.Lifetimes))
 }

@@ -161,8 +161,9 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.upgradePasswordHash(r.Context(), u, password, rehash)
 	h.accounts.RecordLogin(r.Context(), u.ID)
-	// Store touches may extend the row's expiry, but not the browser deadline.
-	h.session.Set(w, token, sess.ExpiresAt)
+	// The cookie follows the web policy's absolute deadline; the store
+	// enforces the earlier idle deadline without resetting the cookie on touch.
+	h.session.Set(w, token, h.accounts.Lifetime(account.KindWeb).AbsoluteExpiry(sess.CreatedAt))
 	if next == "" {
 		next = "/account"
 	}

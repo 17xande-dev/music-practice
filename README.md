@@ -155,9 +155,17 @@ reuse them (`set -a; . ./.env; set +a`). The app does not load `.env` itself.
 | `HSTS`             | `0`     | Send Strict-Transport-Security on HTTPS only. Accepts `1`, `0`, `true`, `false` |
 | `COOKIE_SECURE`    | `1`     | Secure session cookie. Accepts `1`, `0`, `true`, `false`; `auto` is refused. Set `0` for plain-HTTP development |
 | `BASE_URL`         | unset   | Optional canonical public origin: lowercase `scheme://host[:port]`, no path or trailing slash, omit default port. HTTPS required unless `COOKIE_SECURE=0` |
+| `SESSION_IDLE` | `720h` | Browser inactivity limit (30 days) |
+| `SESSION_ABSOLUTE` | `2160h` | Browser deadline from sign-in (90 days); also the cookie's deadline |
+| `DEVICE_SESSION_IDLE` | `2160h` | iPad bearer-token inactivity limit (90 days) |
+| `DEVICE_SESSION_ABSOLUTE` | `8760h` | iPad bearer-token deadline from sign-in (365 days) |
 | `SHUTDOWN_TIMEOUT` | `10s`   | Grace period for in-flight requests on SIGTERM |
 | `DB_PATH`          | none    | SQLite file for accounts and synced history. Required. `make dev` uses `data/dev.db` |
 | `CLIENT_IP_HEADER` | unset   | Socket peer by default. Set a header only if all traffic arrives through a proxy that controls it. Production trusts `CF-Connecting-IP`; `X-Forwarded-For` uses the rightmost entry |
+
+Session settings take positive Go durations in whole seconds (use `24h`, not `1d`).
+Idle must not exceed absolute. Last use is recorded at most hourly, so idle expiry can arrive
+up to an hour early. For a session to renew its idle deadline on activity, set idle above `1h`.
 
 For sign-in over plain HTTP on a LAN, set `COOKIE_SECURE=0` and use the LAN origin for `BASE_URL`
 (e.g. `http://192.0.2.1:8080`). Forwarded protocol headers do not change cookie security.
@@ -264,9 +272,10 @@ what is new. [`docs/sync-api.md`](docs/sync-api.md) is the contract; the iPad ap
 ([`docs/ipad-sync-handoff.md`](docs/ipad-sync-handoff.md) has the design notes). Settings and
 uploaded scores are not synced.
 
-Browsers authenticate with a session cookie (90 days, sliding), the app with a bearer token from
-`POST /api/token` that lasts until it is revoked. Both are opaque random tokens stored only as their
-sha256, and every signed-in device is listed, and can be signed out, on the account page.
+Browsers authenticate with a session cookie (30 days idle, 90 days absolute by default); the
+app uses a bearer token from `POST /api/token` (90 days idle, 365 days absolute by default).
+Both are opaque random tokens stored only as their SHA-256 hash. The account page lists live
+sessions and lets their owner sign them out.
 
 ### Dependencies
 
@@ -374,9 +383,9 @@ makes trusting `CF-Connecting-IP` safe. The app runs with a 512 MB limit and the
 
 `HSTS=1` sends Strict-Transport-Security. Set `COOKIE_SECURE=1` and
 `BASE_URL=https://music.17xande.dev`: the browser sees HTTPS even though the app sees plain HTTP
-from kamal-proxy. The first release using `__Host-mp_session` signs browser users out once; iPad
-tokens continue to work. The new cookie expires 90 days after sign-in, even if server-side
-activity keeps the session row live longer. Browser history stays local, but any not-yet-sent
+from kamal-proxy. The first release using `__Host-mp_session` signs browser users out once; the
+cookie rename does not affect iPad tokens. Session limits also apply to existing rows and count
+from the recorded sign-in and last use, not from the deploy. Browser history stays local, but any not-yet-sent
 deletions are discarded when sync sees the old cookie rejected. Rolling back across the cookie
 rename signs browsers out again.
 

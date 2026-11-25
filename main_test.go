@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/music-practice/internal/auth"
 )
 
@@ -30,5 +32,32 @@ func TestInvalidBaseURLStopsBeforeMigration(t *testing.T) {
 	}
 	if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
 		t.Errorf("invalid config reached the database: stat error = %v", err)
+	}
+}
+
+func TestInvalidSessionLifetimeStopsBeforeMigration(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "test.db")
+	t.Setenv("DB_PATH", path)
+	t.Setenv("BASE_URL", "")
+	t.Setenv("ADDR", "invalid-address") // Never listen, even if validation regresses.
+	t.Setenv("DEVICE_SESSION_IDLE", "48h")
+	t.Setenv("DEVICE_SESSION_ABSOLUTE", "24h")
+	for _, attempt := range []struct {
+		name string
+		run  func() error
+	}{
+		{"serve", func() error { return run(slog.New(slog.NewTextHandler(io.Discard, nil)), false) }},
+		{"account_command", func() error {
+			return withStore(func(context.Context, *account.Store) error { return nil })
+		}},
+	} {
+		t.Run(attempt.name, func(t *testing.T) {
+			if err := attempt.run(); err == nil || !strings.Contains(err.Error(), "DEVICE_SESSION_ABSOLUTE") {
+				t.Errorf("startup error = %v; want invalid device lifetime", err)
+			}
+			if _, err := os.Stat(path); !errors.Is(err, os.ErrNotExist) {
+				t.Errorf("invalid config reached the database: stat error = %v", err)
+			}
+		})
 	}
 }

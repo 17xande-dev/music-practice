@@ -8,6 +8,9 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/17xande-dev/music-practice/internal/auth"
 )
 
 // api sends a JSON request with a bearer token, a cookie, or neither.
@@ -63,6 +66,51 @@ func (s *testServer) sync(t *testing.T, body, token, cookie string) syncResult {
 }
 
 func runJSON(id string) string { return fmt.Sprintf(`{"id":%q,"ts":1700000000000,"accuracy":0.9}`, id) }
+
+func TestExpiredLegacyDeviceTokenRequiresSignIn(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		age, idle time.Duration
+	}{
+		{"absolute", 366 * 24 * time.Hour, 0},
+		{"idle", 91 * 24 * time.Hour, 90 * 24 * time.Hour},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newTestServer(t)
+			u := s.addUser(t, "u@example.com", false)
+			tok := s.deviceToken(t, u.Email, testPassword)
+			now := s.accounts.Now().UTC()
+			// Before P2 device rows had no stored expiry. Both types of
+			// timeout must still produce the client's signed-out response.
+			if _, err := s.db.ExecContext(t.Context(), `UPDATE auth_sessions
+				SET created_at = ?, last_used_at = ?, expires_at = '' WHERE token_hash = ?`,
+				now.Add(-tc.age).Format(time.RFC3339), now.Add(-tc.idle).Format(time.RFC3339), auth.HashToken(tok)); err != nil {
+				t.Fatal(err)
+			}
+			rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, tok, "")
+			if rec.Code != http.StatusUnauthorized || rec.Header().Get("Cache-Control") != "no-store" ||
+				strings.TrimSpace(rec.Body.String()) != `{"error":"not signed in"}` {
+				t.Fatalf("expired token got status %d, want 401 with the signed-out error", rec.Code)
+			}
+			fresh := s.deviceToken(t, u.Email, testPassword)
+			if rec := s.api(t, "POST", "/api/sync", `{"cursor":0}`, fresh, ""); rec.Code != http.StatusOK {
+				t.Fatalf("sync after signing in again: status %d", rec.Code)
+			}
+		})
+	}
+}
+
+func TestActiveDeviceTokenIgnoresStaleStoredExpiry(t *testing.T) {
+	s := newTestServer(t)
+	u := s.addUser(t, "u@example.com", false)
+	tok := s.deviceToken(t, u.Email, testPassword)
+	if _, err := s.db.ExecContext(t.Context(), `UPDATE auth_sessions SET expires_at = '2000-01-01T00:00:00Z' WHERE token_hash = ?`, auth.HashToken(tok)); err != nil {
+		t.Fatal(err)
+	}
+	if rec := s.api(t, "GET", "/api/me", "", tok, ""); rec.Code != http.StatusOK {
+		t.Fatalf("active token with stale stored expiry: status %d, want 200", rec.Code)
+	}
+}
 
 // The iPad and the browser are the same account: what one pushes, the other
 // pulls, whichever way each authenticates.

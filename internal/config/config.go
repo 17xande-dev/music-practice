@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/ratelimit/clientip"
 	"github.com/17xande-dev/websec/csrf"
+	"github.com/17xande-dev/websec/session"
 )
 
 // Config is the whole runtime configuration.
@@ -27,6 +29,9 @@ type Config struct {
 
 	// BaseURL is the optional public origin, without a path or a trailing slash.
 	BaseURL string
+
+	// Lifetimes applies to existing as well as newly issued sessions.
+	Lifetimes account.Lifetimes
 
 	// ShutdownTimeout bounds how long in-flight requests get on SIGTERM.
 	ShutdownTimeout time.Duration
@@ -55,6 +60,7 @@ func Load(getenv func(string) string) (Config, error) {
 		Addr:            ":8080",
 		CookieSecure:    true,
 		ShutdownTimeout: 10 * time.Second,
+		Lifetimes:       account.DefaultLifetimes(),
 	}
 	var errs []string
 
@@ -97,6 +103,9 @@ func Load(getenv func(string) string) (Config, error) {
 		}
 	}
 
+	errs = loadLifetime(getenv, errs, "SESSION", &c.Lifetimes.Web)
+	errs = loadLifetime(getenv, errs, "DEVICE_SESSION", &c.Lifetimes.Device)
+
 	c.DBPath = getenv("DB_PATH")
 	c.ClientIPHeader = getenv("CLIENT_IP_HEADER")
 	if src, err := clientip.New(clientip.Config{TrustedHeader: c.ClientIPHeader}); err != nil {
@@ -109,4 +118,26 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("config: %s", strings.Join(errs, "; "))
 	}
 	return c, nil
+}
+
+func loadLifetime(getenv func(string) string, errs []string, prefix string, life *session.Lifetime) []string {
+	idle, absolute := prefix+"_IDLE", prefix+"_ABSOLUTE"
+	for _, v := range []struct {
+		key string
+		dst *time.Duration
+	}{{idle, &life.Idle}, {absolute, &life.Absolute}} {
+		if raw := getenv(v.key); raw != "" {
+			d, err := time.ParseDuration(raw)
+			// The existing RFC3339 columns and cookie deadlines have second precision.
+			if err != nil || d <= 0 || d%time.Second != 0 {
+				errs = append(errs, v.key+": want a positive whole-second duration like 720h")
+			} else {
+				*v.dst = d
+			}
+		}
+	}
+	if err := life.Validate(); err != nil {
+		errs = append(errs, fmt.Sprintf("%s/%s: %v", idle, absolute, err))
+	}
+	return errs
 }

@@ -53,6 +53,53 @@ func TestLoadReportsAllErrors(t *testing.T) {
 	}
 }
 
+func TestSessionLifetimeDefaultsAndOverrides(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		env   map[string]string
+		hours [4]time.Duration
+	}{
+		{"defaults", nil, [4]time.Duration{720, 2160, 2160, 8760}},
+		{"overrides", map[string]string{
+			"SESSION_IDLE": "8h", "SESSION_ABSOLUTE": "24h",
+			"DEVICE_SESSION_IDLE": "36h", "DEVICE_SESSION_ABSOLUTE": "96h",
+		}, [4]time.Duration{8, 24, 36, 96}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := Load(env(tc.env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			web, device := cfg.Lifetimes.Web, cfg.Lifetimes.Device
+			got := [4]time.Duration{web.Idle / time.Hour, web.Absolute / time.Hour, device.Idle / time.Hour, device.Absolute / time.Hour}
+			if got != tc.hours || web.IdleOff || device.IdleOff {
+				t.Fatalf("lifetimes = %+v; want hours %v, idle enabled", cfg.Lifetimes, tc.hours)
+			}
+		})
+	}
+}
+
+func TestSessionLifetimeRejectsInvalidSettings(t *testing.T) {
+	for _, key := range []string{"SESSION_IDLE", "SESSION_ABSOLUTE", "DEVICE_SESSION_IDLE", "DEVICE_SESSION_ABSOLUTE"} {
+		for _, bad := range []string{"0s", "-1h", "30d", " 24h ", "off", "1100ms", "999999999999999h"} {
+			t.Run(key+"/"+bad, func(t *testing.T) {
+				if _, err := Load(env(map[string]string{key: bad})); err == nil || !strings.Contains(err.Error(), key) {
+					t.Fatalf("expected an error naming %s; got %v", key, err)
+				}
+			})
+		}
+	}
+	_, err := Load(env(map[string]string{
+		"SESSION_IDLE": "48h", "SESSION_ABSOLUTE": "24h",
+		"DEVICE_SESSION_IDLE": "48h", "DEVICE_SESSION_ABSOLUTE": "24h",
+	}))
+	for _, want := range []string{"SESSION_IDLE/SESSION_ABSOLUTE:", "DEVICE_SESSION_IDLE/DEVICE_SESSION_ABSOLUTE:"} {
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("invalid range not rejected for %s: %v", want, err)
+		}
+	}
+}
+
 func TestCookieSecure(t *testing.T) {
 	for in, want := range map[string]bool{"": true, "1": true, "true": true, "0": false, "false": false} {
 		t.Run("accepts_"+in, func(t *testing.T) {

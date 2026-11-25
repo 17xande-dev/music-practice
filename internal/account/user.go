@@ -36,12 +36,14 @@ type User struct {
 
 // Store is the users and sessions tables.
 type Store struct {
-	db  *sql.DB
-	now func() time.Time
+	db        *sql.DB
+	now       func() time.Time
+	lifetimes Lifetimes
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{db: db, now: time.Now}
+// NewStore takes the policies already validated by startup configuration.
+func NewStore(db *sql.DB, lifetimes Lifetimes) *Store {
+	return &Store{db: db, now: time.Now, lifetimes: lifetimes}
 }
 
 // Now gives the cookie policy the same clock used to create sessions.
@@ -128,9 +130,8 @@ type UserSummary struct {
 // List returns every user, admins first, then by email.
 func (s *Store) List(ctx context.Context) ([]UserSummary, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT `+userColumns+`,
-		(SELECT count(*) FROM auth_sessions a WHERE a.user_id = users.id
-		   AND (a.expires_at = '' OR a.expires_at > ?))
-		FROM users ORDER BY is_admin DESC, email`, timestamp(s.now()))
+		(SELECT count(*) FROM auth_sessions WHERE user_id = users.id AND NOT `+expiredSessions+`)
+		FROM users ORDER BY is_admin DESC, email`, s.expiryCutoffs(s.now())...)
 	if err != nil {
 		return nil, err
 	}

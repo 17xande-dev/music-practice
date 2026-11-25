@@ -22,11 +22,23 @@ func TestBackupsSettings(t *testing.T) {
 	}
 }
 
-// The loop must actually take a backup at startup, and clear the old
-// crash temps first; a loop that silently stopped calling Run would leave the
-// app with no backups and no error.
+// Startup must back up the database, clear the crash temps, and sweep expired
+// sessions even if their owners never use the credentials again.
 func TestMaintainBacksUpAtStartupAndClearsPartials(t *testing.T) {
 	d := dbtest.New(t)
+	accounts := account.NewStore(d, account.DefaultLifetimes())
+	u, err := accounts.Create(t.Context(), "u@example.com", "unused hash", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, old, err := accounts.SignIn(t.Context(), u, account.KindDevice, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.ExecContext(t.Context(), `UPDATE auth_sessions
+		SET created_at = '2000-01-01T00:00:00Z', expires_at = '' WHERE id = ?`, old.ID); err != nil {
+		t.Fatal(err)
+	}
 	b := backups(filepath.Join(t.TempDir(), "music-practice.db"))
 	if err := os.MkdirAll(b.Dir, 0o700); err != nil {
 		t.Fatal(err)
@@ -41,9 +53,13 @@ func TestMaintainBacksUpAtStartupAndClearsPartials(t *testing.T) {
 
 	ctx, stop := context.WithCancel(t.Context())
 	done := make(chan struct{})
+	t.Cleanup(func() {
+		stop()
+		<-done
+	})
 	go func() {
 		defer close(done)
-		maintain(ctx, slog.New(slog.NewTextHandler(io.Discard, nil)), d, account.NewStore(d), b)
+		maintain(ctx, slog.New(slog.NewTextHandler(io.Discard, nil)), d, accounts, b)
 	}()
 	deadline := time.Now().Add(10 * time.Second)
 	for {
@@ -51,11 +67,15 @@ func TestMaintainBacksUpAtStartupAndClearsPartials(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(files) == 1 {
+		var remaining int
+		if err := d.QueryRowContext(t.Context(), `SELECT count(*) FROM auth_sessions`).Scan(&remaining); err != nil {
+			t.Fatal(err)
+		}
+		if len(files) == 1 && remaining == 0 {
 			break
 		}
 		if time.Now().After(deadline) {
-			t.Fatal("maintain made no backup at startup")
+			t.Fatalf("maintain did not back up and sweep expired device sessions: backups=%d sessions=%d", len(files), remaining)
 		}
 		time.Sleep(20 * time.Millisecond)
 	}

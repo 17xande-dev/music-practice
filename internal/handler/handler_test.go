@@ -34,8 +34,13 @@ func newTestServer(t *testing.T) *testServer { return newTestServerWith(t, nil) 
 // newTestServerWith lets a test override Options before New.
 func newTestServerWith(t *testing.T, tweak func(*Options)) *testServer {
 	t.Helper()
+	return newTestServerWithLifetimes(t, account.DefaultLifetimes(), tweak)
+}
+
+func newTestServerWithLifetimes(t *testing.T, lifetimes account.Lifetimes, tweak func(*Options)) *testServer {
+	t.Helper()
 	d := dbtest.New(t)
-	accounts := account.NewStore(d)
+	accounts := account.NewStore(d, lifetimes)
 	o := Options{Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Accounts: accounts, History: history.NewStore(d), CookieSecure: true}
 	if tweak != nil {
 		tweak(&o)

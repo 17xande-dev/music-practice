@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/17xande-dev/music-practice/internal/dbtest"
 )
@@ -13,7 +12,7 @@ var ctx = context.Background()
 
 func newStore(t *testing.T) *Store {
 	t.Helper()
-	return NewStore(dbtest.New(t))
+	return NewStore(dbtest.New(t), DefaultLifetimes())
 }
 
 func mustCreate(t *testing.T, s *Store, email string, admin bool) User {
@@ -121,41 +120,6 @@ func TestDisableEndsSessions(t *testing.T) {
 	}
 	if _, _, err := s.Authenticate(ctx, tok); !errors.Is(err, ErrNotFound) {
 		t.Error("disabled user still authenticated")
-	}
-}
-
-func TestWebSessionExpiresAndSlides(t *testing.T) {
-	s := newStore(t)
-	u := mustCreate(t, s, "u@x.com", false)
-	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	s.now = func() time.Time { return now }
-	tok, _, _ := s.CreateSession(ctx, u.ID, KindWeb, "")
-
-	// Used just before expiry: the window slides forward from that use.
-	now = now.Add(WebSessionTTL - time.Hour)
-	if _, _, err := s.Authenticate(ctx, tok); err != nil {
-		t.Fatalf("before expiry: %v", err)
-	}
-	now = now.Add(WebSessionTTL - time.Hour)
-	if _, _, err := s.Authenticate(ctx, tok); err != nil {
-		t.Fatalf("after sliding: %v", err)
-	}
-	now = now.Add(WebSessionTTL + time.Hour)
-	if _, _, err := s.Authenticate(ctx, tok); !errors.Is(err, ErrNotFound) {
-		t.Fatalf("expired session accepted: %v", err)
-	}
-}
-
-// A device stays signed in until revoked, however long it sits unused.
-func TestDeviceSessionDoesNotExpire(t *testing.T) {
-	s := newStore(t)
-	u := mustCreate(t, s, "u@x.com", false)
-	now := time.Now()
-	s.now = func() time.Time { return now }
-	tok, _, _ := s.CreateSession(ctx, u.ID, KindDevice, "iPad")
-	now = now.Add(5 * 365 * 24 * time.Hour)
-	if _, _, err := s.Authenticate(ctx, tok); err != nil {
-		t.Errorf("device session expired: %v", err)
 	}
 }
 

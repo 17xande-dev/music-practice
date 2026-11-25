@@ -44,11 +44,20 @@ at the end of this page.
 - **Browser:** the `__Host-mp_session` cookie set by signing in at `/account` (`mp_session` only
   when running with `COOKIE_SECURE=0` for plain-HTTP development). Same-origin `fetch` sends it.
   Cross-site requests are refused (403) by the server's cross-origin protection. HTTPS browsers
-  still using the old bare name get a 401 and must sign in again; the iPad token is unaffected.
-- **App:** `Authorization: Bearer <token>`, from `POST /api/token`. A token lasts until it's
-  revoked: by signing out in the app, by "Sign out" on the account page's device list, by an admin,
-  by a password change or reset, or by the account being disabled or deleted. After any of these,
-  every request answers 401.
+  still using the old bare name get a 401 and must sign in again; the cookie rename does not affect
+  iPad tokens. By default, a browser session ends after 30 days without use or 90 days after
+  sign-in, whichever comes first.
+- **App:** `Authorization: Bearer <token>`, from `POST /api/token`. By default, a token expires
+  after 90 days without use or 365 days after sign-in, whichever comes first. It can end sooner
+  if the user signs it out in the app or on the account page, an admin revokes it, the password
+  changes or is reset, or the account is disabled or deleted. An expired or revoked token gets
+  `401 {"error":"not signed in"}` on authenticated endpoints, including `/api/sync`. Sign in again
+  to obtain a new token. This is the existing signed-out flow: the client keeps local history but
+  clears the token and sync state, including the cursor and any queued deletions.
+
+These limits are configurable on the server (see the README config table). Activity is recorded
+at most hourly, so idle expiry can arrive up to an hour early. Existing tokens use the original
+sign-in and last-use timestamps; the limits do not restart at deploy.
 
 Accounts are created by an admin at `/admin/users`. There is no sign-up endpoint.
 

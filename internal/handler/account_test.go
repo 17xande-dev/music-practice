@@ -208,6 +208,28 @@ func TestSessionCookieAttributes(t *testing.T) {
 	browser.Get("/api/me").WantStatus(http.StatusUnauthorized)
 }
 
+func TestSessionCookieFollowsConfiguredWebAbsoluteDeadline(t *testing.T) {
+	lifetimes := account.DefaultLifetimes()
+	lifetimes.Web.Idle = 8 * time.Hour
+	lifetimes.Web.Absolute = 48 * time.Hour
+	s := newTestServerWithLifetimes(t, lifetimes, nil)
+	s.addUser(t, "u@example.com", false)
+	rec := s.do(t, "POST", "/account/login", url.Values{"email": {"u@example.com"}, "password": {testPassword}}, "")
+	cookies := rec.Result().Cookies()
+	if rec.Code != http.StatusSeeOther || len(cookies) != 1 {
+		t.Fatalf("login got %d cookies, status %d", len(cookies), rec.Code)
+	}
+	c := cookies[0]
+	_, sess, err := s.accounts.Authenticate(t.Context(), c.Value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := sess.CreatedAt.Add(48 * time.Hour)
+	if !c.Expires.Equal(want) || c.MaxAge > 48*60*60 || c.MaxAge < int(want.Sub(s.accounts.Now()).Seconds()) {
+		t.Fatalf("cookie expires at %s, Max-Age %d; want absolute deadline %s", c.Expires, c.MaxAge, want)
+	}
+}
+
 func TestBareNamedSessionCookieIsIgnored(t *testing.T) {
 	s := newTestServer(t)
 	s.addUser(t, "a@x.com", false)
