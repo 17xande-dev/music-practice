@@ -401,8 +401,9 @@ rewriting `Host` does not break browser requests. Refusals are non-cacheable 403
 Requests with neither header still pass the origin check: this is how the native
 iPad client works, and it still needs to authenticate. For a browser that sends
 neither header, the session cookie's `SameSite=Lax` is the backstop; the server
-does not require a separate form token. An explicitly empty Bearer credential
-is rejected rather than falling back to a browser session.
+does not require a separate form token. A request with any
+`Authorization` header that is not exactly one well-formed `Bearer <token>` (empty, `Basic`,
+repeated) is rejected rather than falling back to a browser session.
 
 The service worker stores only the public, cookie-independent shells (`/`,
 `/songs`, `/progress`, `/about`) and static assets. It doesn't cache account or

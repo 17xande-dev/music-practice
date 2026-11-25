@@ -57,7 +57,10 @@ at the end of this page.
   clears the token and sync state, including the cursor and any queued deletions.
 
 Native clients can omit both `Origin` and `Sec-Fetch-Site`. On endpoints that require a
-session, an empty Bearer credential is a 401, not a request to use the session cookie instead.
+session, a request with any `Authorization` header that is not exactly one well-formed
+`Bearer <token>` (an empty Bearer, `Basic ...`, an empty value, a second `Authorization` header)
+is a 401, not a request to use the session cookie instead. The cookie is used only when there is
+no `Authorization` header at all.
 
 These limits are configurable on the server (see the README config table). Activity is recorded
 at most hourly, so idle expiry can arrive up to an hour early. Existing tokens use the original

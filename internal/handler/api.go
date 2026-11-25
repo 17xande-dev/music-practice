@@ -41,17 +41,27 @@ func apiError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
-// bearer distinguishes a missing Bearer scheme from a supplied but empty token.
+// bearer reads the Authorization header. supplied reports that the request
+// carries any Authorization header at all, well formed or not; token is
+// non-empty only for exactly one header of the form `Bearer <token>` (space or
+// tab after the scheme). A caller that supplied a credential header must be
+// judged by it and never by the cookie, so a malformed one yields supplied with
+// an empty token.
 func bearer(r *http.Request) (token string, supplied bool) {
-	value := strings.TrimSpace(r.Header.Get("Authorization"))
-	scheme := value
-	if i := strings.IndexAny(value, " \t"); i >= 0 {
-		scheme, token = value[:i], strings.TrimSpace(value[i:])
-	}
-	if !strings.EqualFold(scheme, "Bearer") {
+	values := r.Header.Values("Authorization")
+	if len(values) == 0 {
 		return "", false
 	}
-	return token, true
+	if len(values) != 1 {
+		// Which of two headers would a proxy or a client honour? Neither.
+		return "", true
+	}
+	value := strings.Trim(values[0], " \t")
+	i := strings.IndexAny(value, " \t")
+	if i < 0 || !strings.EqualFold(value[:i], "Bearer") {
+		return "", true
+	}
+	return strings.Trim(value[i:], " \t"), true
 }
 
 // errNotSignedIn means the request has no live credentials (401). Any other
@@ -59,7 +69,8 @@ func bearer(r *http.Request) (token string, supplied bool) {
 // is dead" and throw it away, so a passing database error must not become one.
 var errNotSignedIn = errors.New("not signed in")
 
-// apiUser uses the browser's cookie only when no Bearer scheme was supplied.
+// apiUser uses the browser's cookie only when the request has no Authorization
+// header at all.
 func (h *Handler) apiUser(r *http.Request) (account.User, account.Session, error) {
 	tok, supplied := bearer(r)
 	if supplied {

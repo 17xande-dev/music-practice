@@ -192,12 +192,33 @@ func TestEmptyBearerDoesNotFallBackToCookie(t *testing.T) {
 	c.PostForm("/account/login", url.Values{"email": {"empty@example.test"}, "password": {testPassword}}).
 		WantStatus(http.StatusSeeOther)
 	c.Get("/api/me").WantStatus(http.StatusOK) // the cookie itself is valid
-	for _, header := range []string{"Bearer", "Bearer ", "bearer  ", "BEARER \t"} {
-		t.Run(header, func(t *testing.T) {
+	// Any Authorization header that is not one well-formed Bearer token is a
+	// credential the request supplied and we cannot use: 401, never the cookie.
+	for name, headers := range map[string][]string{
+		"bare scheme":        {"Bearer"},
+		"trailing space":     {"Bearer "},
+		"mixed case":         {"bearer  "},
+		"trailing tab":       {"BEARER \t"},
+		"basic":              {"Basic Zm9vOmJhcg=="},
+		"bogus":              {"Bogus"},
+		"empty value":        {""},
+		"blank value":        {"   "},
+		"nbsp separator":     {"Bearer\u00a0bogus"},
+		"nbsp only":          {"Bearer \u00a0"},
+		"basic then bearer":  {"Basic x", "Bearer bogus"},
+		"bearer then basic":  {"Bearer bogus", "Basic x"},
+		"two bearers":        {"Bearer bogus", "Bearer bogus"},
+		"two empty":          {"", ""},
+		"tab, unknown token": {"Bearer\tbogus"},
+	} {
+		t.Run(name, func(t *testing.T) {
 			c := c.With(t)
-			auth := webtest.Header("Authorization", header)
-			c.Get("/api/me", auth).WantStatus(http.StatusUnauthorized)
-			csrfTestJSON(c, http.MethodPost, "/api/sync", `{"cursor":0}`, auth).WantStatus(http.StatusUnauthorized)
+			var opts []webtest.Option
+			for _, v := range headers {
+				opts = append(opts, func(r *http.Request) { r.Header.Add("Authorization", v) })
+			}
+			c.Get("/api/me", opts...).WantStatus(http.StatusUnauthorized)
+			csrfTestJSON(c, http.MethodPost, "/api/sync", `{"cursor":0}`, opts...).WantStatus(http.StatusUnauthorized)
 		})
 	}
 }
@@ -239,27 +260,56 @@ func csrfTestJSON(c *webtest.Client, method, path, body string, opts ...webtest.
 
 func TestBearerParsing(t *testing.T) {
 	for _, tc := range []struct {
-		name, header, token string
-		supplied            bool
+		name     string
+		headers  []string
+		token    string
+		supplied bool
 	}{
 		{name: "absent"},
-		{name: "other scheme", header: "Basic value"},
-		{name: "bare scheme", header: "Bearer", supplied: true},
-		{name: "one trailing space", header: "Bearer ", supplied: true},
-		{name: "mixed case and trailing whitespace", header: "bEaReR  \t", supplied: true},
-		{name: "valid", header: "bEaReR token ", token: "token", supplied: true},
+		{name: "other scheme", headers: []string{"Basic value"}, supplied: true},
+		{name: "scheme without separator", headers: []string{"Bogus"}, supplied: true},
+		{name: "empty value", headers: []string{""}, supplied: true},
+		{name: "bare scheme", headers: []string{"Bearer"}, supplied: true},
+		{name: "one trailing space", headers: []string{"Bearer "}, supplied: true},
+		{name: "mixed case and trailing whitespace", headers: []string{"bEaReR  \t"}, supplied: true},
+		{name: "non-breaking space separator", headers: []string{"Bearer\u00a0token"}, supplied: true},
+		{name: "two headers, first valid", headers: []string{"Bearer token", "Bearer token"}, supplied: true},
+		{name: "two headers, first foreign", headers: []string{"Basic x", "Bearer token"}, supplied: true},
+		{name: "valid", headers: []string{"bEaReR token "}, token: "token", supplied: true},
+		{name: "valid with a tab", headers: []string{"Bearer\ttoken"}, token: "token", supplied: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r, err := http.NewRequest(http.MethodGet, csrfTestOrigin, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if tc.header != "" {
-				r.Header.Set("Authorization", tc.header)
+			for _, v := range tc.headers {
+				r.Header.Add("Authorization", v)
 			}
 			if token, supplied := bearer(r); token != tc.token || supplied != tc.supplied {
 				t.Fatalf("unexpected bearer parse (supplied=%t, want %t)", supplied, tc.supplied)
 			}
 		})
 	}
+}
+
+// A live token is not enough when the request names two Authorization values:
+// the parser may not quietly pick one of them.
+func TestSecondAuthorizationHeaderIsRefused(t *testing.T) {
+	s := newTestServer(t)
+	s.addUser(t, "twice@example.test", false)
+	token := s.deviceToken(t, "twice@example.test", testPassword)
+	c := webtest.New(t, s.routes, csrfTestOrigin)
+	add := func(values ...string) webtest.Option {
+		return func(r *http.Request) {
+			for _, v := range values {
+				r.Header.Add("Authorization", v)
+			}
+		}
+	}
+	c.Get("/api/me", add("Bearer "+token)).WantStatus(http.StatusOK)
+	c.Get("/api/me", add("Bearer\t"+token)).WantStatus(http.StatusOK)
+	c.Get("/api/me", add("Bearer "+token, "Bearer "+token)).WantStatus(http.StatusUnauthorized)
+	c.Get("/api/me", add("Basic x", "Bearer "+token)).WantStatus(http.StatusUnauthorized)
+	c.Get("/api/me", add("Bearer\u00a0"+token)).WantStatus(http.StatusUnauthorized)
 }
