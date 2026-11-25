@@ -313,3 +313,22 @@ func TestSecondAuthorizationHeaderIsRefused(t *testing.T) {
 	c.Get("/api/me", add("Basic x", "Bearer "+token)).WantStatus(http.StatusUnauthorized)
 	c.Get("/api/me", add("Bearer\u00a0"+token)).WantStatus(http.StatusUnauthorized)
 }
+
+// The cross-origin layer refuses before any handler runs, so it must not read
+// the body either: a refused upload costs nothing. The body would otherwise be
+// 1 MiB of filler the client streams for as long as the server keeps reading.
+func TestCrossOriginRefusalReadsNoBody(t *testing.T) {
+	s := newTestServer(t)
+	for _, path := range []string{"/account/login", "/api/sync", "/admin/users"} {
+		t.Run(path, func(t *testing.T) {
+			body := webtest.NewCountingReader(webtest.Filler(1 << 20))
+			c := s.client(t, "", webtest.NoOrigin(), webtest.SecFetchSite("cross-site"))
+			req := c.NewRequest(http.MethodPost, path, body)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			c.Do(req).WantStatus(http.StatusForbidden)
+			if n := body.N(); n != 0 {
+				t.Fatalf("the refusal read %d body bytes, want 0", n)
+			}
+		})
+	}
+}

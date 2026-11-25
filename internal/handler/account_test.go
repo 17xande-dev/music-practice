@@ -326,10 +326,9 @@ func TestSignInRedirectStaysOnSite(t *testing.T) {
 		"/\\evil.example":      "/account",
 		"https://evil.example": "/account",
 	} {
-		rec := s.do(t, "POST", "/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}, "next": {next}}, "")
-		if loc := rec.Header.Get("Location"); loc != want {
-			t.Errorf("next=%q: redirected to %q, want %q", next, loc, want)
-		}
+		s.client(t, "").PostForm("/account/login",
+			url.Values{"email": {"a@x.com"}, "password": {testPassword}, "next": {next}}).
+			WantRedirect(http.StatusSeeOther, want)
 	}
 }
 

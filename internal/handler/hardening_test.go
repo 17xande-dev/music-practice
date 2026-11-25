@@ -1,19 +1,17 @@
 package handler
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"regexp"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/17xande-dev/music-practice/internal/auth"
+	"github.com/17xande-dev/websec/webtest"
 )
 
 // The rules are websec's and tested there; this keeps one row per class at
@@ -44,13 +42,19 @@ func TestSafeNext(t *testing.T) {
 }
 
 func TestSignInRedirectRefusesControlCharacters(t *testing.T) {
-	s := newTestServer(t)
-	s.addUser(t, "a@x.com", false)
-	for _, next := range []string{"/%09/evil.example", "/\t/evil", `/\\evil`, "https://evil", "//evil"} {
-		rec := s.do(t, "POST", "/account/login", url.Values{"email": {"a@x.com"}, "password": {testPassword}, "next": {next}}, "")
-		if loc := rec.Header.Get("Location"); loc != "/account" {
-			t.Errorf("next=%q: redirected to %q", next, loc)
-		}
+	// The five values this test always had, then every hostile spelling the kit
+	// knows. The raw Location is checked: a Go http.Client would refuse to parse
+	// "/\t/evil.example" and the test would pass on the transport error.
+	for _, next := range append([]string{"/%09/evil.example", "/\t/evil", `/\\evil`, "https://evil", "//evil"}, webtest.HostileRedirects()...) {
+		t.Run(fmt.Sprintf("%.30q", next), func(t *testing.T) {
+			// A server per row: 22 sign-ins from one peer would meet the per-IP
+			// limit (10) and answer 429 instead of the redirect under test.
+			s := newTestServer(t)
+			s.addUser(t, "a@x.com", false)
+			s.client(t, "").PostForm("/account/login",
+				url.Values{"email": {"a@x.com"}, "password": {testPassword}, "next": {next}}).
+				WantRedirect(http.StatusSeeOther, "/account")
+		})
 	}
 }
 
@@ -195,45 +199,28 @@ func TestCanceledPasswordWaitIsNotBusy(t *testing.T) {
 	}
 }
 
-// logs captures what the server logs, so a test can check what is (and is
-// not) in it.
-type logBuf struct {
-	mu  sync.Mutex
-	buf bytes.Buffer
-}
-
-func (l *logBuf) Write(p []byte) (int, error) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	return l.buf.Write(p)
-}
-func (l *logBuf) String() string {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	return l.buf.String()
-}
-
+// The submitted password and email never reach the log, in any common
+// encoding; what the log does carry is the 12-hex email tag and the client IP.
+// The email is longer than the old fixture because NoSecrets refuses secrets
+// shorter than 12 bytes.
 func TestFailedSignInsAndLimitsAreLoggedWithoutSecrets(t *testing.T) {
 	s := newTestServer(t)
-	var lb logBuf
-	s.h.log = slog.New(slog.NewTextHandler(&lb, nil))
-	s.addUser(t, "a@x.com", false)
+	log, logs := webtest.Logger(t)
+	s.h.log = log
+	const email, pw = "log.probe@example.test", "hunter2 hunter2 hunter2"
+	s.addUser(t, email, false)
 	for range 6 {
-		s.do(t, "POST", "/account/login", url.Values{"email": {"a@x.com"}, "password": {"hunter2 hunter2 hunter2"}}, "")
+		s.do(t, "POST", "/account/login", url.Values{"email": {email}, "password": {pw}}, "")
 	}
-	out := lb.String()
-	if !strings.Contains(out, "sign-in failed") || !strings.Contains(out, "sign-in rate limited") {
-		t.Fatalf("missing log lines:\n%s", out)
+	out := logs.String()
+	webtest.NoSecrets(t, out, `"msg":"sign-in failed"`, pw, email)
+	if !strings.Contains(out, `"msg":"sign-in rate limited"`) {
+		t.Fatalf("missing the rate-limit log line:\n%s", out)
 	}
-	if !strings.Contains(out, emailTag("a@x.com")) || !strings.Contains(out, "192.0.2.1") {
+	if !strings.Contains(out, `"email":"`+emailTag(email)+`"`) || !strings.Contains(out, `"ip":"192.0.2.1"`) {
 		t.Errorf("log lacks the email hash prefix or the client IP:\n%s", out)
 	}
-	for _, secret := range []string{"hunter2", "a@x.com"} {
-		if strings.Contains(out, secret) {
-			t.Errorf("log contains %q:\n%s", secret, out)
-		}
-	}
-	if !regexp.MustCompile(`email=[0-9a-f]{12}\b`).MatchString(out) {
+	if !regexp.MustCompile(`"email":"[0-9a-f]{12}"`).MatchString(out) {
 		t.Errorf("email is not a 12-hex tag:\n%s", out)
 	}
 }
