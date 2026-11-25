@@ -387,7 +387,10 @@ from kamal-proxy. The first release using `__Host-mp_session` signs browser user
 cookie rename does not affect iPad tokens. Session limits also apply to existing rows and count
 from the recorded sign-in and last use, not from the deploy. Browser history stays local, but any not-yet-sent
 deletions are discarded when sync sees the old cookie rejected. Rolling back across the cookie
-rename signs browsers out again.
+rename signs browsers out again. It also changes iPad sessions: the new release
+writes a derived `expires_at` on every device row, and the older release reads any non-empty
+`expires_at` as a sliding 90-day web expiry. After a rollback an iPad unused for about 90 days is
+therefore signed out, which never happened before; one used at least every 90 days is not.
 
 ### Cross-origin requests and offline sync
 
