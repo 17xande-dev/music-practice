@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/17xande-dev/music-practice/internal/auth"
@@ -53,8 +54,14 @@ func (s *Store) createSession(ctx context.Context, userID int64, verifiedHash st
 	if kind == KindWeb {
 		expires = now.Add(WebSessionTTL)
 	}
-	if len(label) > 100 {
-		label = label[:100]
+	// Range gives byte offsets at rune boundaries, so an iPad name stays UTF-8.
+	n := 0
+	for i := range label {
+		if n == 100 {
+			label = label[:i]
+			break
+		}
+		n++
 	}
 	var res sql.Result
 	var err error
@@ -102,7 +109,10 @@ func (s *Store) Authenticate(ctx context.Context, token string) (User, Session, 
 	sess.CreatedAt, sess.LastUsedAt, sess.ExpiresAt = parseTime(created), parseTime(lastUsed), parseTime(expires)
 	now := s.now()
 	if !sess.ExpiresAt.IsZero() && !now.Before(sess.ExpiresAt) {
-		s.db.ExecContext(ctx, `DELETE FROM auth_sessions WHERE id = ?`, sess.ID)
+		// The session is expired even if cleaning up the row fails.
+		if _, err := s.db.ExecContext(ctx, `DELETE FROM auth_sessions WHERE id = ?`, sess.ID); err != nil {
+			slog.ErrorContext(ctx, "delete expired session", "session_id", sess.ID, "error", err)
+		}
 		return User{}, Session{}, ErrNotFound
 	}
 	if now.Sub(sess.LastUsedAt) >= touchInterval {
@@ -110,8 +120,11 @@ func (s *Store) Authenticate(ctx context.Context, token string) (User, Session, 
 			sess.ExpiresAt = now.Add(WebSessionTTL)
 		}
 		sess.LastUsedAt = now
-		s.db.ExecContext(ctx, `UPDATE auth_sessions SET last_used_at = ?, expires_at = ? WHERE id = ?`,
-			timestamp(now), timestamp(sess.ExpiresAt), sess.ID)
+		// A failed maintenance write does not invalidate a live session.
+		if _, err := s.db.ExecContext(ctx, `UPDATE auth_sessions SET last_used_at = ?, expires_at = ? WHERE id = ?`,
+			timestamp(now), timestamp(sess.ExpiresAt), sess.ID); err != nil {
+			slog.ErrorContext(ctx, "touch session", "session_id", sess.ID, "error", err)
+		}
 	}
 	u, err := s.ByID(ctx, sess.UserID)
 	if err != nil {
