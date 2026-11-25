@@ -106,10 +106,12 @@ func Logging(log *slog.Logger) Middleware {
 				return
 			}
 			path := r.URL.Path
-			if rec.status == http.StatusForbidden {
-				// A refusal can happen before routing; the CSRF warning records
-				// the registered pattern separately without echoing the URL.
-				path = "(forbidden)"
+			if rec.status == http.StatusForbidden && r.Pattern == "" {
+				// A cross-origin refusal happens before routing, so no pattern
+				// matched. Its own warning names the registered route; don't
+				// leak the rejected path through this line. A handler's 403
+				// (a non-admin on /admin/...) has a pattern and keeps its path.
+				path = "unmatched"
 			}
 			log.Info("request",
 				"method", r.Method,

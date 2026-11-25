@@ -103,23 +103,23 @@ func TestCrossOriginRefusalLog(t *testing.T) {
 		t.Error("API refusal must be a non-cacheable JSON error")
 	}
 	text := logs.String()
-	webtest.NoSecrets(t, text, `"msg":"csrf: request refused"`, segment, query, bearer, cookie)
+	webtest.NoSecrets(t, text, `"msg":"cross-origin request refused"`, segment, query, bearer, cookie)
 	want := [][2]string{
 		{"POST /admin/users/{id}/disable", "Sec-Fetch-Site"},
-		{"(unmatched)", "Origin"},
+		{"unmatched", "Origin"},
 		{"POST /api/sync", "Origin"},
 	}
 	i := 0
 	for line := range strings.SplitSeq(strings.TrimSpace(text), "\n") {
-		var row struct{ Msg, Level, Method, Route, Reason string }
+		var row struct{ Msg, Level, Method, Route, Header string }
 		if err := json.Unmarshal([]byte(line), &row); err != nil {
 			t.Fatal("refusal log is not JSON")
 		}
-		if row.Msg != "csrf: request refused" {
+		if row.Msg != "cross-origin request refused" {
 			continue
 		}
 		if i >= len(want) || row.Level != "WARN" || row.Method != "POST" ||
-			row.Route != want[i][0] || row.Reason != want[i][1] {
+			row.Route != want[i][0] || row.Header != want[i][1] {
 			t.Fatalf("unexpected refusal log fields at index %d", i)
 		}
 		i++

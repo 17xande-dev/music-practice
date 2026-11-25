@@ -241,13 +241,13 @@ func (h *Handler) newRoutes(origin string) (http.Handler, error) {
 		// Handler can return a concrete path for a redirect; only log registered patterns.
 		_, pattern := mux.Handler(r)
 		if !patterns[pattern] {
-			pattern = "(unmatched)"
+			pattern = "unmatched"
 		}
-		reason := "Origin"
+		header := "Origin"
 		if r.Header.Get("Sec-Fetch-Site") != "" {
-			reason = "Sec-Fetch-Site"
+			header = "Sec-Fetch-Site"
 		}
-		h.log.WarnContext(r.Context(), "csrf: request refused", "method", r.Method, "route", pattern, "reason", reason)
+		h.log.WarnContext(r.Context(), "cross-origin request refused", "method", r.Method, "route", pattern, "header", header)
 		w.Header().Set("Cache-Control", "no-store")
 		const message = "cross-origin request refused"
 		if strings.HasPrefix(r.URL.Path, "/api/") {

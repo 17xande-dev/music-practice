@@ -399,7 +399,9 @@ it uses `Sec-Fetch-Site` first, then falls back to comparing `Origin` with the r
 `Host`. The validated `BASE_URL`, when set, is an exact trusted origin so a proxy
 rewriting `Host` does not break browser requests. Refusals are non-cacheable 403s
 (JSON under `/api/`); the warning records the method, registered route pattern
-(or an unmatched marker), and which header caused the refusal, not the URL or header values.
+(or the marker `unmatched`) and which header (`Origin` or `Sec-Fetch-Site`) caused the refusal,
+not the URL or header values, under the message `cross-origin request refused`. The access log shows
+`unmatched` instead of the path for those refusals only; any other 403 logs its path as usual.
 
 Requests with neither header still pass the origin check: this is how the native
 iPad client works, and it still needs to authenticate. For a browser that sends
