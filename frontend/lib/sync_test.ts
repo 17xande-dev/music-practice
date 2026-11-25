@@ -218,6 +218,10 @@ function fakeServer(...replies: ((c: Call) => Response | Promise<Response>)[]) {
   const calls: Call[] = [];
   const f: FetchFn = async (url, init) => {
     assertEquals(url, "/api/sync");
+    const request = new Request(new URL(url, "https://practice.example"), init);
+    assertEquals(request.method, "POST");
+    assertEquals(request.credentials, "same-origin");
+    assertEquals(request.headers.get("Content-Type"), "application/json");
     const c = JSON.parse(init!.body as string) as Call;
     calls.push(c);
     const reply = replies[calls.length - 1];
