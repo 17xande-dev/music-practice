@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/17xande-dev/music-practice/internal/auth"
+	"github.com/17xande-dev/music-practice/internal/middleware"
 	"github.com/17xande-dev/websec/webtest"
 )
 
@@ -223,6 +225,49 @@ func TestFailedSignInsAndLimitsAreLoggedWithoutSecrets(t *testing.T) {
 	if !regexp.MustCompile(`"email":"[0-9a-f]{12}"`).MatchString(out) {
 		t.Errorf("email is not a 12-hex tag:\n%s", out)
 	}
+}
+
+// The JSON API is scanned as well as the form: a successful and a failed
+// /api/token, a /api/sync with the bearer and a DELETE /api/token, through
+// the handler's own log and the access log (Logging wraps the routes). The
+// issued device token, the submitted password and the bearer header never
+// reach either. The failed sign-in's own line is the required marker, so an
+// empty log cannot pass.
+func TestAPILogsCarryNoTokensOrPasswords(t *testing.T) {
+	log, logs := webtest.Logger(t)
+	s := newTestServerWith(t, func(o *Options) { o.Log = log })
+	routes := middleware.Logging(log)(s.routes)
+	const email, pw = "api.log.probe@example.test", testPassword
+	s.addUser(t, email, false)
+	c := func() *webtest.Client { return webtest.New(t, routes, csrfTestOrigin) }
+	post := func(method, target, body, token string) *webtest.Response {
+		t.Helper()
+		cl := c()
+		r := cl.NewRequest(method, target, strings.NewReader(body))
+		r.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			r.Header.Set("Authorization", "Bearer "+token)
+		}
+		return cl.Do(r)
+	}
+	creds := func(password string) string {
+		return fmt.Sprintf(`{"email":%q,"password":%q,"label":"iPad"}`, email, password)
+	}
+
+	res := post("POST", "/api/token", creds(pw), "")
+	res.WantStatus(http.StatusOK)
+	var issued struct{ Token string }
+	if err := json.Unmarshal([]byte(res.Body), &issued); err != nil || issued.Token == "" {
+		t.Fatalf("no token issued: %v %s", err, res.Body)
+	}
+	const wrong = "wrong api probe password"
+	post("POST", "/api/token", creds(wrong), "").WantStatus(http.StatusUnauthorized)
+	post("POST", "/api/sync", `{"cursor":0}`, issued.Token).WantStatus(http.StatusOK)
+	post("DELETE", "/api/token", "", issued.Token).WantStatus(http.StatusNoContent)
+	// The token is revoked now; a replay is refused and logged too.
+	post("POST", "/api/sync", `{"cursor":0}`, issued.Token).WantStatus(http.StatusUnauthorized)
+
+	webtest.NoSecrets(t, logs.String(), `"msg":"sign-in failed"`, issued.Token, pw, wrong, email, "Bearer "+issued.Token)
 }
 
 // Signing in over a live session ends that session, so it does not linger in
