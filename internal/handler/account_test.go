@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -378,16 +379,21 @@ func TestRevokeOtherSession(t *testing.T) {
 	}
 }
 
-// publicRoutes are the only routes that answer someone not signed in. The
-// list is short and deliberate: adding a route anywhere means either adding
-// it here, with a reason, or protecting it.
-var publicRoutes = map[string]bool{
-	"GET /{$}": true, "GET /songs": true, "GET /progress": true, "GET /about": true,
-	"GET /static/": true, "GET /sw.js": true, "GET /healthz": true,
-	"GET /account":         true, // the sign-in form
-	"POST /account/login":  true,
-	"POST /account/logout": true, // signing out with no session is a no-op
-	"POST /api/token":      true, // the app's sign-in
+// publicRoutes are the only routes that answer someone not signed in, each
+// with the reason. The list is short and deliberate: adding a route anywhere
+// means either adding it here, with a reason, or protecting it.
+var publicRoutes = map[string]string{
+	"GET /{$}":             "an offline-cacheable page shell, the same for everyone",
+	"GET /songs":           "an offline-cacheable page shell, the same for everyone",
+	"GET /progress":        "an offline-cacheable page shell, the same for everyone",
+	"GET /about":           "an offline-cacheable page shell, the same for everyone",
+	"GET /static/":         "hashed public assets",
+	"GET /sw.js":           "the service worker, served from the root for its scope",
+	"GET /healthz":         "the container health check",
+	"GET /account":         "the sign-in form",
+	"POST /account/login":  "signing in",
+	"POST /account/logout": "signing out with no session is a no-op",
+	"POST /api/token":      "the app's sign-in",
 }
 
 // Every route is collected from routes() itself, so a route added later is
@@ -397,29 +403,38 @@ func TestEveryRouteIsPublicOrProtected(t *testing.T) {
 	s := newTestServer(t)
 	var all []string
 	s.h.routes(func(pattern string, _ http.Handler) { all = append(all, pattern) })
-	if len(all) < 20 {
-		t.Fatalf("collected only %d routes", len(all))
-	}
-	checked := 0
-	for _, pattern := range all {
-		if publicRoutes[pattern] {
-			continue
+	routes := webtest.Routes(t, all, map[string]string{"id": "1"})
+	seen := 0
+	for i := range routes {
+		if why, ok := publicRoutes[routes[i].Pattern]; ok {
+			routes[i].Public, routes[i].Why = true, why
+			seen++
 		}
-		method, path, _ := strings.Cut(pattern, " ")
-		path = strings.NewReplacer("{id}", "1", "{$}", "").Replace(path)
-		for _, cookie := range []string{"", "made-up-token"} {
-			rec := s.do(t, method, path, url.Values{"current": {"x"}, "new": {"y"}, "confirm": {"y"}}, cookie)
-			loc := rec.Header.Get("Location")
-			refused := rec.Status == http.StatusUnauthorized ||
-				(rec.Status == http.StatusSeeOther && strings.HasPrefix(loc, "/account"))
-			if !refused {
-				t.Errorf("%s (cookie %q): %d %s", pattern, cookie, rec.Status, loc)
+	}
+	// A listed route that is no longer registered is a stale exception.
+	if seen != len(publicRoutes) {
+		t.Fatalf("%d of the %d public routes are registered", seen, len(publicRoutes))
+	}
+	// Exact, so removing or adding a route must change this number on purpose.
+	const protected = 16
+	webtest.Sweep{
+		Routes: routes,
+		Min:    protected,
+		Client: func() *webtest.Client { return s.client(t, "") },
+		Form:   url.Values{"current": {"x"}, "new": {"y"}, "confirm": {"y"}},
+		// A made-up token is tried as the session cookie as well as no cookie.
+		Cookies: []*http.Cookie{{Name: s.h.session.Name(), Value: "made-up-token", Path: "/", Secure: true}},
+		NoToken: true, // No per-form token in the stdlib policy.
+		Refused: func(_ webtest.Route, r *webtest.Response) error {
+			loc := r.Header.Get("Location")
+			if r.Status == http.StatusUnauthorized || (r.Status == http.StatusSeeOther && strings.HasPrefix(loc, "/account")) {
+				return nil
 			}
-		}
-		checked++
-	}
-	if checked < 10 {
-		t.Fatalf("checked only %d protected routes", checked)
+			return fmt.Errorf("want 401 or a 303 to /account, got %d %q", r.Status, loc)
+		},
+	}.Run(t)
+	if n := len(routes) - len(publicRoutes); n != protected {
+		t.Fatalf("%d protected routes, want exactly %d", n, protected)
 	}
 }
 

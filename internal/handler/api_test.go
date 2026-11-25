@@ -231,16 +231,36 @@ func TestSyncPaginates(t *testing.T) {
 	}
 }
 
+// Every API route but the sign-in is collected from routes(), so a route added
+// later is swept too; each is sent its own method. The sweep posts a form body,
+// not JSON, which is fine here: the credential check comes first.
 func TestAPIRefusesAnonymous(t *testing.T) {
 	s := newTestServer(t)
-	for _, route := range []string{"GET /api/me", "POST /api/sync", "DELETE /api/token"} {
-		method, path, _ := strings.Cut(route, " ")
-		for _, token := range []string{"", "made-up"} {
-			rec := s.api(t, method, path, `{}`, token, "")
-			if rec.Status != http.StatusUnauthorized || !strings.Contains(rec.Body, `"error"`) {
-				t.Errorf("%s token=%q: %d %s", route, token, rec.Status, rec.Body)
-			}
+	var patterns []string
+	s.h.routes(func(pattern string, _ http.Handler) {
+		if _, path, _ := strings.Cut(pattern, " "); strings.HasPrefix(path, "/api/") && pattern != "POST /api/token" {
+			patterns = append(patterns, pattern)
 		}
+	})
+	routes := webtest.Routes(t, patterns, nil)
+	for name, opts := range map[string][]webtest.Option{
+		"no credentials": nil,
+		"made-up token":  {webtest.Header("Authorization", "Bearer made-up")},
+	} {
+		t.Run(name, func(t *testing.T) {
+			webtest.Sweep{
+				Routes:  routes,
+				Min:     3, // GET /api/me, POST /api/sync, DELETE /api/token
+				Client:  func() *webtest.Client { return s.client(t, "", opts...) },
+				NoToken: true,
+				Refused: func(_ webtest.Route, r *webtest.Response) error {
+					if r.Status != http.StatusUnauthorized || !strings.Contains(r.Body, `"error"`) {
+						return fmt.Errorf("want 401 with a JSON error, got %d", r.Status)
+					}
+					return nil
+				},
+			}.Run(t)
+		})
 	}
 }
 

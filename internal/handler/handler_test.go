@@ -115,8 +115,10 @@ func TestNoInlineStyleOrHandlers(t *testing.T) {
 		}
 		checked++
 	}
-	if checked < 2 {
-		t.Fatalf("checked %d pages, want at least 2", checked)
+	// Exactly the six listed pages, so the walk cannot silently shrink.
+	webtest.MinCount(t, "pages checked", checked, 6)
+	if checked != len(pagePaths) {
+		t.Fatalf("checked %d pages, want %d", checked, len(pagePaths))
 	}
 }
 
