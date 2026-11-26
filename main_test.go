@@ -24,7 +24,7 @@ func TestInvalidBaseURLStopsBeforeMigration(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "test.db")
 	t.Setenv("DB_PATH", path)
 	t.Setenv("BASE_URL", "https://example.com/path")
-	t.Setenv("COOKIE_SECURE", "1")
+	t.Setenv("COOKIE_SECURE", "true")
 	t.Setenv("ADDR", "invalid-address") // Never listen, even if validation regresses.
 	err := run(slog.New(slog.NewTextHandler(io.Discard, nil)), false)
 	if err == nil || !strings.Contains(err.Error(), "BASE_URL") {

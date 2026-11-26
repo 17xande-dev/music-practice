@@ -6,14 +6,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/17xande-dev/env"
+	"github.com/17xande-dev/env/envtest"
 )
 
-func env(m map[string]string) func(string) string {
-	return func(k string) string { return m[k] }
+func lookup(m map[string]string) env.Lookup {
+	return envtest.NewRecorder(m).Lookup
 }
 
 func TestLoadDefaults(t *testing.T) {
-	c, err := Load(env(nil))
+	c, err := load(lookup(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,10 +27,10 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestLoadOverrides(t *testing.T) {
-	c, err := Load(env(map[string]string{
-		"ADDR": ":9000", "HSTS": "1", "SHUTDOWN_TIMEOUT": "3s",
+	c, err := load(lookup(map[string]string{
+		"ADDR": ":9000", "HSTS": "true", "SHUTDOWN_TIMEOUT": "3s",
 		"DB_PATH": "/data/x.db", "CLIENT_IP_HEADER": "CF-Connecting-IP",
-		"COOKIE_SECURE": "0", "BASE_URL": "http://local.example:9000",
+		"COOKIE_SECURE": "false", "BASE_URL": "http://local.example:9000",
 	}))
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +45,7 @@ func TestLoadOverrides(t *testing.T) {
 // Every bad value is reported together, so an operator fixes a deployment in
 // one pass rather than one restart per mistake.
 func TestLoadReportsAllErrors(t *testing.T) {
-	_, err := Load(env(map[string]string{"HSTS": "yes", "SHUTDOWN_TIMEOUT": "-1s"}))
+	_, err := load(lookup(map[string]string{"HSTS": "yes", "SHUTDOWN_TIMEOUT": "-1s"}))
 	if err == nil {
 		t.Fatal("want error")
 	}
@@ -66,7 +69,7 @@ func TestSessionLifetimeDefaultsAndOverrides(t *testing.T) {
 		}, [4]time.Duration{8, 24, 36, 96}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := Load(env(tc.env))
+			cfg, err := load(lookup(tc.env))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -83,13 +86,13 @@ func TestSessionLifetimeRejectsInvalidSettings(t *testing.T) {
 	for _, key := range []string{"SESSION_IDLE", "SESSION_ABSOLUTE", "DEVICE_SESSION_IDLE", "DEVICE_SESSION_ABSOLUTE"} {
 		for _, bad := range []string{"0s", "-1h", "30d", " 24h ", "off", "1100ms", "999999999999999h"} {
 			t.Run(key+"/"+bad, func(t *testing.T) {
-				if _, err := Load(env(map[string]string{key: bad})); err == nil || !strings.Contains(err.Error(), key) {
+				if _, err := load(lookup(map[string]string{key: bad})); err == nil || !strings.Contains(err.Error(), key) {
 					t.Fatalf("expected an error naming %s; got %v", key, err)
 				}
 			})
 		}
 	}
-	_, err := Load(env(map[string]string{
+	_, err := load(lookup(map[string]string{
 		"SESSION_IDLE": "48h", "SESSION_ABSOLUTE": "24h",
 		"DEVICE_SESSION_IDLE": "48h", "DEVICE_SESSION_ABSOLUTE": "24h",
 	}))
@@ -101,17 +104,17 @@ func TestSessionLifetimeRejectsInvalidSettings(t *testing.T) {
 }
 
 func TestCookieSecure(t *testing.T) {
-	for in, want := range map[string]bool{"": true, "1": true, "true": true, "0": false, "false": false} {
+	for in, want := range map[string]bool{"": true, "true": true, "false": false} {
 		t.Run("accepts_"+in, func(t *testing.T) {
-			c, err := Load(env(map[string]string{"COOKIE_SECURE": in}))
+			c, err := load(lookup(map[string]string{"COOKIE_SECURE": in}))
 			if err != nil || c.CookieSecure != want {
 				t.Errorf("%q: %t %v", in, c.CookieSecure, err)
 			}
 		})
 	}
-	for _, in := range []string{"auto", "AUTO", "TRUE", " true ", "maybe"} {
+	for _, in := range []string{"1", "0", "auto", "AUTO", "TRUE", " true ", "maybe"} {
 		t.Run("rejects_"+in, func(t *testing.T) {
-			_, err := Load(env(map[string]string{"COOKIE_SECURE": in}))
+			_, err := load(lookup(map[string]string{"COOKIE_SECURE": in}))
 			if err == nil || !strings.Contains(err.Error(), "COOKIE_SECURE") {
 				t.Fatalf("expected a COOKIE_SECURE error, got %v", err)
 			}
@@ -129,8 +132,8 @@ func TestBaseURL(t *testing.T) {
 	}{
 		{"optional", "", "", true},
 		{"public", "https://example.com", "", true},
-		{"LAN", "http://192.0.2.1:8080", "0", true},
-		{"http_with_secure_cookie", "http://example.com", "1", false},
+		{"LAN", "http://192.0.2.1:8080", "false", true},
+		{"http_with_secure_cookie", "http://example.com", "true", false},
 		{"path", "https://example.com/account", "", false},
 		{"trailing_slash", "https://example.com/", "", false},
 		{"uppercase", "https://Example.com", "", false},
@@ -138,7 +141,7 @@ func TestBaseURL(t *testing.T) {
 		{"bare_host", "example.com", "", false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := Load(env(map[string]string{"BASE_URL": tc.url, "COOKIE_SECURE": tc.secure}))
+			c, err := load(lookup(map[string]string{"BASE_URL": tc.url, "COOKIE_SECURE": tc.secure}))
 			if tc.valid {
 				if err != nil || c.BaseURL != tc.url {
 					t.Fatalf("BaseURL = %q, err = %v; want %q", c.BaseURL, err, tc.url)
@@ -163,7 +166,7 @@ func TestLoadClientIPSource(t *testing.T) {
 	}
 	spoof := map[string]string{"CF-Connecting-IP": "203.0.113.9", "X-Forwarded-For": "203.0.113.8"}
 
-	c, err := Load(env(nil))
+	c, err := load(lookup(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +174,7 @@ func TestLoadClientIPSource(t *testing.T) {
 		t.Errorf("unset: %s, want the peer", got)
 	}
 
-	c, err = Load(env(map[string]string{"CLIENT_IP_HEADER": "cf-connecting-ip"}))
+	c, err = load(lookup(map[string]string{"CLIENT_IP_HEADER": "cf-connecting-ip"}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +188,7 @@ func TestLoadClientIPSource(t *testing.T) {
 		t.Errorf("junk header: %s, want the peer", got)
 	}
 
-	if _, err := Load(env(map[string]string{"CLIENT_IP_HEADER": "Bad Header"})); err == nil || !strings.Contains(err.Error(), "CLIENT_IP_HEADER") {
+	if _, err := load(lookup(map[string]string{"CLIENT_IP_HEADER": "Bad Header"})); err == nil || !strings.Contains(err.Error(), "CLIENT_IP_HEADER") {
 		t.Errorf("invalid header name accepted: %v", err)
 	}
 }

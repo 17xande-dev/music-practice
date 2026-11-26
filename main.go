@@ -39,7 +39,7 @@ func main() {
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	if *healthcheck {
-		cfg, err := config.Load(os.Getenv)
+		cfg, err := config.Load()
 		if err == nil {
 			err = probe(cfg.Addr, 3*time.Second)
 		}
@@ -76,7 +76,7 @@ func main() {
 }
 
 func run(log *slog.Logger, dev bool) error {
-	cfg, err := config.Load(os.Getenv)
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func openMigratedDB(cfg config.Config) (*sql.DB, []string, error) {
 var errNoDBPath = errors.New("DB_PATH is not set: it names the SQLite file for accounts and history (e.g. /data/music-practice.db)")
 
 func printMigrateStatus() error {
-	cfg, err := config.Load(os.Getenv)
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func printMigrateStatus() error {
 // here lets -add-admin run against a brand-new volume before the server's
 // first start.
 func withStore(fn func(context.Context, *account.Store) error) error {
-	cfg, err := config.Load(os.Getenv)
+	cfg, err := config.Load()
 	if err != nil {
 		return err
 	}

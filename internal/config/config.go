@@ -5,9 +5,10 @@ package config
 
 import (
 	"fmt"
-	"strings"
+	"os"
 	"time"
 
+	"github.com/17xande-dev/env"
 	"github.com/17xande-dev/music-practice/internal/account"
 	"github.com/17xande-dev/ratelimit/clientip"
 	"github.com/17xande-dev/websec/csrf"
@@ -53,91 +54,69 @@ type Config struct {
 	ClientIP clientip.Source
 }
 
-// Load reads configuration through getenv (os.Getenv in production, a map in
-// tests) and reports every invalid value at once rather than the first.
-func Load(getenv func(string) string) (Config, error) {
+// Load reads the process environment and reports every invalid setting at
+// once rather than the first.
+func Load() (Config, error) { return load(os.LookupEnv) }
+
+// load takes the lookup so tests can supply an environment without touching
+// the process's.
+func load(lookup env.Lookup) (Config, error) {
+	r := env.New(lookup)
 	c := Config{
-		Addr:            ":8080",
-		CookieSecure:    true,
-		ShutdownTimeout: 10 * time.Second,
+		Addr:            r.String("ADDR", ":8080"),
+		HSTS:            r.Bool("HSTS", false),
+		BaseURL:         r.String("BASE_URL", ""),
+		ShutdownTimeout: r.Duration("SHUTDOWN_TIMEOUT", 10*time.Second, time.Nanosecond, 0),
 		Lifetimes:       account.DefaultLifetimes(),
+		DBPath:          r.String("DB_PATH", ""),
+		ClientIPHeader:  r.String("CLIENT_IP_HEADER", ""),
 	}
-	var errs []string
-
-	if v := getenv("ADDR"); v != "" {
-		c.Addr = v
-	}
-
-	switch v := getenv("HSTS"); v {
-	case "", "0", "false":
-	case "1", "true":
-		c.HSTS = true
-	default:
-		errs = append(errs, fmt.Sprintf("HSTS: want 1/0/true/false, got %q", v))
+	// "auto" was a supported spelling once; say what replaced it rather than
+	// the generic boolean message.
+	if value, _ := lookup("COOKIE_SECURE"); value == "auto" {
+		r.Fail("COOKIE_SECURE", "auto is no longer supported; use true for HTTPS or false for plain HTTP")
+		c.CookieSecure = true
+	} else {
+		c.CookieSecure = r.Bool("COOKIE_SECURE", true)
 	}
 
-	switch v := getenv("COOKIE_SECURE"); v {
-	case "", "1", "true":
-	case "0", "false":
-		c.CookieSecure = false
-	case "auto":
-		errs = append(errs, "COOKIE_SECURE: auto is no longer supported; use 1 for HTTPS or 0 for plain HTTP")
-	default:
-		errs = append(errs, "COOKIE_SECURE: want 1/0/true/false")
-	}
-
-	c.BaseURL = getenv("BASE_URL")
 	if c.BaseURL != "" {
 		if err := csrf.ValidateOrigin(c.BaseURL, !c.CookieSecure); err != nil {
 			// A pasted URL might contain userinfo; do not echo its value.
-			errs = append(errs, "BASE_URL: want a canonical origin (scheme://host[:port], no path); HTTPS is required when COOKIE_SECURE is true")
+			r.Fail("BASE_URL", "want a canonical origin (scheme://host[:port], no path); HTTPS is required when COOKIE_SECURE is true")
 		}
 	}
 
-	if v := getenv("SHUTDOWN_TIMEOUT"); v != "" {
-		d, err := time.ParseDuration(v)
-		if err != nil || d <= 0 {
-			errs = append(errs, fmt.Sprintf("SHUTDOWN_TIMEOUT: want a positive duration like 10s, got %q", v))
-		} else {
-			c.ShutdownTimeout = d
-		}
-	}
+	loadLifetime(r, "SESSION", &c.Lifetimes.Web)
+	loadLifetime(r, "DEVICE_SESSION", &c.Lifetimes.Device)
 
-	errs = loadLifetime(getenv, errs, "SESSION", &c.Lifetimes.Web)
-	errs = loadLifetime(getenv, errs, "DEVICE_SESSION", &c.Lifetimes.Device)
-
-	c.DBPath = getenv("DB_PATH")
-	c.ClientIPHeader = getenv("CLIENT_IP_HEADER")
 	if src, err := clientip.New(clientip.Config{TrustedHeader: c.ClientIPHeader}); err != nil {
-		errs = append(errs, fmt.Sprintf("CLIENT_IP_HEADER: %v", err))
+		r.Fail("CLIENT_IP_HEADER", "must be a valid header name")
 	} else {
 		c.ClientIP = src
 	}
 
-	if len(errs) > 0 {
-		return Config{}, fmt.Errorf("config: %s", strings.Join(errs, "; "))
+	if err := r.Err(); err != nil {
+		return Config{}, fmt.Errorf("config: %w", err)
 	}
 	return c, nil
 }
 
-func loadLifetime(getenv func(string) string, errs []string, prefix string, life *session.Lifetime) []string {
+func loadLifetime(r *env.Reader, prefix string, life *session.Lifetime) {
 	idle, absolute := prefix+"_IDLE", prefix+"_ABSOLUTE"
 	for _, v := range []struct {
 		key string
 		dst *time.Duration
 	}{{idle, &life.Idle}, {absolute, &life.Absolute}} {
-		if raw := getenv(v.key); raw != "" {
-			d, err := time.ParseDuration(raw)
-			// The existing RFC3339 columns and cookie deadlines have second precision.
-			if err != nil || d <= 0 || d%time.Second != 0 {
-				errs = append(errs, v.key+": want a positive whole-second duration like 720h")
-			} else {
-				*v.dst = d
-			}
+		// The existing RFC3339 columns and cookie deadlines have second
+		// precision, so fractions are refused; the minimum excludes zero and
+		// negative values.
+		*v.dst = r.Duration(v.key, *v.dst, time.Second, 0)
+		if *v.dst%time.Second != 0 {
+			r.Fail(v.key, "want a positive whole-second duration like 720h")
 		}
 	}
 	if err := life.Validate(); err != nil {
-		errs = append(errs, fmt.Sprintf("%s/%s: %v", idle, absolute, err))
+		r.Fail(idle+"/"+absolute, "the idle limit must not exceed the absolute limit")
 	}
-	return errs
 }

@@ -139,7 +139,7 @@ included. It also needs HTTPS, and permission to use the audio input.
 ## Develop
 
 ```sh
-COOKIE_SECURE=0 make dev  # rebundle TypeScript on change + run with -dev on :8080
+COOKIE_SECURE=false make dev  # rebundle TypeScript on change + run with -dev on :8080
 make check   # the gate before any commit: gofmt, vet, deno check/lint/fmt/test, bundle, go test
 make build   # bundle, then compile bin/music-practice with everything embedded
 make docker  # multi-stage image: Deno bundle → Go build → distroless
@@ -152,9 +152,9 @@ reuse them (`set -a; . ./.env; set +a`). The app does not load `.env` itself.
 | Variable           | Default | Meaning |
 | ------------------ | ------- | ------- |
 | `ADDR`             | `:8080` | Listen address |
-| `HSTS`             | `0`     | Send Strict-Transport-Security on HTTPS only. Accepts `1`, `0`, `true`, `false` |
-| `COOKIE_SECURE`    | `1`     | Secure session cookie. Accepts `1`, `0`, `true`, `false`; `auto` is refused. Set `0` for plain-HTTP development |
-| `BASE_URL`         | unset   | Optional canonical public origin: lowercase `scheme://host[:port]`, no path or trailing slash, omit default port. HTTPS required unless `COOKIE_SECURE=0` |
+| `HSTS`             | `false` | Send Strict-Transport-Security on HTTPS only. Accepts exactly `true` or `false` |
+| `COOKIE_SECURE`    | `true`  | Secure session cookie. Accepts exactly `true` or `false`; `auto` is refused. Set `false` for plain-HTTP development |
+| `BASE_URL`         | unset   | Optional canonical public origin: lowercase `scheme://host[:port]`, no path or trailing slash, omit default port. HTTPS required unless `COOKIE_SECURE=false` |
 | `SESSION_IDLE` | `720h` | Browser inactivity limit (30 days) |
 | `SESSION_ABSOLUTE` | `2160h` | Browser deadline from sign-in (90 days); also the cookie's deadline |
 | `DEVICE_SESSION_IDLE` | `2160h` | iPad bearer-token inactivity limit (90 days) |
@@ -167,7 +167,7 @@ Session settings take positive Go durations in whole seconds (use `24h`, not `1d
 Idle must not exceed absolute. Last use is recorded at most hourly, so idle expiry can arrive
 up to an hour early. For a session to renew its idle deadline on activity, set idle above `1h`.
 
-For sign-in over plain HTTP on a LAN, set `COOKIE_SECURE=0` and use the LAN origin for `BASE_URL`
+For sign-in over plain HTTP on a LAN, set `COOKIE_SECURE=false` and use the LAN origin for `BASE_URL`
 (e.g. `http://192.0.2.1:8080`). Forwarded protocol headers do not change cookie security.
 
 `music-practice -migrate-status` lists each database migration as applied or pending. The server
@@ -381,7 +381,7 @@ terminates TLS, so Kamal runs with `proxy.ssl: false`. Nothing else can reach th
 makes trusting `CF-Connecting-IP` safe. The app runs with a 512 MB limit and the named volume
 `music-practice-data` at `/data`.
 
-`HSTS=1` sends Strict-Transport-Security. Set `COOKIE_SECURE=1` and
+`HSTS=true` sends Strict-Transport-Security. Set `COOKIE_SECURE=true` and
 `BASE_URL=https://music.17xande.dev`: the browser sees HTTPS even though the app sees plain HTTP
 from kamal-proxy. The first release using `__Host-mp_session` signs browser users out once; the
 cookie rename does not affect iPad tokens. Session limits also apply to existing rows and count

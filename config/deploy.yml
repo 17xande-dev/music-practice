@@ -50,8 +50,8 @@ env:
   clear:
     # The browser sees HTTPS even though kamal-proxy and the app speak HTTP.
     # Configure the public origin and cookie policy, not the transport to the app.
-    HSTS: "1"
-    COOKIE_SECURE: "1"
+    HSTS: "true"
+    COOKIE_SECURE: "true"
     BASE_URL: https://music.17xande.dev
     SESSION_IDLE: 720h
     SESSION_ABSOLUTE: 2160h
